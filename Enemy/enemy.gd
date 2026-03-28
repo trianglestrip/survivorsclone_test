@@ -41,6 +41,11 @@ func _load_config():
 
 func _physics_process(_delta):
 	knockback = knockback.move_toward(Vector2.ZERO, knockback_recovery)
+	
+	# 检查玩家是否存在
+	if player == null or not is_instance_valid(player):
+		return
+	
 	var direction = global_position.direction_to(player.global_position)
 	velocity = direction*movement_speed
 	velocity += knockback

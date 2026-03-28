@@ -250,6 +250,14 @@ F:\project\godot\Godot_v4.6.1-stable_win64_console.exe --headless --path . --scr
 F:\project\godot\Godot_v4.6.1-stable_win64_console.exe --headless --path . --script tests/test_complete.gd
 ```
 
+### 性能测试（500 个敌人）
+```powershell
+# GUI 模式 - 可视化 FPS
+F:\project\godot\Godot_v4.6.1-stable_win64.exe tests/performance_test.tscn
+
+# 按 ESC 退出并查看性能总结
+```
+
 ---
 
 ## 文档索引
@@ -263,6 +271,7 @@ F:\project\godot\Godot_v4.6.1-stable_win64_console.exe --headless --path . --scr
 
 ### 开发文档
 - [测试指南](docs/TESTING_GUIDE.md) - 测试方法和故障排除
+- [性能测试](docs/PERFORMANCE_TEST.md) - 性能测试和对象池优化
 - [警告修复](docs/WARNING_FIXES.md) - 代码质量改进记录
 - [Bug 修复](docs/BUGFIX_SUMMARY.md) - 已修复问题记录
 

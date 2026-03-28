@@ -27,3 +27,5 @@ res://TitleScreen/menu.gd
 res://tests/test_stage3.gd
 res://Utility/enemy_registry.gd
 res://Utility/skill_registry.gd
+res://tests/test_registry_loading.gd
+res://Utility/enemy_spawner.gd

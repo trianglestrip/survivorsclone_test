@@ -11,6 +11,27 @@ signal changetime(time)
 
 func _ready():
 	connect("changetime",Callable(player,"change_time"))
+	_prewarm_enemy_pools()
+
+# 预热敌人对象池
+func _prewarm_enemy_pools():
+	print("\n=== 预热敌人对象池 ===")
+	
+	# 为每种敌人类型预热对象池
+	var unique_enemies = {}
+	for spawn_info in spawns:
+		if spawn_info.enemy != null:
+			var enemy_path = spawn_info.enemy.resource_path
+			unique_enemies[enemy_path] = spawn_info.enemy
+	
+	for enemy_path in unique_enemies:
+		var enemy_scene = unique_enemies[enemy_path]
+		var pool_name = "enemy_" + enemy_scene.resource_path.get_file().get_basename()
+		# 预热 20 个实例
+		ObjectPool.prewarm_pool(pool_name, enemy_scene, 20)
+		print("  ✓ 预热对象池: %s (20 个实例)" % pool_name)
+	
+	print("✓ 对象池预热完成\n")
 
 func _on_timer_timeout():
 	time += 1

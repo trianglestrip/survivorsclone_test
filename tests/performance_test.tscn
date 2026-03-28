@@ -1,0 +1,34 @@
+[gd_scene load_steps=4 format=3 uid="uid://performance_test_scene"]
+
+[ext_resource type="Script" path="res://tests/performance_test.gd" id="1_test"]
+[ext_resource type="Script" path="res://tests/fps_display.gd" id="2_fps"]
+[ext_resource type="Script" path="res://tests/performance_monitor.gd" id="3_monitor"]
+
+[node name="PerformanceTest" type="Node2D"]
+script = ExtResource("1_test")
+
+[node name="PerformanceMonitor" type="Node" parent="."]
+script = ExtResource("3_monitor")
+
+[node name="Player" type="CharacterBody2D" parent="." groups=["player"]]
+position = Vector2(320, 180)
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(320, 180)
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="FPSDisplay" type="Label" parent="CanvasLayer"]
+offset_right = 150.0
+offset_bottom = 40.0
+script = ExtResource("2_fps")
+
+[node name="InfoLabel" type="Label" parent="CanvasLayer"]
+offset_left = 10.0
+offset_top = 50.0
+offset_right = 400.0
+offset_bottom = 150.0
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.8, 0.8, 0.8, 1)
+
+[node name="EnemyContainer" type="Node2D" parent="."]
