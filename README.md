@@ -40,6 +40,7 @@ F:\project\godot\Godot_v4.6.1-stable_win64_console.exe --headless --path . --scr
 - **SkillRegistry**: 技能注册系统
 - **ObjectPool**: 对象池优化性能
 - **BaseSkill**: 技能基类，统一技能行为
+- **AudioManager**: 音频管理器，控制声音开关（默认关闭）
 
 ### 配置驱动（完全数据分离）
 - `config/upgrade_config.ini` - 升级和武器配置（31 个升级）
@@ -49,7 +50,8 @@ F:\project\godot\Godot_v4.6.1-stable_win64_console.exe --headless --path . --scr
 - **失败即退出** - 防止不完整配置进入游戏
 
 详细配置系统说明请查看 [CONFIG_SYSTEM.md](CONFIG_SYSTEM.md)  
-详细架构说明请查看 [ARCHITECTURE.md](ARCHITECTURE.md)
+详细架构说明请查看 [ARCHITECTURE.md](ARCHITECTURE.md)  
+音频系统说明请查看 [AUDIO_SYSTEM.md](AUDIO_SYSTEM.md)
 
 ## 提交与编码设置
 
