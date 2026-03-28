@@ -1,5 +1,8 @@
 extends CharacterBody2D
 
+## 注意：此脚本仅用于场景定义和编辑器显示
+## GPU 实例化模式下不会实例化敌人节点，因此此脚本不会执行
+## 所有敌人逻辑由 Enemy/enemy_instance_manager.gd 管理
 
 @export var movement_speed = 20.0
 @export var hp = 10
@@ -22,6 +25,8 @@ signal remove_from_array(object)
 
 
 func _ready():
+	# GPU 模式下此代码不会执行
+	# 保留用于非 GPU 模式或调试
 	_load_config()
 	anim.play("walk")
 	hitBox.damage = enemy_damage
