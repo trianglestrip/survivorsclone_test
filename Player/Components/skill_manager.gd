@@ -91,8 +91,6 @@ func get_unlocked_skills() -> Array:
 
 # 修改技能属性
 func modify_skill_property(skill_id: String, property_name: String, value):
-	var full_property = "%s_%s" % [skill_id, property_name]
-	
 	# 尝试在各个字典中查找和修改
 	if property_name == "level":
 		set_skill_level(skill_id, value)

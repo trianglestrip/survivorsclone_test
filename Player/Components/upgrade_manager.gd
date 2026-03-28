@@ -37,7 +37,7 @@ func apply_upgrade(upgrade_id: String):
 		get_node("/root/EventBus").emit_upgrade_collected(upgrade_id)
 
 # 应用升级效果
-func _apply_upgrade_effects(upgrade_id: String, config: Dictionary):
+func _apply_upgrade_effects(_upgrade_id: String, config: Dictionary):
 	if player_stats == null or skill_manager == null:
 		return
 	

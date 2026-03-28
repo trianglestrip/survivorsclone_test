@@ -29,9 +29,12 @@ func _init():
 	
 	# 调试：检查 player 中是否有 stats
 	print("  'stats' in player: ", "stats" in mock_player)
-	print("  player.stats: ", mock_player.stats if "stats" in mock_player else "N/A")
-	if "stats" in mock_player and mock_player.stats != null:
-		print("  player.stats.spell_size: ", mock_player.stats.spell_size)
+	if "stats" in mock_player:
+		print("  player.stats: ", mock_player.stats)
+		if mock_player.stats != null:
+			print("  player.stats.spell_size: ", mock_player.stats.spell_size)
+	else:
+		print("  player.stats: N/A")
 	
 	skill.apply_player_modifiers()
 	

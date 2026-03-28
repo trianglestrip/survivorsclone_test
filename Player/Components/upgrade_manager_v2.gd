@@ -136,7 +136,7 @@ func _apply_heal(data: Dictionary):
 		get_node("/root/EventBus").emit_signal("player_healed", healed, player_stats.hp)
 
 # 传统方式应用效果（向后兼容）
-func _apply_upgrade_effects_legacy(upgrade_id: String, config: Dictionary):
+func _apply_upgrade_effects_legacy(_upgrade_id: String, config: Dictionary):
 	if player_stats == null or skill_manager == null:
 		return
 	

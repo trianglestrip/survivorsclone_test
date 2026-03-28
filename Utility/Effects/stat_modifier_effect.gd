@@ -47,7 +47,10 @@ func get_description() -> String:
 	var op_text = ""
 	match operation:
 		ModifierOperation.ADD:
-			op_text = "+%s" % modifier_value if modifier_value >= 0 else str(modifier_value)
+			if modifier_value >= 0:
+				op_text = "+%s" % modifier_value
+			else:
+				op_text = str(modifier_value)
 		ModifierOperation.MULTIPLY:
 			op_text = "x%s" % modifier_value
 		ModifierOperation.SET:

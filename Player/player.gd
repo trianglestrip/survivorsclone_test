@@ -136,7 +136,7 @@ func attack():
 		spawn_javelin()
 
 func _on_hurt_box_hurt(damage, _angle, _knockback):
-	var actual_damage = stats.take_damage(damage)
+	var _actual_damage = stats.take_damage(damage)
 	healthBar.max_value = stats.maxhp
 	healthBar.value = stats.hp
 	
@@ -342,17 +342,17 @@ func _on_btn_menu_click_end():
 func _get(property):
 	match property:
 		"spell_size":
-			return stats.spell_size if stats else 0
+			return stats.spell_size if stats != null else 0.0
 		"spell_cooldown":
-			return stats.spell_cooldown if stats else 0
+			return stats.spell_cooldown if stats != null else 0.0
 		"additional_attacks":
-			return stats.additional_attacks if stats else 0
+			return stats.additional_attacks if stats != null else 0
 		"javelin_level":
-			return skill_mgr.get_skill_level("javelin") if skill_mgr else 0
+			return skill_mgr.get_skill_level("javelin") if skill_mgr != null else 0
 		"icespear_level":
-			return skill_mgr.get_skill_level("icespear") if skill_mgr else 0
+			return skill_mgr.get_skill_level("icespear") if skill_mgr != null else 0
 		"tornado_level":
-			return skill_mgr.get_skill_level("tornado") if skill_mgr else 0
+			return skill_mgr.get_skill_level("tornado") if skill_mgr != null else 0
 	return null
 
 func _set(property, value):

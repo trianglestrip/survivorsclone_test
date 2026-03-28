@@ -52,7 +52,9 @@ func _init():
 	print("测试结果总结")
 	print(separator)
 	for result in stage_results:
-		var status = "✓ 通过" if result["passed"] else "✗ 失败"
+		var status = "✗ 失败"
+		if result["passed"]:
+			status = "✓ 通过"
 		print("%s: %s" % [result["stage"], status])
 	
 	print("\n" + separator)

@@ -22,12 +22,10 @@ func _load_upgrade_config():
 	
 	# 手动解析 INI
 	var current_section = ""
-	var line_number = 0
 	var parsed_sections = 0
 	
 	while not file.eof_reached():
 		var line = file.get_line().strip_edges()
-		line_number += 1
 		
 		# 跳过空行和注释
 		if line == "" or line.begins_with("#") or line.begins_with(";"):
@@ -57,9 +55,15 @@ func _load_upgrade_config():
 						UPGRADES[current_section]["prerequisite"] = []
 				# 处理数值类型
 				elif key in ["set_level", "add_baseammo", "set_ammo", "add_armor", "add_additional_attacks", "heal"]:
-					UPGRADES[current_section][key] = int(value) if value.is_valid_int() else value
+					if value.is_valid_int():
+						UPGRADES[current_section][key] = int(value)
+					else:
+						UPGRADES[current_section][key] = value
 				elif key in ["set_tornado_attackspeed", "add_movement_speed", "add_spell_size", "add_spell_cooldown"]:
-					UPGRADES[current_section][key] = float(value) if value.is_valid_float() else value
+					if value.is_valid_float():
+						UPGRADES[current_section][key] = float(value)
+					else:
+						UPGRADES[current_section][key] = value
 				else:
 					UPGRADES[current_section][key] = value
 	

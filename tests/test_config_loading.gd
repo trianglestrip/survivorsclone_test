@@ -91,4 +91,7 @@ func _init():
 		print("❌ 部分测试失败，请检查配置")
 	print(sep)
 	
-	quit(0 if all_passed else 1)
+	if all_passed:
+		quit(0)
+	else:
+		quit(1)
