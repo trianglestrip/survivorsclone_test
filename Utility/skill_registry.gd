@@ -39,27 +39,74 @@ func instantiate_skill(skill_id: String) -> Node:
 	return null
 
 func _ready():
-	# 注册所有技能
-	_register_default_skills()
+	_load_skills_from_config()
 
-func _register_default_skills():
-	# 注册冰矛
-	register_skill("IceSpear", preload("res://Player/Attack/ice_spear.tscn"), {
-		"name": "冰矛",
-		"description": "向随机敌人投掷冰矛",
-		"type": "projectile"
-	})
+func _load_skills_from_config():
+	print("\n=== 加载技能配置 ===")
+	print("配置文件: res://config/skill_config.ini")
 	
-	# 注册龙卷风
-	register_skill("Tornado", preload("res://Player/Attack/tornado.tscn"), {
-		"name": "龙卷风",
-		"description": "生成龙卷风并在玩家方向上随机移动",
-		"type": "projectile"
-	})
+	var file = FileAccess.open("res://config/skill_config.ini", FileAccess.READ)
 	
-	# 注册标枪
-	register_skill("Javelin", preload("res://Player/Attack/javelin.tscn"), {
-		"name": "标枪",
-		"description": "魔法标枪会沿直线跟随你攻击敌人",
-		"type": "orbital"
-	})
+	if file == null:
+		push_error("❌ 无法打开技能配置文件: res://config/skill_config.ini")
+		push_error("游戏无法继续，请确保配置文件存在！")
+		get_tree().quit(1)
+		return
+	
+	var current_section = ""
+	var skill_configs = {}
+	
+	while not file.eof_reached():
+		var line = file.get_line().strip_edges()
+		
+		if line == "" or line.begins_with("#") or line.begins_with(";"):
+			continue
+		
+		if line.begins_with("[") and line.ends_with("]"):
+			current_section = line.substr(1, line.length() - 2)
+			skill_configs[current_section] = {}
+			continue
+		
+		if current_section != "" and line.contains("="):
+			var parts = line.split("=", true, 1)
+			if parts.size() == 2:
+				var key = parts[0].strip_edges()
+				var value = parts[1].strip_edges()
+				
+				if key == "tier":
+					skill_configs[current_section][key] = int(value) if value.is_valid_int() else 1
+				elif key == "is_boss":
+					skill_configs[current_section][key] = value.to_lower() == "true"
+				else:
+					skill_configs[current_section][key] = value
+	
+	file.close()
+	
+	if skill_configs.size() == 0:
+		push_error("❌ 技能配置为空！")
+		get_tree().quit(1)
+		return
+	
+	# 动态注册技能
+	for skill_id in skill_configs:
+		var config = skill_configs[skill_id]
+		
+		if not config.has("scene_path"):
+			push_error("❌ 技能 '%s' 缺少 scene_path" % skill_id)
+			continue
+		
+		var scene = load(config["scene_path"])
+		if scene == null:
+			push_error("❌ 无法加载技能场景: %s" % config["scene_path"])
+			continue
+		
+		var skill_data = {
+			"name": config.get("name", skill_id),
+			"description": config.get("description", ""),
+			"type": config.get("type", "projectile")
+		}
+		
+		register_skill(skill_id, scene, skill_data)
+		print("  ✓ 注册技能: %s (%s)" % [skill_id, skill_data["name"]])
+	
+	print("✓ 成功注册 %d 个技能\n" % registered_skills.size())

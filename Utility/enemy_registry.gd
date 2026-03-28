@@ -42,45 +42,79 @@ func instantiate_enemy(enemy_id: String) -> Node:
 	return null
 
 func _ready():
-	_register_default_enemies()
+	_load_enemies_from_config()
 
-func _register_default_enemies():
-	# 注册弱小狗头人
-	register_enemy("enemy_kobold_weak", 
-		preload("res://Enemy/enemy_kobold_weak.tscn"), {
-		"name": "弱小狗头人",
-		"tier": 1,
-		"is_boss": false
-	})
+func _load_enemies_from_config():
+	print("\n=== 加载敌人配置 ===")
+	print("配置文件: res://config/enemy_config.ini")
 	
-	# 注册强壮狗头人
-	register_enemy("enemy_kobold_strong", 
-		preload("res://Enemy/enemy_kobold_strong.tscn"), {
-		"name": "强壮狗头人",
-		"tier": 2,
-		"is_boss": false
-	})
+	var file = FileAccess.open("res://config/enemy_config.ini", FileAccess.READ)
 	
-	# 注册独眼巨人
-	register_enemy("enemy_cyclops", 
-		preload("res://Enemy/enemy_cyclops.tscn"), {
-		"name": "独眼巨人",
-		"tier": 3,
-		"is_boss": false
-	})
+	if file == null:
+		push_error("❌ 无法打开敌人配置文件: res://config/enemy_config.ini")
+		push_error("游戏无法继续，请确保配置文件存在！")
+		get_tree().quit(1)
+		return
 	
-	# 注册主宰者
-	register_enemy("enemy_juggernaut", 
-		preload("res://Enemy/enemy_juggernaut.tscn"), {
-		"name": "主宰者",
-		"tier": 4,
-		"is_boss": true
-	})
+	var current_section = ""
+	var enemy_configs = {}
 	
-	# 注册超级敌人
-	register_enemy("enemy_super", 
-		preload("res://Enemy/enemy_super.tscn"), {
-		"name": "超级敌人",
-		"tier": 5,
-		"is_boss": true
-	})
+	while not file.eof_reached():
+		var line = file.get_line().strip_edges()
+		
+		if line == "" or line.begins_with("#") or line.begins_with(";"):
+			continue
+		
+		if line.begins_with("[") and line.ends_with("]"):
+			current_section = line.substr(1, line.length() - 2)
+			enemy_configs[current_section] = {}
+			continue
+		
+		if current_section != "" and line.contains("="):
+			var parts = line.split("=", true, 1)
+			if parts.size() == 2:
+				var key = parts[0].strip_edges()
+				var value = parts[1].strip_edges()
+				
+				if key == "tier":
+					enemy_configs[current_section][key] = int(value) if value.is_valid_int() else 1
+				elif key == "is_boss":
+					enemy_configs[current_section][key] = value.to_lower() == "true"
+				else:
+					enemy_configs[current_section][key] = value
+	
+	file.close()
+	
+	if enemy_configs.size() == 0:
+		push_error("❌ 敌人配置为空！")
+		get_tree().quit(1)
+		return
+	
+	# 动态注册敌人
+	for enemy_id in enemy_configs:
+		var config = enemy_configs[enemy_id]
+		
+		if not config.has("scene_path"):
+			push_error("❌ 敌人 '%s' 缺少 scene_path" % enemy_id)
+			continue
+		
+		var scene = load(config["scene_path"])
+		if scene == null:
+			push_error("❌ 无法加载敌人场景: %s" % config["scene_path"])
+			continue
+		
+		var enemy_data = {
+			"name": config.get("name", enemy_id),
+			"tier": config.get("tier", 1),
+			"is_boss": config.get("is_boss", false)
+		}
+		
+		register_enemy(enemy_id, scene, enemy_data)
+		print("  ✓ 注册敌人: %s (%s) [Tier %d%s]" % [
+			enemy_id, 
+			enemy_data["name"], 
+			enemy_data["tier"],
+			" BOSS" if enemy_data["is_boss"] else ""
+		])
+	
+	print("✓ 成功注册 %d 个敌人\n" % registered_enemies.size())
