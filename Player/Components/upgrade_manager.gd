@@ -100,12 +100,14 @@ func get_random_upgrade() -> String:
 		if upgrade_id in upgrade_options:
 			continue
 		
+		var upgrade_data = upgrade_db.UPGRADES[upgrade_id]
+		
 		# 跳过食物类道具
-		if upgrade_db.UPGRADES[upgrade_id]["type"] == "item":
+		if upgrade_data.get("type", "") == "item":
 			continue
 		
 		# 检查前置条件
-		var prerequisites = upgrade_db.UPGRADES[upgrade_id]["prerequisite"]
+		var prerequisites = upgrade_data.get("prerequisite", [])
 		if prerequisites.size() > 0:
 			var can_add = true
 			for prereq in prerequisites:

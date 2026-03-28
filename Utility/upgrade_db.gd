@@ -36,6 +36,42 @@ const _DEFAULT_UPGRADES = {
 		"set_level": 1,
 		"set_ammo": 1,
 	},
+	"armor1": {
+		"icon": "res://Textures/Items/Upgrades/helmet_1.png",
+		"displayname": "护甲",
+		"details": "减少1点伤害",
+		"level": "等级：1",
+		"prerequisite": [],
+		"type": "upgrade",
+		"add_armor": 1,
+	},
+	"speed1": {
+		"icon": "res://Textures/Items/Upgrades/boots_4_green.png",
+		"displayname": "速度",
+		"details": "移动速度提升50%",
+		"level": "等级：1",
+		"prerequisite": [],
+		"type": "upgrade",
+		"add_movement_speed": 20.0,
+	},
+	"tome1": {
+		"icon": "res://Textures/Items/Upgrades/thick_new.png",
+		"displayname": "法典",
+		"details": "法术大小增加10%",
+		"level": "等级：1",
+		"prerequisite": [],
+		"type": "upgrade",
+		"add_spell_size": 0.10,
+	},
+	"food": {
+		"icon": "res://Textures/Items/Upgrades/chunk.png",
+		"displayname": "食物",
+		"details": "恢复20点生命值",
+		"level": "无",
+		"prerequisite": [],
+		"type": "item",
+		"heal": 20,
+	},
 }
 
 func _ready():

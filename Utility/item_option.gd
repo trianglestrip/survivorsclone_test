@@ -15,10 +15,18 @@ func _ready():
 	connect("selected_upgrade",Callable(player,"upgrade_character"))
 	if item == null:
 		item = "food"
-	lblName.text = UpgradeDb.UPGRADES[item]["displayname"]
-	lblDescription.text = UpgradeDb.UPGRADES[item]["details"]
-	lblLevel.text = UpgradeDb.UPGRADES[item]["level"]
-	itemIcon.texture = load(UpgradeDb.UPGRADES[item]["icon"])
+	
+	# 安全检查：确保升级存在
+	if not UpgradeDb.UPGRADES.has(item):
+		push_error("升级不存在: %s" % item)
+		queue_free()
+		return
+	
+	var upgrade_data = UpgradeDb.UPGRADES[item]
+	lblName.text = upgrade_data["displayname"]
+	lblDescription.text = upgrade_data["details"]
+	lblLevel.text = upgrade_data["level"]
+	itemIcon.texture = load(upgrade_data["icon"])
 	
 func _input(event):
 	if event.is_action("click"):

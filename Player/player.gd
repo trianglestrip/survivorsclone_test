@@ -288,13 +288,20 @@ func adjust_gui_collection(upgrade_id: String):
 	if upgrade_db == null:
 		return
 	
-	var get_upgraded_displayname = upgrade_db.UPGRADES[upgrade_id]["displayname"]
-	var get_type = upgrade_db.UPGRADES[upgrade_id]["type"]
+	# 安全检查：确保升级存在
+	if not upgrade_db.UPGRADES.has(upgrade_id):
+		push_warning("升级不存在: %s" % upgrade_id)
+		return
+	
+	var upgrade_data = upgrade_db.UPGRADES[upgrade_id]
+	var get_upgraded_displayname = upgrade_data["displayname"]
+	var get_type = upgrade_data["type"]
 	
 	if get_type != "item":
 		var get_collected_displaynames = []
 		for i in upgrade_mgr.collected_upgrades:
-			get_collected_displaynames.append(upgrade_db.UPGRADES[i]["displayname"])
+			if upgrade_db.UPGRADES.has(i):
+				get_collected_displaynames.append(upgrade_db.UPGRADES[i]["displayname"])
 		
 		if not get_upgraded_displayname in get_collected_displaynames:
 			var new_item = itemContainer.instantiate()
