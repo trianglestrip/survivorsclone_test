@@ -13,7 +13,7 @@ func _init():
 	all_passed = test_skill_manager() and all_passed
 	all_passed = test_experience_manager() and all_passed
 	all_passed = test_upgrade_manager() and all_passed
-	all_passed = test_player_refactored() and all_passed
+	# player_refactored.gd 已集成到 player.gd，不再需要单独测试
 	
 	print("\n========================================")
 	print("测试结果汇总")
@@ -168,14 +168,4 @@ func test_upgrade_manager() -> bool:
 	print("  ✓ UpgradeManager 测试通过")
 	return true
 
-func test_player_refactored() -> bool:
-	print("测试 5: Player 重构验证")
-	
-	var player_script = load("res://Player/player_refactored.gd")
-	if player_script == null:
-		print("  ✗ 无法加载 player_refactored.gd")
-		return false
-	
-	# 验证脚本可以正常解析
-	print("  ✓ Player 重构脚本加载成功")
-	return true
+# player_refactored.gd 已集成到 player.gd，不再需要此测试
