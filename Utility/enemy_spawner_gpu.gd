@@ -15,7 +15,7 @@ var enemy_manager = null
 
 func _ready():
 	connect("changetime", Callable(player, "change_time"))
-	_initialize_enemy_manager()
+	await _initialize_enemy_manager()
 	_prewarm_enemy_pools()
 
 func _initialize_enemy_manager():
@@ -27,6 +27,9 @@ func _initialize_enemy_manager():
 	enemy_manager.set_container(self)
 	enemy_manager.set_player(player)
 	add_child(enemy_manager)
+	
+	# 等待初始化完成
+	await enemy_manager.initialization_complete
 	
 	print("✓ GPU 敌人管理器就绪\n")
 

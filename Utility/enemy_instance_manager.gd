@@ -43,6 +43,9 @@ class EnemyTypeData:
 # 存储所有敌人类型
 var enemy_types: Dictionary = {}  # type_id -> EnemyTypeData
 
+# 同 hframes 共用一个 ShaderMaterial，避免重复编译
+var _sprite_sheet_materials: Dictionary = {}  # int -> ShaderMaterial
+
 # 引用
 var player: Node = null
 var container: Node2D = null
@@ -82,58 +85,94 @@ void fragment() {
 }
 """ % hframes
 
+func _get_sprite_sheet_material(hframes: int) -> ShaderMaterial:
+	if _sprite_sheet_materials.has(hframes):
+		return _sprite_sheet_materials[hframes]
+	var shader_material := ShaderMaterial.new()
+	var shader := Shader.new()
+	shader.code = _create_sprite_sheet_shader(hframes)
+	shader_material.shader = shader
+	_sprite_sheet_materials[hframes] = shader_material
+	return shader_material
+
+func _coerce_texture2d(pval: Variant) -> Texture2D:
+	if pval is Texture2D:
+		return pval
+	if pval is Resource:
+		var path: String = pval.resource_path
+		if path != "":
+			var loaded = load(path)
+			if loaded is Texture2D:
+				return loaded
+	return null
+
+## 从 PackedScene 的 SceneState 读取精灵与 HurtBox 碰撞数据，不实例化节点。
+func _parse_enemy_scene_from_state(packed: PackedScene) -> Dictionary:
+	var out := {
+		"texture": null,
+		"sprite_scale": Vector2(0.75, 0.75),
+		"hframes": 1,
+		"collision_shape": null,
+	}
+	if packed == null:
+		return out
+	var state := packed.get_state()
+	if state == null:
+		return out
+	for i in state.get_node_count():
+		var node_type := state.get_node_type(i)
+		var node_path := state.get_node_path(i)
+		var path_str := str(node_path)
+		if node_type == &"Sprite2D":
+			for j in state.get_node_property_count(i):
+				var pname: StringName = state.get_node_property_name(i, j)
+				var pval: Variant = state.get_node_property_value(i, j)
+				match pname:
+					&"texture":
+						out.texture = _coerce_texture2d(pval)
+					&"scale":
+						if pval is Vector2:
+							out.sprite_scale = pval
+					&"hframes":
+						if pval is int and pval > 0:
+							out.hframes = pval
+		elif node_type == &"CollisionShape2D" and path_str.contains("HurtBox"):
+			for j in state.get_node_property_count(i):
+				if state.get_node_property_name(i, j) != &"shape":
+					continue
+				var pval: Variant = state.get_node_property_value(i, j)
+				if pval is Shape2D:
+					out.collision_shape = pval.duplicate()
+					break
+	return out
+
 func _initialize_enemy_types():
-	# 等待 EnemyRegistry 初始化
-	await get_tree().process_frame
-	
+	# Autoload 的 EnemyRegistry 在任意场景节点 _ready 之前已加载完成，无需再 await 一帧。
 	var enemy_ids = EnemyRegistry.get_all_enemy_ids()
 	print("  开始初始化 %d 种敌人类型..." % enemy_ids.size())
 	
-	# 第一步：批量预加载所有配置（快速）
-	var configs = {}
-	for enemy_id in enemy_ids:
-		configs[enemy_id] = _load_enemy_config(enemy_id)
+	var configs := _load_all_enemy_configs_from_ini()
 	
 	var init_count = 0
 	for enemy_id in enemy_ids:
 		init_count += 1
-		var _enemy_data = EnemyRegistry.get_enemy_data(enemy_id)
 		var scene = EnemyRegistry.get_enemy_scene(enemy_id)
 		
 		if scene == null:
 			continue
 		
-		# 实例化一个敌人获取纹理、精灵信息和碰撞形状
-		var temp_enemy = scene.instantiate()
-		var sprite = temp_enemy.get_node_or_null("Sprite2D")
-		var texture = null
-		var sprite_scale = Vector2(0.75, 0.75)  # 默认缩放
-		var hframes = 1
-		var frame = 0
+		var meta := _parse_enemy_scene_from_state(scene)
+		var texture: Texture2D = meta.texture
+		var sprite_scale: Vector2 = meta.sprite_scale
+		var hframes: int = meta.hframes
+		var collision_shape: Shape2D = meta.collision_shape
 		
-		if sprite:
-			texture = sprite.texture
-			sprite_scale = sprite.scale
-			hframes = sprite.hframes if sprite.hframes > 0 else 1
-			frame = sprite.frame
-		
-		# 获取碰撞形状
-		var hurt_box = temp_enemy.get_node_or_null("HurtBox")
-		var collision_shape = null
-		if hurt_box:
-			var shape_node = hurt_box.get_node_or_null("CollisionShape2D")
-			if shape_node and shape_node.shape:
-				collision_shape = shape_node.shape.duplicate()
-		
-		# 使用预加载的配置
 		var config = configs.get(enemy_id, {})
 		
-		# 创建类型数据
 		var type_data = EnemyTypeData.new(enemy_id, texture, config)
 		type_data.collision_shape = collision_shape
 		type_data.hframes = hframes
 		
-		# 创建单个 MultiMesh（使用 Shader 控制帧）
 		if texture and container:
 			var tex_size = texture.get_size()
 			var frame_width = tex_size.x / float(hframes) if hframes > 1 else tex_size.x
@@ -146,20 +185,15 @@ func _initialize_enemy_types():
 			
 			multimesh.mesh = quad
 			multimesh.transform_format = MultiMesh.TRANSFORM_2D
-			multimesh.use_colors = true  # 使用 color 通道传递帧索引
+			multimesh.use_colors = true
 			multimesh.instance_count = 0
 			
 			multimesh_instance.multimesh = multimesh
 			multimesh_instance.texture = texture
 			multimesh_instance.z_index = 0
 			
-			# 创建 Shader 材质
 			if hframes > 1:
-				var shader_material = ShaderMaterial.new()
-				var shader = Shader.new()
-				shader.code = _create_sprite_sheet_shader(hframes)
-				shader_material.shader = shader
-				multimesh_instance.material = shader_material
+				multimesh_instance.material = _get_sprite_sheet_material(hframes)
 			
 			container.add_child(multimesh_instance)
 			type_data.multimesh_instance = multimesh_instance
@@ -167,53 +201,45 @@ func _initialize_enemy_types():
 			print("    - 创建 MultiMesh: %s (纹理: %dx%d, %d 帧)" % [enemy_id, tex_size.x, tex_size.y, hframes])
 		
 		enemy_types[enemy_id] = type_data
-		temp_enemy.queue_free()
 		
 		print("  ✓ [%d/%d] 初始化敌人类型: %s" % [init_count, enemy_ids.size(), enemy_id])
-		
-		# 每初始化一个类型，等待一帧（避免卡顿）
-		if init_count < enemy_ids.size():
-			await get_tree().process_frame
 	
 	print("✓ GPU 实例化系统就绪（共 %d 种敌人）\n" % enemy_ids.size())
 	is_initialized = true
-	emit_signal("initialization_complete")
+	# 须在 add_child 返回之后发出，否则父节点里的 await initialization_complete 会错过本帧已发出的信号。
+	call_deferred("emit_signal", "initialization_complete")
 
-func _load_enemy_config(enemy_id: String) -> Dictionary:
+func _parse_enemy_config_line(section: String, key: String, value: String, into: Dictionary) -> void:
+	if key in ["hp", "enemy_damage", "experience"]:
+		into[section][key] = int(value) if value.is_valid_int() else 0
+	elif key in ["movement_speed", "knockback_recovery"]:
+		into[section][key] = float(value) if value.is_valid_float() else 0.0
+	else:
+		into[section][key] = value
+
+## 只读一次 enemy_config.ini，避免每种敌人整文件扫一遍。
+func _load_all_enemy_configs_from_ini() -> Dictionary:
+	var result: Dictionary = {}
 	var file = FileAccess.open("res://config/enemy_config.ini", FileAccess.READ)
 	if file == null:
-		return {}
-	
-	var current_section = ""
-	var config = {}
-	
+		return result
+	var current_section: String = ""
 	while not file.eof_reached():
-		var line = file.get_line().strip_edges()
-		
+		var line: String = file.get_line().strip_edges()
 		if line == "" or line.begins_with("#"):
 			continue
-		
 		if line.begins_with("[") and line.ends_with("]"):
 			current_section = line.substr(1, line.length() - 2)
-			if current_section == enemy_id:
-				config = {}
+			result[current_section] = {}
 			continue
-		
-		if current_section == enemy_id and line.contains("="):
-			var parts = line.split("=", true, 1)
+		if current_section != "" and line.contains("="):
+			var parts: PackedStringArray = line.split("=", true, 1)
 			if parts.size() == 2:
-				var key = parts[0].strip_edges()
-				var value = parts[1].strip_edges()
-				
-				if key in ["hp", "enemy_damage", "experience"]:
-					config[key] = int(value) if value.is_valid_int() else 0
-				elif key in ["movement_speed", "knockback_recovery"]:
-					config[key] = float(value) if value.is_valid_float() else 0.0
-				else:
-					config[key] = value
-	
+				var key: String = parts[0].strip_edges()
+				var value: String = parts[1].strip_edges()
+				_parse_enemy_config_line(current_section, key, value, result)
 	file.close()
-	return config
+	return result
 
 # 生成敌人
 func spawn_enemy(enemy_type: String, pos: Vector2) -> int:
@@ -228,8 +254,10 @@ func spawn_enemy(enemy_type: String, pos: Vector2) -> int:
 	# 创建碰撞检测区域
 	if type_data.collision_shape and container:
 		var hurt_box = Area2D.new()
-		hurt_box.collision_layer = 0
-		hurt_box.collision_mask = 4  # 检测武器层
+		# Layer 3 (Enemy) = bit 3 = 值 4
+		# 武器在 Layer 3，collision_mask = 4 表示检测 Layer 3
+		hurt_box.collision_layer = 4  # 敌人 HurtBox 在 Layer 3 (Enemy)
+		hurt_box.collision_mask = 4   # 检测 Layer 3（武器也在这层）
 		hurt_box.position = pos
 		hurt_box.monitoring = true
 		hurt_box.monitorable = true
@@ -247,8 +275,8 @@ func spawn_enemy(enemy_type: String, pos: Vector2) -> int:
 	
 	type_data.instances.append(instance)
 	
-	# 更新 MultiMesh 实例数量
-	_update_multimesh(enemy_type)
+	# 不在这里更新 MultiMesh，由 _physics_process 统一处理
+	# 这样可以避免生成时的闪现
 	
 	return type_data.instances.size() - 1
 
@@ -278,19 +306,22 @@ func _physics_process(delta):
 		_update_enemy_type(type_data, delta)
 
 func _update_enemy_type(type_data: EnemyTypeData, delta: float):
+	if not type_data.multimesh_instance:
+		return
+	
 	var config = type_data.config
 	var movement_speed = config.get("movement_speed", 20.0)
 	var knockback_recovery = config.get("knockback_recovery", 3.5)
 	
-	# 第一遍：更新逻辑并计算活跃数量
-	var active_count = 0
+	# 准备 Transform 和 Color 数据
+	var transforms = []
+	var colors = []
+	
 	for i in range(type_data.instances.size()):
 		var inst = type_data.instances[i]
 		
 		if not inst.active:
 			continue
-		
-		active_count += 1
 		
 		# 更新击退
 		inst.knockback = inst.knockback.move_toward(Vector2.ZERO, knockback_recovery)
@@ -313,44 +344,37 @@ func _update_enemy_type(type_data: EnemyTypeData, delta: float):
 		# 更新碰撞体位置
 		if inst.hurt_box and is_instance_valid(inst.hurt_box):
 			inst.hurt_box.global_position = inst.position
+		
+		# 准备 Transform
+		var scale_x = -1.0 if inst.flip_h else 1.0
+		var scale_y = -1.0  # 翻转 Y 轴
+		
+		var transform = Transform2D(
+			Vector2(scale_x, 0),
+			Vector2(0, scale_y),
+			inst.position
+		)
+		transforms.append(transform)
+		
+		# 准备 Color（动画帧）
+		if type_data.hframes > 1:
+			var total_time = inst.anim_time + inst.anim_offset
+			var current_frame = int(total_time / 0.3) % type_data.hframes
+			# 映射到 [0, 1) 范围，确保 Shader 能正确计算帧索引
+			# 例如 2 帧：frame 0 -> 0.0, frame 1 -> 0.5
+			var frame_normalized = (float(current_frame) + 0.5) / float(type_data.hframes)
+			colors.append(Color(frame_normalized, 0, 0, 1))
+		else:
+			colors.append(Color(1, 1, 1, 1))
 	
-	# 先更新 instance_count，避免闪现
-	if type_data.multimesh_instance:
-		type_data.multimesh_instance.multimesh.instance_count = active_count
+	# 一次性更新 MultiMesh（先设置数量，再批量设置 Transform）
+	var active_count = transforms.size()
+	type_data.multimesh_instance.multimesh.instance_count = active_count
 	
-	# 第二遍：更新 MultiMesh Transform 和颜色
-	var active_index = 0
-	for i in range(type_data.instances.size()):
-		var inst = type_data.instances[i]
-		
-		if not inst.active:
-			continue
-		
-		# 更新 MultiMesh Transform 和动画帧
-		if type_data.multimesh_instance:
-			# 创建 Transform（Y 轴翻转以匹配 Sprite2D 坐标系）
-			var scale_x = -1.0 if inst.flip_h else 1.0
-			var scale_y = -1.0  # 翻转 Y 轴修正上下颠倒
-			
-			var transform = Transform2D(
-				Vector2(scale_x, 0),    # X 轴
-				Vector2(0, scale_y),     # Y 轴（翻转）
-				inst.position            # 位置
-			)
-			
-			type_data.multimesh_instance.multimesh.set_instance_transform_2d(active_index, transform)
-			
-			# 计算当前帧并通过 COLOR 传递给 Shader
-			if type_data.hframes > 1:
-				var total_time = inst.anim_time + inst.anim_offset
-				var current_frame = int(total_time / 0.3) % type_data.hframes
-				var frame_normalized = float(current_frame) / float(type_data.hframes)
-				
-				# 使用 COLOR.r 传递帧索引（0-1 范围）
-				var color = Color(frame_normalized, 0, 0, 1)
-				type_data.multimesh_instance.multimesh.set_instance_color(active_index, color)
-		
-		active_index += 1
+	for idx in range(active_count):
+		type_data.multimesh_instance.multimesh.set_instance_transform_2d(idx, transforms[idx])
+		if type_data.hframes > 1:
+			type_data.multimesh_instance.multimesh.set_instance_color(idx, colors[idx])
 
 # 敌人受伤
 func damage_enemy(enemy_type: String, instance_id: int, damage: int, angle: Vector2, knockback_amount: int) -> bool:
@@ -408,17 +432,20 @@ func _kill_enemy(type_data: EnemyTypeData, inst: EnemyInstance, _instance_id: in
 	var exp_amount = type_data.config.get("experience", 1)
 	var exp_gem_scene = load("res://Objects/experience_gem.tscn")
 	var exp_gem = ObjectPool.get_object("experience_gem", exp_gem_scene)
-	if exp_gem:
+	if exp_gem and is_instance_valid(exp_gem):
+		# 确保不在场景树中
+		if exp_gem.is_inside_tree():
+			return  # 跳过，等待下次
+		
 		exp_gem.global_position = inst.position
 		exp_gem.experience = exp_amount
 		
-		# 添加到 Loot 节点（如果已有父节点，ObjectPool 会处理）
+		# 添加到 Loot 节点
 		var loot_base = get_tree().get_first_node_in_group("loot")
-		if loot_base and exp_gem.get_parent() == null:
+		if loot_base:
 			loot_base.call_deferred("add_child", exp_gem)
 	
-	# 更新 MultiMesh
-	_update_multimesh(inst.type_id)
+	# 不在这里更新 MultiMesh，由 _physics_process 统一处理
 
 # 获取区域内的敌人（用于武器碰撞检测）
 func get_enemies_in_area(area_position: Vector2, area_size: Vector2) -> Array:
