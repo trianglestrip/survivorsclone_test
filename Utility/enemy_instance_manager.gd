@@ -147,40 +147,56 @@ func _parse_enemy_scene_from_state(packed: PackedScene) -> Dictionary:
 	return out
 
 func _initialize_enemy_types():
-	# Autoload 的 EnemyRegistry 在任意场景节点 _ready 之前已加载完成，无需再 await 一帧。
+	var start_time := Time.get_ticks_msec()
+	
 	var enemy_ids = EnemyRegistry.get_all_enemy_ids()
 	print("  开始初始化 %d 种敌人类型..." % enemy_ids.size())
 	
+	# 异步并行加载配置和场景数据
+	var config_load_start := Time.get_ticks_msec()
 	var configs := _load_all_enemy_configs_from_ini()
+	var config_load_time := Time.get_ticks_msec() - config_load_start
+	print("    ⏱ 配置加载: %d ms" % config_load_time)
 	
-	var init_count = 0
+	# 批量解析场景数据（CPU 密集，但很快）
+	var scene_parse_start := Time.get_ticks_msec()
+	var scene_metas := {}
+	for enemy_id in enemy_ids:
+		var scene = EnemyRegistry.get_enemy_scene(enemy_id)
+		if scene:
+			scene_metas[enemy_id] = _parse_enemy_scene_from_state(scene)
+	var scene_parse_time := Time.get_ticks_msec() - scene_parse_start
+	print("    ⏱ 场景解析: %d ms" % scene_parse_time)
+	
+	# 创建 MultiMesh（分帧执行，避免卡顿）
+	var mesh_create_start := Time.get_ticks_msec()
+	var init_count := 0
 	for enemy_id in enemy_ids:
 		init_count += 1
-		var scene = EnemyRegistry.get_enemy_scene(enemy_id)
 		
-		if scene == null:
+		if not scene_metas.has(enemy_id):
 			continue
 		
-		var meta := _parse_enemy_scene_from_state(scene)
+		var meta: Dictionary = scene_metas[enemy_id]
 		var texture: Texture2D = meta.texture
 		var sprite_scale: Vector2 = meta.sprite_scale
 		var hframes: int = meta.hframes
 		var collision_shape: Shape2D = meta.collision_shape
 		
-		var config = configs.get(enemy_id, {})
+		var config: Dictionary = configs.get(enemy_id, {})
 		
-		var type_data = EnemyTypeData.new(enemy_id, texture, config)
+		var type_data := EnemyTypeData.new(enemy_id, texture, config)
 		type_data.collision_shape = collision_shape
 		type_data.hframes = hframes
 		
 		if texture and container:
-			var tex_size = texture.get_size()
-			var frame_width = tex_size.x / float(hframes) if hframes > 1 else tex_size.x
+			var tex_size := texture.get_size()
+			var frame_width := tex_size.x / float(hframes) if hframes > 1 else tex_size.x
 			
-			var multimesh_instance = MultiMeshInstance2D.new()
-			var multimesh = MultiMesh.new()
+			var multimesh_instance := MultiMeshInstance2D.new()
+			var multimesh := MultiMesh.new()
 			
-			var quad = QuadMesh.new()
+			var quad := QuadMesh.new()
 			quad.size = Vector2(frame_width, tex_size.y) * sprite_scale
 			
 			multimesh.mesh = quad
@@ -197,16 +213,28 @@ func _initialize_enemy_types():
 			
 			container.add_child(multimesh_instance)
 			type_data.multimesh_instance = multimesh_instance
-			
-			print("    - 创建 MultiMesh: %s (纹理: %dx%d, %d 帧)" % [enemy_id, tex_size.x, tex_size.y, hframes])
 		
 		enemy_types[enemy_id] = type_data
 		
-		print("  ✓ [%d/%d] 初始化敌人类型: %s" % [init_count, enemy_ids.size(), enemy_id])
+		# 调试信息
+		if not texture:
+			push_warning("⚠️ 敌人 %s 没有纹理！" % enemy_id)
+		if not collision_shape:
+			push_warning("⚠️ 敌人 %s 没有碰撞形状！" % enemy_id)
+		if hframes > 1:
+			print("    📽 敌人 %s 有 %d 帧动画" % [enemy_id, hframes])
+		
+		# 每创建一个类型，让出一帧（避免长时间阻塞）
+		if init_count < enemy_ids.size():
+			await get_tree().process_frame
 	
-	print("✓ GPU 实例化系统就绪（共 %d 种敌人）\n" % enemy_ids.size())
+	var mesh_create_time := Time.get_ticks_msec() - mesh_create_start
+	var total_time := Time.get_ticks_msec() - start_time
+	
+	print("    ⏱ MultiMesh 创建: %d ms" % mesh_create_time)
+	print("✓ GPU 实例化系统就绪（共 %d 种敌人，总耗时 %d ms）\n" % [enemy_ids.size(), total_time])
+	
 	is_initialized = true
-	# 须在 add_child 返回之后发出，否则父节点里的 await initialization_complete 会错过本帧已发出的信号。
 	call_deferred("emit_signal", "initialization_complete")
 
 func _parse_enemy_config_line(section: String, key: String, value: String, into: Dictionary) -> void:
@@ -261,6 +289,7 @@ func spawn_enemy(enemy_type: String, pos: Vector2) -> int:
 		hurt_box.position = pos
 		hurt_box.monitoring = true
 		hurt_box.monitorable = true
+		hurt_box.add_to_group("enemy_hurtbox")  # 添加到组，便于调试
 		
 		var collision_shape_node = CollisionShape2D.new()
 		collision_shape_node.shape = type_data.collision_shape
@@ -272,6 +301,9 @@ func spawn_enemy(enemy_type: String, pos: Vector2) -> int:
 		
 		container.add_child(hurt_box)
 		instance.hurt_box = hurt_box
+	else:
+		if not type_data.collision_shape:
+			push_warning("⚠️ 敌人 %s 没有碰撞形状！" % enemy_type)
 	
 	type_data.instances.append(instance)
 	
@@ -401,7 +433,10 @@ func damage_enemy(enemy_type: String, instance_id: int, damage: int, angle: Vect
 # 碰撞处理
 func _on_enemy_hurt(area: Area2D, enemy_type: String, instance_id: int):
 	if not area.is_in_group("attack"):
+		print("⚠️ 碰撞区域不在 attack 组: ", area.name)
 		return
+	
+	print("✓ 敌人受击: %s[%d] 被 %s 击中" % [enemy_type, instance_id, area.name])
 	
 	# 获取武器伤害
 	var damage = 1

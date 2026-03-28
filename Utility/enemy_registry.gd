@@ -45,6 +45,7 @@ func _ready():
 	_load_enemies_from_config()
 
 func _load_enemies_from_config():
+	var start_time := Time.get_ticks_msec()
 	print("\n=== 加载敌人注册配置 ===")
 	print("配置文件: res://config/enemy_registry.ini")
 	
@@ -117,4 +118,5 @@ func _load_enemies_from_config():
 			" BOSS" if enemy_data["is_boss"] else ""
 		])
 	
-	print("✓ 成功注册 %d 个敌人\n" % registered_enemies.size())
+	var total_time := Time.get_ticks_msec() - start_time
+	print("✓ 成功注册 %d 个敌人 (耗时 %d ms)\n" % [registered_enemies.size(), total_time])

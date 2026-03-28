@@ -7,6 +7,7 @@ func _ready():
 	_validate_upgrades()
 
 func _load_upgrade_config():
+	var start_time := Time.get_ticks_msec()
 	print("\n=== 加载升级配置 ===")
 	print("配置文件: res://config/upgrade_config.ini")
 	
@@ -75,7 +76,8 @@ func _load_upgrade_config():
 		get_tree().quit(1)
 		return
 	
-	print("✓ 成功解析 %d 个升级配置" % parsed_sections)
+	var total_time := Time.get_ticks_msec() - start_time
+	print("✓ 成功解析 %d 个升级配置 (耗时 %d ms)" % [parsed_sections, total_time])
 
 # 验证升级配置的完整性
 func _validate_upgrades():

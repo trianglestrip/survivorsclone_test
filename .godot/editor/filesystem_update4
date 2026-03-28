@@ -33,3 +33,4 @@ res://tests/performance_test.gd
 res://tests/fps_display.gd
 res://tests/performance_test_gpu.gd
 res://Utility/enemy_instance_manager.gd
+res://Utility/enemy_spawner_gpu.gd

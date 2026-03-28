@@ -42,6 +42,7 @@ func _ready():
 	_load_skills_from_config()
 
 func _load_skills_from_config():
+	var start_time := Time.get_ticks_msec()
 	print("\n=== 加载技能注册配置 ===")
 	print("配置文件: res://config/skill_registry.ini")
 	
@@ -109,4 +110,5 @@ func _load_skills_from_config():
 		register_skill(skill_id, scene, skill_data)
 		print("  ✓ 注册技能: %s (%s)" % [skill_id, skill_data["name"]])
 	
-	print("✓ 成功注册 %d 个技能\n" % registered_skills.size())
+	var total_time := Time.get_ticks_msec() - start_time
+	print("✓ 成功注册 %d 个技能 (耗时 %d ms)\n" % [registered_skills.size(), total_time])
