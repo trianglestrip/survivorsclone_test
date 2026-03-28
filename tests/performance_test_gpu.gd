@@ -42,23 +42,25 @@ func _ready():
 	print("场景运行中... 按 ESC 退出")
 
 func _spawn_enemies():
-	print("\n生成敌人...")
+	print("\n直接生成 500 个敌人...")
 	
 	var enemy_types = EnemyRegistry.get_all_enemy_ids()
+	var spawn_positions = []
 	
+	# 预先计算所有生成位置
 	for enemy_type in enemy_types:
 		for i in range(enemies_per_type):
-			# 随机位置
 			var angle = randf() * TAU
 			var distance = randf_range(100, 500)
 			var pos = camera.global_position + Vector2(cos(angle), sin(angle)) * distance
-			
-			enemy_manager.spawn_enemy(enemy_type, pos)
-			total_enemies += 1
-		
-		print("  ✓ 生成 %d 个 %s" % [enemies_per_type, enemy_type])
+			spawn_positions.append({"type": enemy_type, "pos": pos})
 	
-	print("\n总敌人数: %d" % total_enemies)
+	# 批量生成（一次性）
+	for spawn_data in spawn_positions:
+		enemy_manager.spawn_enemy(spawn_data["type"], spawn_data["pos"])
+		total_enemies += 1
+	
+	print("  ✓ 已生成 %d 个敌人（所有类型）" % total_enemies)
 	print("=== 场景就绪 ===\n")
 
 func _update_info():

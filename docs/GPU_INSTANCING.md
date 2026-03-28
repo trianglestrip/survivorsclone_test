@@ -21,7 +21,7 @@
 
 ### 架构设计
 
-#### 1. 数据驱动的敌人系统
+#### 1. 混合架构：数据驱动 + 碰撞检测
 
 **逻辑层**（CPU）：
 ```gdscript
@@ -31,6 +31,7 @@ class EnemyInstance:
     var hp: float
     var knockback: Vector2
     var active: bool
+    var hurt_box: Area2D  # 轻量级碰撞体
 ```
 
 **渲染层**（GPU）：
@@ -38,6 +39,14 @@ class EnemyInstance:
 MultiMeshInstance2D + MultiMesh
 - 一个 MultiMesh 渲染同类型的所有敌人
 - GPU 并行处理渲染
+```
+
+**碰撞层**（物理引擎）：
+```gdscript
+Area2D + CollisionShape2D
+- 每个敌人实例有一个轻量级 Area2D
+- 只包含碰撞形状，没有渲染组件
+- 跟随 GPU 实例位置更新
 ```
 
 #### 2. 系统组件
@@ -68,18 +77,34 @@ multimesh_instance.multimesh = multimesh
 multimesh_instance.texture = enemy_texture
 ```
 
-#### 敌人生成
+#### 敌人生成（含碰撞体）
 
 ```gdscript
 func spawn_enemy(enemy_type: String, pos: Vector2):
     var instance = EnemyInstance.new(pos, enemy_type, hp)
+    
+    # 创建轻量级碰撞检测区域
+    var hurt_box = Area2D.new()
+    hurt_box.collision_mask = 4  # 检测武器层
+    hurt_box.position = pos
+    
+    var collision_shape_node = CollisionShape2D.new()
+    collision_shape_node.shape = type_data.collision_shape
+    hurt_box.add_child(collision_shape_node)
+    
+    # 连接碰撞信号
+    hurt_box.area_entered.connect(_on_enemy_hurt.bind(enemy_type, instance_id))
+    
+    container.add_child(hurt_box)
+    instance.hurt_box = hurt_box
+    
     type_data.instances.append(instance)
     
     # 更新 MultiMesh 实例数量
     multimesh.instance_count = active_enemies.size()
 ```
 
-#### 每帧更新
+#### 每帧更新（逻辑 + 渲染 + 碰撞）
 
 ```gdscript
 func _physics_process(delta):
@@ -90,11 +115,21 @@ func _physics_process(delta):
             if not inst.active:
                 continue
             
-            # 更新逻辑（CPU）
+            # 1. 更新逻辑（CPU）
+            var direction = inst.position.direction_to(player.global_position)
+            inst.velocity = direction * movement_speed + inst.knockback
             inst.position += inst.velocity * delta
             
-            # 更新渲染（GPU）
-            var transform = Transform2D().translated(inst.position)
+            # 2. 更新碰撞体位置
+            if inst.hurt_box:
+                inst.hurt_box.global_position = inst.position
+            
+            # 3. 更新渲染（GPU）
+            var transform = Transform2D()
+            if inst.flip_h:
+                transform.x.x = -1.0  # 翻转 X 轴
+            transform.origin = inst.position
+            
             multimesh.set_instance_transform_2d(active_index, transform)
             
             active_index += 1
@@ -162,16 +197,59 @@ F:\project\godot\Godot_v4.6.1-stable_win64_console.exe --headless --script tests
 - [x] 实现基础 MultiMesh 渲染
 - [x] 创建 GPU 测试场景
 
-### 阶段 2: 完整功能集成（待实现）
-- [ ] 自定义碰撞检测（空间哈希）
-- [ ] Sprite Sheet 动画支持
-- [ ] 音效池化和距离衰减
-- [ ] 伤害数字显示优化
+### 阶段 2: 完整功能集成 ✅
+- [x] 碰撞检测（Area2D 混合方案）
+- [x] Sprite Sheet 支持（AtlasTexture 第一帧）
+- [x] 精灵翻转支持
+- [x] 击退和伤害系统
+- [ ] 动画支持（未来）
+- [ ] 音效池化和距离衰减（未来）
 
-### 阶段 3: 游戏集成（待实现）
-- [ ] 将 GPU 实例化集成到主游戏
-- [ ] 配置开关（GPU vs 普通模式）
-- [ ] 性能自适应调整
+### 阶段 3: 游戏集成 ✅
+- [x] 将 GPU 实例化集成到主游戏（world.tscn）
+- [x] FPS 显示（底部左侧）
+- [ ] 配置开关（GPU vs 普通模式）（待实现）
+- [ ] 性能自适应调整（待实现）
+
+## 已修复的问题
+
+### 1. 精灵表支持
+
+**问题**：敌人纹理使用 `hframes = 2` 的精灵表，MultiMesh 会显示整个纹理。
+
+**解决方案**：使用 `AtlasTexture` 提取第一帧
+```gdscript
+if hframes > 1:
+    var atlas = AtlasTexture.new()
+    atlas.atlas = texture
+    var frame_width = tex_size.x / float(hframes)
+    atlas.region = Rect2(0, 0, frame_width, tex_size.y)
+    final_texture = atlas
+```
+
+### 2. 精灵翻转
+
+**问题**：敌人朝向错误，Y 轴倒置。
+
+**解决方案**：正确构建 Transform2D
+```gdscript
+var transform = Transform2D()
+if inst.flip_h:
+    transform.x.x = -1.0  # 翻转 X 轴
+transform.origin = inst.position  # 设置位置
+```
+
+### 3. 位置闪烁
+
+**问题**：敌人位置跳变，渲染不稳定。
+
+**原因**：
+- `active_index` 映射不稳定
+- Transform 构建顺序错误（先 translate 再 scale 导致偏移）
+
+**解决方案**：
+- 先应用缩放/翻转，再设置 `origin`
+- 确保 `active_index` 按顺序遍历活跃实例
 
 ## 技术细节
 
@@ -190,8 +268,23 @@ class EnemyInstance:
     var velocity: Vector2      # 8 bytes
     var hp: float              # 4 bytes
     var knockback: Vector2     # 8 bytes
-    # 总计: 28 bytes/敌人
+    var hurt_box: Area2D       # 8 bytes (引用)
+    # 总计: ~36 bytes/敌人（数据） + Area2D 节点开销
 ```
+
+### 碰撞检测优化
+
+**问题**：MultiMesh 只是渲染，没有物理碰撞。
+
+**解决方案**：混合架构
+- **渲染**：MultiMesh（GPU 批量渲染）
+- **碰撞**：轻量级 Area2D（只有碰撞形状，无渲染组件）
+- **同步**：每帧更新 Area2D 位置跟随 GPU 实例
+
+**性能对比**：
+- 完整 CharacterBody2D：~2KB/节点（包含所有子节点）
+- Area2D 碰撞体：~200 字节/节点（只有碰撞形状）
+- 节省 ~90% 节点开销
 
 vs
 

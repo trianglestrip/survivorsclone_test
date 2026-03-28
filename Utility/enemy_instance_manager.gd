@@ -12,6 +12,7 @@ class EnemyInstance:
 	var type_id: String
 	var active: bool = true
 	var flip_h: bool = false
+	var hurt_box: Area2D = null  # 碰撞检测区域
 	
 	func _init(pos: Vector2, enemy_type: String, health: float):
 		position = pos
@@ -28,6 +29,7 @@ class EnemyTypeData:
 	var multimesh_instance: MultiMeshInstance2D
 	var instances: Array[EnemyInstance] = []
 	var config: Dictionary
+	var collision_shape: Shape2D = null  # 碰撞形状模板
 	
 	func _init(id: String, tex: Texture2D, cfg: Dictionary):
 		type_id = id
@@ -64,19 +66,34 @@ func _initialize_enemy_types():
 		if scene == null:
 			continue
 		
-		# 实例化一个敌人获取纹理
+		# 实例化一个敌人获取纹理、精灵信息和碰撞形状
 		var temp_enemy = scene.instantiate()
 		var sprite = temp_enemy.get_node_or_null("Sprite2D")
 		var texture = null
+		var sprite_scale = Vector2(0.75, 0.75)  # 默认缩放
+		var hframes = 1
+		var frame = 0
 		
 		if sprite:
 			texture = sprite.texture
+			sprite_scale = sprite.scale
+			hframes = sprite.hframes if sprite.hframes > 0 else 1
+			frame = sprite.frame
+		
+		# 获取碰撞形状
+		var hurt_box = temp_enemy.get_node_or_null("HurtBox")
+		var collision_shape = null
+		if hurt_box:
+			var shape_node = hurt_box.get_node_or_null("CollisionShape2D")
+			if shape_node and shape_node.shape:
+				collision_shape = shape_node.shape.duplicate()
 		
 		# 加载配置
 		var config = _load_enemy_config(enemy_id)
 		
 		# 创建类型数据
 		var type_data = EnemyTypeData.new(enemy_id, texture, config)
+		type_data.collision_shape = collision_shape
 		
 		# 创建 MultiMesh
 		if texture and container:
@@ -86,20 +103,32 @@ func _initialize_enemy_types():
 			# 使用 QuadMesh 作为基础网格
 			var quad = QuadMesh.new()
 			var tex_size = texture.get_size()
-			quad.size = tex_size * 0.75  # 匹配 Sprite2D 的 scale
+			
+			# 如果是精灵表，创建 AtlasTexture 只使用第一帧
+			var final_texture = texture
+			if hframes > 1:
+				var atlas = AtlasTexture.new()
+				atlas.atlas = texture
+				var frame_width = tex_size.x / float(hframes)
+				atlas.region = Rect2(0, 0, frame_width, tex_size.y)
+				final_texture = atlas
+				tex_size = Vector2(frame_width, tex_size.y)
+			
+			# 设置 quad 大小（应用缩放）
+			quad.size = tex_size * sprite_scale
 			
 			multimesh.mesh = quad
 			multimesh.transform_format = MultiMesh.TRANSFORM_2D
 			multimesh.instance_count = 0  # 初始为 0，动态调整
 			
 			multimesh_instance.multimesh = multimesh
-			multimesh_instance.texture = texture
+			multimesh_instance.texture = final_texture
 			multimesh_instance.z_index = 0
 			
 			container.add_child(multimesh_instance)
 			type_data.multimesh_instance = multimesh_instance
 			
-			print("    - 创建 MultiMesh: %s (纹理: %dx%d)" % [enemy_id, tex_size.x, tex_size.y])
+			print("    - 创建 MultiMesh: %s (纹理: %dx%d, 帧: %d/%d)" % [enemy_id, tex_size.x, tex_size.y, frame, hframes])
 		
 		enemy_types[enemy_id] = type_data
 		temp_enemy.queue_free()
@@ -153,6 +182,25 @@ func spawn_enemy(enemy_type: String, pos: Vector2) -> int:
 	var hp = type_data.config.get("hp", 10)
 	
 	var instance = EnemyInstance.new(pos, enemy_type, hp)
+	
+	# 创建碰撞检测区域
+	if type_data.collision_shape and container:
+		var hurt_box = Area2D.new()
+		hurt_box.collision_layer = 0
+		hurt_box.collision_mask = 4  # 检测武器层
+		hurt_box.position = pos
+		
+		var collision_shape_node = CollisionShape2D.new()
+		collision_shape_node.shape = type_data.collision_shape
+		hurt_box.add_child(collision_shape_node)
+		
+		# 连接信号
+		var instance_id = type_data.instances.size()
+		hurt_box.area_entered.connect(_on_enemy_hurt.bind(enemy_type, instance_id))
+		
+		container.add_child(hurt_box)
+		instance.hurt_box = hurt_box
+	
 	type_data.instances.append(instance)
 	
 	# 更新 MultiMesh 实例数量
@@ -213,12 +261,21 @@ func _update_enemy_type(type_data: EnemyTypeData, delta: float):
 		elif direction.x < -0.1:
 			inst.flip_h = false
 		
+		# 更新碰撞体位置
+		if inst.hurt_box and is_instance_valid(inst.hurt_box):
+			inst.hurt_box.global_position = inst.position
+		
 		# 更新 MultiMesh Transform
 		if type_data.multimesh_instance:
+			# 创建基础 Transform
 			var transform = Transform2D()
-			transform = transform.translated(inst.position)
+			
+			# 应用翻转（如果需要）
 			if inst.flip_h:
-				transform = transform.scaled(Vector2(-1, 1))
+				transform.x.x = -1.0  # 翻转 X 轴
+			
+			# 设置位置
+			transform.origin = inst.position
 			
 			type_data.multimesh_instance.multimesh.set_instance_transform_2d(active_index, transform)
 		
@@ -246,8 +303,35 @@ func damage_enemy(enemy_type: String, instance_id: int, damage: int, angle: Vect
 	
 	return false
 
+# 碰撞处理
+func _on_enemy_hurt(area: Area2D, enemy_type: String, instance_id: int):
+	if not area.is_in_group("attack"):
+		return
+	
+	# 获取武器伤害
+	var damage = 1
+	var knockback_amount = 100
+	var angle = Vector2.ZERO
+	
+	if area.has_method("get_damage"):
+		damage = area.get_damage()
+	if area.has_method("get_knockback"):
+		knockback_amount = area.get_knockback()
+	
+	# 计算击退方向
+	if enemy_types.has(enemy_type) and instance_id < enemy_types[enemy_type].instances.size():
+		var inst = enemy_types[enemy_type].instances[instance_id]
+		if inst.active:
+			angle = area.global_position.direction_to(inst.position)
+			damage_enemy(enemy_type, instance_id, damage, angle, knockback_amount)
+
 func _kill_enemy(type_data: EnemyTypeData, inst: EnemyInstance, _instance_id: int):
 	inst.active = false
+	
+	# 移除碰撞体
+	if inst.hurt_box and is_instance_valid(inst.hurt_box):
+		inst.hurt_box.queue_free()
+		inst.hurt_box = null
 	
 	# 生成经验宝石
 	var exp_amount = type_data.config.get("experience", 1)
@@ -255,6 +339,55 @@ func _kill_enemy(type_data: EnemyTypeData, inst: EnemyInstance, _instance_id: in
 	
 	# 更新 MultiMesh
 	_update_multimesh(inst.type_id)
+
+# 获取区域内的敌人（用于武器碰撞检测）
+func get_enemies_in_area(area_position: Vector2, area_size: Vector2) -> Array:
+	var result = []
+	var half_size = area_size * 0.5
+	
+	for enemy_type in enemy_types:
+		var type_data = enemy_types[enemy_type]
+		
+		for i in range(type_data.instances.size()):
+			var inst = type_data.instances[i]
+			if not inst.active:
+				continue
+			
+			# 简单的矩形碰撞检测
+			var diff = inst.position - area_position
+			if abs(diff.x) <= half_size.x and abs(diff.y) <= half_size.y:
+				result.append({
+					"enemy_type": enemy_type,
+					"instance_id": i,
+					"position": inst.position
+				})
+	
+	return result
+
+# 获取圆形区域内的敌人
+func get_enemies_in_radius(center: Vector2, radius: float) -> Array:
+	var result = []
+	var radius_sq = radius * radius
+	
+	for enemy_type in enemy_types:
+		var type_data = enemy_types[enemy_type]
+		
+		for i in range(type_data.instances.size()):
+			var inst = type_data.instances[i]
+			if not inst.active:
+				continue
+			
+			# 圆形碰撞检测
+			var dist_sq = inst.position.distance_squared_to(center)
+			if dist_sq <= radius_sq:
+				result.append({
+					"enemy_type": enemy_type,
+					"instance_id": i,
+					"position": inst.position,
+					"distance": sqrt(dist_sq)
+				})
+	
+	return result
 
 # 获取统计信息
 func get_stats() -> Dictionary:

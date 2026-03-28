@@ -2,7 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://b6umklllf2jsl" path="res://Textures/dirt_full_new.png" id="1_3v41d"]
 [ext_resource type="PackedScene" uid="uid://dncgepmkc4jf4" path="res://Player/player.tscn" id="2_40uwv"]
-[ext_resource type="PackedScene" uid="uid://ba2claihwes2y" path="res://Utility/enemy_spawner.tscn" id="3_p01g4"]
+[ext_resource type="Script" path="res://Utility/enemy_spawner_gpu.gd" id="3_spawner_gpu"]
 [ext_resource type="PackedScene" uid="uid://gvm5jcbbgwdv" path="res://Enemy/enemy_kobold_weak.tscn" id="4_ee8bm"]
 [ext_resource type="Script" path="res://Utility/spawn_info.gd" id="5_jj7s8"]
 [ext_resource type="PackedScene" uid="uid://bbvhxvk65o8el" path="res://Enemy/enemy_kobold_strong.tscn" id="6_rumbx"]
@@ -96,8 +96,13 @@ region_rect = Rect2(-4000, -4000, 4000, 4000)
 
 [node name="Player" parent="." instance=ExtResource("2_40uwv")]
 
-[node name="EnemySpawner" parent="." instance=ExtResource("3_p01g4")]
+[node name="EnemySpawnerGPU" type="Node2D" parent="."]
+script = ExtResource("3_spawner_gpu")
 spawns = Array[ExtResource("5_jj7s8")]([SubResource("Resource_03m25"), SubResource("Resource_ij20a"), SubResource("Resource_68oxv"), SubResource("Resource_l8y0x"), SubResource("Resource_daq1w"), SubResource("Resource_0gpiy"), SubResource("Resource_4teun"), SubResource("Resource_rx6id"), SubResource("Resource_t2np8")])
+
+[node name="Timer" type="Timer" parent="EnemySpawnerGPU"]
+wait_time = 1.0
+autostart = true
 
 [node name="Loot" type="Node2D" parent="." groups=["loot"]]
 
@@ -119,4 +124,5 @@ offset_right = 150.0
 offset_bottom = -10.0
 script = ExtResource("12_fps")
 
+[connection signal="timeout" from="EnemySpawnerGPU/Timer" to="EnemySpawnerGPU" method="_on_timer_timeout"]
 [connection signal="playerdeath" from="Player" to="snd_Music" method="_on_player_playerdeath"]

@@ -30,3 +30,4 @@ res://Utility/skill_registry.gd
 res://tests/test_registry_loading.gd
 res://Utility/enemy_spawner.gd
 res://tests/performance_test.gd
+res://tests/fps_display.gd
