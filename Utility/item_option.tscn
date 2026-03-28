@@ -2,7 +2,6 @@
 
 [ext_resource type="Texture2D" uid="uid://bu2son8g2konp" path="res://Textures/Items/Weapons/sword.png" id="1_583l0"]
 [ext_resource type="Script" uid="uid://dp65r3xwisopi" path="res://Utility/item_option.gd" id="1_unejd"]
-[ext_resource type="FontFile" uid="uid://cb4e8g30xxp5u" path="res://Font/tenderness.otf" id="2_wif5r"]
 
 [sub_resource type="SystemFont" id="SystemFont_k7luv"]
 
@@ -37,7 +36,6 @@ offset_left = 39.0
 offset_top = 2.0
 offset_right = 79.0
 offset_bottom = 25.0
-theme_override_fonts/font = ExtResource("2_wif5r")
 text = "名称"
 horizontal_alignment = 1
 
@@ -47,7 +45,6 @@ offset_left = 4.0
 offset_top = 27.0
 offset_right = 166.0
 offset_bottom = 48.0
-theme_override_fonts/font = ExtResource("2_wif5r")
 theme_override_font_sizes/font_size = 8
 text = "物品说明"
 autowrap_mode = 3
@@ -58,7 +55,6 @@ offset_left = 130.0
 offset_top = 3.0
 offset_right = 170.0
 offset_bottom = 26.0
-theme_override_fonts/font = SubResource("SystemFont_k7luv")
 theme_override_font_sizes/font_size = 12
 text = "等级：1"
 

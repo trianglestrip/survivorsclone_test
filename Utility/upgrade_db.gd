@@ -4,32 +4,41 @@ var UPGRADES = {}
 
 const _DEFAULT_UPGRADES = {
 	"icespear1": {
-		"icon": "Gem_blue",
+		"icon": "res://Textures/Items/Weapons/ice_spear.png",
 		"displayname": "冰矛",
-		"details": "伤害 10%，每 0.4s 发射一次。",
-		"level": 1,
+		"details": "向随机敌人投掷冰矛",
+		"level": "等级：1",
 		"prerequisite": [],
 		"type": "weapon",
+		"spell": "IceSpear",
+		"set_level": 1,
+		"add_baseammo": 1,
 	},
-	"icespear2": {
-		"icon": "Gem_blue",
-		"displayname": "冰矛+",
-		"details": "伤害 15%，每 0.4s 发射一次。",
-		"level": 2,
-		"prerequisite": ["icespear1"],
+	"tornado1": {
+		"icon": "res://Textures/Items/Weapons/tornado.png",
+		"displayname": "龙卷风",
+		"details": "召唤一个龙卷风",
+		"level": "等级：1",
+		"prerequisite": [],
 		"type": "weapon",
+		"spell": "Tornado",
+		"set_level": 1,
+		"add_baseammo": 1,
 	},
-	"icespear3": {
-		"icon": "Gem_blue",
-		"displayname": "冰矛++",
-		"details": "伤害 20%，每 0.4s 发射一次。",
-		"level": 3,
-		"prerequisite": ["icespear2"],
+	"javelin1": {
+		"icon": "res://Textures/Items/Weapons/javelin_3_new_attack.png",
+		"displayname": "标枪",
+		"details": "围绕玩家旋转的标枪",
+		"level": "等级：1",
+		"prerequisite": [],
 		"type": "weapon",
+		"spell": "Javelin",
+		"set_level": 1,
+		"set_ammo": 1,
 	},
 }
 
-func _init():
+func _ready():
 	_load_upgrade_config()
 
 func _load_upgrade_config():

@@ -1,0 +1,3 @@
+@echo off
+echo Starting Godot Game...
+"F:\project\godot\Godot_v4.6.1-stable_win64_console.exe" --path "f:\project\SurvivorsClone_Test" res://World/world.tscn

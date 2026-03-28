@@ -5,7 +5,6 @@
 [ext_resource type="PackedScene" uid="uid://xy3cvpwdy828" path="res://Utility/hurt_box.tscn" id="3_gs51i"]
 [ext_resource type="Texture2D" uid="uid://dx7xx6vfahxlq" path="res://Textures/GUI/exp_background.png" id="4_pbpj5"]
 [ext_resource type="Texture2D" uid="uid://dlx33roiu0vlj" path="res://Textures/GUI/exp_progress.png" id="5_5ive2"]
-[ext_resource type="FontFile" uid="uid://cb4e8g30xxp5u" path="res://Font/tenderness.otf" id="6_okx7u"]
 [ext_resource type="AudioStream" uid="uid://ul8hunj8tl2t" path="res://Audio/SoundEffect/levelup.ogg" id="7_wl7d2"]
 [ext_resource type="Texture2D" uid="uid://cj6a5rhwov14" path="res://Textures/GUI/healthbar.png" id="8_flesq"]
 [ext_resource type="Texture2D" uid="uid://da53mspvqfxq4" path="res://Textures/GUI/health.png" id="9_uker1"]
@@ -121,7 +120,6 @@ layout_mode = 0
 offset_left = 540.0
 offset_right = 640.0
 offset_bottom = 20.0
-theme_override_fonts/font = ExtResource("6_okx7u")
 theme_override_font_sizes/font_size = 16
 text = "等级：1"
 horizontal_alignment = 1
@@ -152,9 +150,7 @@ offset_bottom = 300.0
 [node name="lbl_LevelUP" type="Label" parent="GUILayer/GUI/LevelUp" unique_id=2079621698]
 layout_mode = 0
 offset_right = 200.0
-offset_bottom = 50.0
-theme_override_fonts/font = ExtResource("6_okx7u")
-text = "升级！"
+offset_bottom = 50.0	ext = "升级！"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -186,7 +182,6 @@ unique_name_in_owner = true
 layout_mode = 0
 offset_right = 200.0
 offset_bottom = 50.0
-theme_override_fonts/font = ExtResource("6_okx7u")
 text = "结果"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -216,7 +211,6 @@ offset_left = 280.0
 offset_top = 20.0
 offset_right = 360.0
 offset_bottom = 44.0
-theme_override_fonts/font = ExtResource("6_okx7u")
 theme_override_font_sizes/font_size = 20
 text = "00:00"
 horizontal_alignment = 1
