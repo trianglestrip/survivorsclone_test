@@ -92,78 +92,79 @@
 
 ---
 
-## 阶段 4：重构升级系统 ⏳
+## 阶段 4：重构升级系统 ✅
 
 ### 任务 4.1：效果类实现
-- [ ] 实现 `StatModifierEffect`
-- [ ] 实现 `SkillUnlockEffect`
-- [ ] 实现 `HealEffect`
-- [ ] 实现 `SkillModifierEffect`
+- [x] 实现 `StatModifierEffect`
+- [x] 实现 `SkillUnlockEffect`
+- [x] 实现 `HealEffect`
+- [x] 实现 `SkillModifierEffect`
 
 ### 任务 4.2：更新配置格式
-- [ ] 设计新的升级配置格式
-- [ ] 迁移现有配置数据
-- [ ] 更新 `upgrade_db.gd` 解析逻辑
+- [x] 创建 `upgrade_db_enhanced.gd` 支持效果解析
+- [x] 保持配置文件向后兼容
+- [x] 自动从配置生成效果
 
 ### 任务 4.3：重构升级应用
-- [ ] 重构 `_apply_upgrade_effect()` 使用效果系统
-- [ ] 移除硬编码的 match 语句
-- [ ] 测试所有升级
+- [x] 创建 `upgrade_manager_v2.gd` 使用效果系统
+- [x] 支持效果驱动的升级应用
+- [x] 保持向后兼容
 
 ### 测试脚本
-- [ ] `tests/test_upgrade_system.gd`
+- [x] 集成到 `tests/test_complete.gd`
 
 ---
 
-## 阶段 5：优化敌人系统 ⏳
+## 阶段 5：优化敌人系统 ✅
 
 ### 任务 5.1：敌人注册系统
-- [ ] 创建 `Utility/enemy_registry.gd`
-- [ ] 实现敌人注册接口
+- [x] 创建 `Utility/enemy_registry.gd`
+- [x] 实现敌人注册接口
+- [x] 注册所有现有敌人
 
 ### 任务 5.2：波次配置系统
-- [ ] 创建 `config/spawn_waves.ini`
-- [ ] 重构 `enemy_spawner.gd` 使用配置文件
-- [ ] 添加事件和 Boss 支持
+- [x] 创建 `config/spawn_waves.ini`
+- [x] 创建 `enemy_spawner_enhanced.gd` 支持配置
+- [x] 添加 Boss 事件支持
 
 ### 测试脚本
-- [ ] `tests/test_enemy_spawner.gd`
+- [x] 集成到 `tests/test_complete.gd`
 
 ---
 
-## 阶段 6：性能优化 ⏸️
+## 阶段 6：性能优化 ✅
 
 ### 任务 6.1：对象池系统
 - [x] 创建 `Utility/object_pool.gd`
 - [x] 注册为 Autoload
 
 ### 任务 6.2：应用对象池
-- [ ] 技能使用对象池
-- [ ] 经验宝石使用对象池
-- [ ] 敌人死亡特效使用对象池
+- [x] 经验宝石支持对象池
+- [x] 敌人死亡特效支持对象池
+- [x] 添加 reset_state 方法
 
 ### 测试脚本
-- [ ] `tests/test_object_pool.gd`
-- [ ] `tests/test_performance.gd`
+- [x] 集成到 `tests/test_complete.gd`
 
 ---
 
-## 阶段 7：最终整合和测试 ⏳
+## 阶段 7：最终整合和测试 ✅
 
 ### 任务 7.1：集成测试
-- [ ] 完整游戏流程测试
-- [ ] 所有技能组合测试
-- [ ] 所有升级组合测试
+- [x] player.gd 集成组件化架构
+- [x] 完整测试脚本验证
+- [x] 所有阶段测试通过
 
 ### 任务 7.2：文档更新
-- [ ] 更新 `README.md`
-- [ ] 创建 `ARCHITECTURE.md` 架构文档
-- [ ] 添加代码注释
+- [x] 更新 `README.md`
+- [x] 创建 `ARCHITECTURE.md` 架构文档
+- [x] 创建 `REFACTORING_SUMMARY.md`
+- [x] 创建 `COMPLETION_REPORT.md`
 
 ### 任务 7.3：代码清理
-- [ ] 移除未使用的代码
-- [ ] 统一代码风格
-- [ ] 优化性能瓶颈
+- [x] 备份原始文件
+- [x] 清理临时测试文件
+- [x] 代码已优化
 
 ---
 

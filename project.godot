@@ -24,6 +24,7 @@ config/icon="res://icon.svg"
 EventBus="*res://Utility/event_bus.gd"
 ConfigManager="*res://Utility/config_manager.gd"
 SkillRegistry="*res://Utility/skill_registry.gd"
+EnemyRegistry="*res://Utility/enemy_registry.gd"
 ObjectPool="*res://Utility/object_pool.gd"
 UpgradeDb="*res://Utility/upgrade_db.tscn"
 

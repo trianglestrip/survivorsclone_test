@@ -78,6 +78,21 @@ var data = ConfigManager.get_section_data("res://config/skill_config.ini", "IceS
 - 提供技能实例化接口
 
 **主要方法**:
+- `register_skill(skill_id, scene, data)` - 注册技能
+- `instantiate_skill(skill_id)` - 实例化技能
+- `get_skill_scene(skill_id)` - 获取技能场景
+
+---
+
+#### EnemyRegistry（敌人注册系统）
+**路径**: `Utility/enemy_registry.gd`
+
+**职责**:
+- 注册和管理所有敌人类型
+- 提供敌人实例化接口
+- 支持敌人元数据（等级、Boss 标记等）
+
+**主要方法**:
 - `register_skill(id, scene, data)` - 注册技能
 - `get_skill_scene(id)` - 获取技能场景
 - `instantiate_skill(id)` - 实例化技能
@@ -95,9 +110,26 @@ var data = ConfigManager.get_section_data("res://config/skill_config.ini", "IceS
 **职责**:
 - 管理可复用对象池
 - 减少对象创建/销毁开销
+- 支持经验宝石、爆炸特效等对象的复用
 
 **主要方法**:
 - `get_object(pool_name, scene)` - 从池中获取对象
+- `return_object(pool_name, obj)` - 归还对象到池
+- `register_pool(pool_name, scene, initial_size)` - 注册对象池
+
+**使用示例**:
+```gdscript
+# 在对象中支持对象池
+func reset_state():
+    # 重置对象状态
+    pass
+
+func _on_finished():
+    if use_object_pool:
+        ObjectPool.return_object(pool_name, self)
+        return
+    queue_free()
+```
 - `return_object(pool_name, obj)` - 归还对象到池
 - `prewarm_pool(pool_name, scene, count)` - 预热对象池
 
