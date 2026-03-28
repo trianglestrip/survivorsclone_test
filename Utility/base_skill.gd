@@ -70,16 +70,12 @@ func apply_player_modifiers():
 	if player == null:
 		return
 	
-	# 尝试通过多种方式获取 spell_size
+	# 获取 spell_size（兼容新旧架构）
 	var spell_size = 0.0
 	
-	# 方法 1：直接访问 stats 组件（新架构）
-	if player.has_node("PlayerStats") or (player.get("stats") != null):
-		var stats = player.get("stats")
-		if stats and stats.get("spell_size") != null:
-			spell_size = stats.spell_size
-	# 方法 2：直接属性访问（旧架构）
-	elif "spell_size" in player:
+	# 新架构：通过 _get() 方法访问
+	# player.gd 的 _get() 会返回 stats.spell_size
+	if player.get("spell_size") != null:
 		spell_size = player.spell_size
 	
 	attack_size *= (1 + spell_size)
