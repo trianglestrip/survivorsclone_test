@@ -13,3 +13,17 @@ res://Enemy/explosion.gd
 res://Objects/experience_gem.gd
 res://Player/Components/upgrade_manager.gd
 res://Utility/base_skill.gd
+res://Player/GUI/item_container.gd
+res://Utility/item_option.gd
+res://tests/test_config_loading.gd
+res://Player/player_refactored.gd
+res://Player/Components/skill_manager.gd
+res://Player/Components/upgrade_manager_v2.gd
+res://tests/test_complete.gd
+res://tests/test_skill_player_interaction.gd
+res://Utility/event_bus.gd
+res://Utility/Effects/stat_modifier_effect.gd
+res://TitleScreen/menu.gd
+res://tests/test_stage3.gd
+res://Utility/enemy_registry.gd
+res://Utility/skill_registry.gd

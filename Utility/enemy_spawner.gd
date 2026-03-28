@@ -24,7 +24,9 @@ func _on_timer_timeout():
 				var new_enemy = i.enemy
 				var counter = 0
 				while  counter < i.enemy_num:
-					var enemy_spawn = new_enemy.instantiate()
+					# 使用对象池获取敌人实例
+					var pool_name = "enemy_" + new_enemy.resource_path.get_file().get_basename()
+					var enemy_spawn = ObjectPool.get_object(pool_name, new_enemy)
 					enemy_spawn.global_position = get_random_position()
 					add_child(enemy_spawn)
 					counter += 1

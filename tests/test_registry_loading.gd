@@ -9,9 +9,9 @@ func _init():
 	
 	var all_passed = true
 	
-	# 测试 1: 技能配置文件解析
-	print("\n[测试 1] 技能配置文件解析")
-	var skill_configs = _parse_ini("res://config/skill_config.ini")
+	# 测试 1: 技能注册配置文件解析
+	print("\n[测试 1] 技能注册配置文件解析")
+	var skill_configs = _parse_ini("res://config/skill_registry.ini")
 	
 	if skill_configs.size() == 0:
 		print("  ❌ 失败: 技能配置为空")
@@ -44,9 +44,9 @@ func _init():
 				print("    ❌ 缺少技能: %s" % skill_id)
 				all_passed = false
 	
-	# 测试 2: 敌人配置文件解析
-	print("\n[测试 2] 敌人配置文件解析")
-	var enemy_configs = _parse_ini("res://config/enemy_config.ini")
+	# 测试 2: 敌人注册配置文件解析
+	print("\n[测试 2] 敌人注册配置文件解析")
+	var enemy_configs = _parse_ini("res://config/enemy_registry.ini")
 	
 	if enemy_configs.size() == 0:
 		print("  ❌ 失败: 敌人配置为空")

@@ -44,9 +44,21 @@ func _load_skills_from_config():
 - 完全数据驱动
 - 便于扩展和维护
 
-## 配置文件
+## 配置文件结构
 
-### 1. 技能配置 (`config/skill_config.ini`)
+### 配置文件分离
+
+为了清晰分离职责，系统使用两类配置文件：
+
+1. **注册配置**：定义哪些技能/敌人存在，场景路径
+   - `config/skill_registry.ini` - 技能注册
+   - `config/enemy_registry.ini` - 敌人注册
+
+2. **属性配置**：定义技能/敌人的具体属性
+   - `config/skill_config.ini` - 技能属性（伤害、速度等）
+   - `config/enemy_config.ini` - 敌人属性（血量、速度等）
+
+### 1. 技能注册配置 (`config/skill_registry.ini`)
 
 ```ini
 [IceSpear]
@@ -74,7 +86,7 @@ scene_path=res://Player/Attack/javelin.tscn
 - `type`: 技能类型（projectile/orbital）
 - `scene_path`: 技能场景路径
 
-### 2. 敌人配置 (`config/enemy_config.ini`)
+### 2. 敌人注册配置 (`config/enemy_registry.ini`)
 
 ```ini
 [enemy_kobold_weak]
@@ -144,7 +156,7 @@ scene_path=res://Enemy/enemy_super.tscn
 ### 添加新技能
 
 1. 创建技能场景（如 `res://Player/Attack/new_skill.tscn`）
-2. 在 `config/skill_config.ini` 中添加：
+2. 在 `config/skill_registry.ini` 中添加注册信息：
 
 ```ini
 [NewSkill]
@@ -154,12 +166,23 @@ type=projectile
 scene_path=res://Player/Attack/new_skill.tscn
 ```
 
-3. 重启游戏，技能自动注册
+3. （可选）在 `config/skill_config.ini` 中添加属性配置：
+
+```ini
+[NewSkill]
+base_speed=150
+base_damage=10
+base_knockback_amount=100
+level1_hp=1
+level1_damage=10
+```
+
+4. 重启游戏，技能自动注册
 
 ### 添加新敌人
 
 1. 创建敌人场景（如 `res://Enemy/enemy_new.tscn`）
-2. 在 `config/enemy_config.ini` 中添加：
+2. 在 `config/enemy_registry.ini` 中添加注册信息：
 
 ```ini
 [enemy_new]
@@ -169,7 +192,19 @@ is_boss=false
 scene_path=res://Enemy/enemy_new.tscn
 ```
 
-3. 重启游戏，敌人自动注册
+3. 在 `config/enemy_config.ini` 中添加属性配置：
+
+```ini
+[enemy_new]
+movement_speed=25.0
+hp=50
+knockback_recovery=5.0
+experience=3
+enemy_damage=3
+```
+
+4. 在 `config/spawn_waves.ini` 中配置生成规则
+5. 重启游戏，敌人自动注册
 
 ## 测试
 
@@ -185,6 +220,49 @@ F:\project\godot\Godot_v4.6.1-stable_win64_console.exe --headless --script tests
 - 必需字段验证
 - 场景路径有效性
 
+## 性能优化
+
+### 敌人对象池
+
+敌人生成使用对象池复用实例，避免频繁创建/销毁：
+
+```gdscript
+# enemy_spawner.gd
+var pool_name = "enemy_" + new_enemy.resource_path.get_file().get_basename()
+var enemy_spawn = ObjectPool.get_object(pool_name, new_enemy)
+```
+
+**优势**：
+- 减少内存分配开销
+- 避免 GC 压力
+- 提升大量敌人时的性能
+
+### 敌人状态重置
+
+敌人支持 `reset_state()` 方法，从对象池取出时重置：
+
+```gdscript
+# enemy.gd
+func reset_state():
+    _load_config()
+    knockback = Vector2.ZERO
+    velocity = Vector2.ZERO
+    anim.play("walk")
+    hitBox.damage = enemy_damage
+```
+
+### 死亡时归还对象池
+
+敌人死亡时不再 `queue_free()`，而是归还到对象池：
+
+```gdscript
+# enemy.gd
+func death():
+    # ... 生成爆炸和经验宝石
+    var pool_name = "enemy_" + get_name()
+    ObjectPool.return_object(pool_name, self)
+```
+
 ## 优势总结
 
 1. **完全数据驱动**：技能和敌人完全由配置文件定义
@@ -192,3 +270,4 @@ F:\project\godot\Godot_v4.6.1-stable_win64_console.exe --headless --script tests
 3. **策划友好**：配置文件格式简单，易于编辑
 4. **启动验证**：游戏启动时验证配置完整性
 5. **统一架构**：与 `upgrade_config.ini` 保持一致的设计理念
+6. **高性能**：对象池优化，支持大量敌人同时存在

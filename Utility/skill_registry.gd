@@ -42,13 +42,13 @@ func _ready():
 	_load_skills_from_config()
 
 func _load_skills_from_config():
-	print("\n=== 加载技能配置 ===")
-	print("配置文件: res://config/skill_config.ini")
+	print("\n=== 加载技能注册配置 ===")
+	print("配置文件: res://config/skill_registry.ini")
 	
-	var file = FileAccess.open("res://config/skill_config.ini", FileAccess.READ)
+	var file = FileAccess.open("res://config/skill_registry.ini", FileAccess.READ)
 	
 	if file == null:
-		push_error("❌ 无法打开技能配置文件: res://config/skill_config.ini")
+		push_error("❌ 无法打开技能注册配置文件: res://config/skill_registry.ini")
 		push_error("游戏无法继续，请确保配置文件存在！")
 		get_tree().quit(1)
 		return

@@ -96,20 +96,24 @@ F:\project\godot\Godot_v4.6.1-stable_win64.exe --path .
 ### 配置驱动
 
 **完全数据分离** - 所有游戏数据从配置文件加载：
-- `config/skill_config.ini` - 3 个技能配置
-- `config/enemy_config.ini` - 5 个敌人配置
-- `config/upgrade_config.ini` - 31 个升级配置
+- `config/skill_registry.ini` - 技能注册（3 个技能）
+- `config/skill_config.ini` - 技能属性配置
+- `config/enemy_registry.ini` - 敌人注册（5 个敌人）
+- `config/enemy_config.ini` - 敌人属性配置
+- `config/upgrade_config.ini` - 升级配置（31 个升级）
 - `config/spawn_waves.ini` - 敌人波次配置
 
 **无硬编码** - 代码中不包含任何游戏数据  
 **启动验证** - 配置加载失败时游戏退出并报错  
-**动态注册** - 技能和敌人从配置文件动态注册
+**动态注册** - 技能和敌人从配置文件动态注册  
+**对象池优化** - 敌人使用对象池复用，支持大量敌人
 
 ### 性能优化
 
-- **对象池** - 复用 Explosion 和 ExperienceGem 对象
+- **对象池** - 复用敌人、爆炸和经验宝石对象
 - **事件驱动** - 减少轮询和直接耦合
 - **组件化** - 按需加载和更新
+- **敌人复用** - 大量敌人时性能提升显著
 
 ---
 
@@ -152,7 +156,7 @@ SurvivorsClone_Test/
 ### 添加新武器
 
 1. 在 `Player/Attack/` 创建继承 `BaseSkill` 的脚本
-2. 在 `config/skill_config.ini` 添加技能注册：
+2. 在 `config/skill_registry.ini` 添加技能注册：
 
 ```ini
 [NewWeapon]
@@ -162,7 +166,18 @@ type=projectile
 scene_path=res://Player/Attack/new_weapon.tscn
 ```
 
-3. 在 `config/upgrade_config.ini` 添加武器升级配置：
+3. 在 `config/skill_config.ini` 添加技能属性：
+
+```ini
+[NewWeapon]
+base_speed=120
+base_damage=8
+base_knockback_amount=100
+level1_hp=1
+level1_damage=8
+```
+
+4. 在 `config/upgrade_config.ini` 添加武器升级配置：
 
 ```ini
 [newweapon1]
@@ -177,12 +192,12 @@ set_level=1
 add_baseammo=1
 ```
 
-4. 重启游戏，技能自动注册
+5. 重启游戏，技能自动注册
 
 ### 添加新敌人
 
 1. 在 `Enemy/` 创建继承 `enemy.gd` 的场景
-2. 在 `config/enemy_config.ini` 添加敌人注册：
+2. 在 `config/enemy_registry.ini` 添加敌人注册：
 
 ```ini
 [enemy_new]
@@ -192,8 +207,19 @@ is_boss=false
 scene_path=res://Enemy/enemy_new.tscn
 ```
 
-3. 在 `config/spawn_waves.ini` 配置生成规则
-4. 重启游戏，敌人自动注册
+3. 在 `config/enemy_config.ini` 添加敌人属性：
+
+```ini
+[enemy_new]
+movement_speed=25.0
+hp=50
+knockback_recovery=5.0
+experience=3
+enemy_damage=3
+```
+
+4. 在 `config/spawn_waves.ini` 配置生成规则
+5. 重启游戏，敌人自动注册并使用对象池优化
 
 ### 添加新升级
 

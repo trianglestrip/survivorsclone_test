@@ -53,15 +53,22 @@ func _physics_process(_delta):
 
 func death():
 	emit_signal("remove_from_array",self)
-	var enemy_death = death_anim.instantiate()
+	
+	# 使用对象池获取爆炸效果
+	var enemy_death = ObjectPool.get_object("explosion", death_anim)
 	enemy_death.scale = sprite.scale
 	enemy_death.global_position = global_position
 	get_parent().call_deferred("add_child",enemy_death)
-	var new_gem = exp_gem.instantiate()
+	
+	# 使用对象池获取经验宝石
+	var new_gem = ObjectPool.get_object("experience_gem", exp_gem)
 	new_gem.global_position = global_position
 	new_gem.experience = experience
 	loot_base.call_deferred("add_child",new_gem)
-	queue_free()
+	
+	# 归还敌人到对象池
+	var pool_name = "enemy_" + get_name()
+	ObjectPool.return_object(pool_name, self)
 
 func _on_hurt_box_hurt(damage, angle, knockback_amount):
 	hp -= damage
@@ -70,3 +77,13 @@ func _on_hurt_box_hurt(damage, angle, knockback_amount):
 		death()
 	else:
 		snd_hit.play()
+
+# 对象池支持：重置敌人状态
+func reset_state():
+	_load_config()
+	knockback = Vector2.ZERO
+	velocity = Vector2.ZERO
+	if anim:
+		anim.play("walk")
+	if hitBox:
+		hitBox.damage = enemy_damage
