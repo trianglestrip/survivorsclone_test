@@ -13,6 +13,8 @@ class EnemyInstance:
 	var active: bool = true
 	var flip_h: bool = false
 	var hurt_box: Area2D = null  # 碰撞检测区域
+	var anim_time: float = 0.0  # 动画时间
+	var anim_offset: float = 0.0  # 动画偏移（让敌人不同步）
 	
 	func _init(pos: Vector2, enemy_type: String, health: float):
 		position = pos
@@ -21,6 +23,7 @@ class EnemyInstance:
 		max_hp = health
 		velocity = Vector2.ZERO
 		knockback = Vector2.ZERO
+		anim_offset = randf() * 0.6  # 随机偏移 0-0.6 秒
 
 # 敌人类型数据
 class EnemyTypeData:
@@ -30,6 +33,7 @@ class EnemyTypeData:
 	var instances: Array[EnemyInstance] = []
 	var config: Dictionary
 	var collision_shape: Shape2D = null  # 碰撞形状模板
+	var hframes: int = 1  # 精灵表帧数
 	
 	func _init(id: String, tex: Texture2D, cfg: Dictionary):
 		type_id = id
@@ -42,6 +46,9 @@ var enemy_types: Dictionary = {}  # type_id -> EnemyTypeData
 # 引用
 var player: Node = null
 var container: Node2D = null
+var is_initialized: bool = false
+
+signal initialization_complete
 
 func _ready():
 	print("\n=== GPU 实例化敌人管理器初始化 ===")
@@ -53,14 +60,44 @@ func set_container(parent: Node2D):
 func set_player(p: Node):
 	player = p
 
+# 创建精灵表 Shader
+func _create_sprite_sheet_shader(hframes: int) -> String:
+	return """
+shader_type canvas_item;
+
+uniform int hframes = %d;
+
+void fragment() {
+	// 从 COLOR.r 获取帧索引（0-1 范围映射到 0-hframes）
+	float frame_index = COLOR.r * float(hframes);
+	int frame = int(frame_index);
+	
+	// 计算 UV 偏移
+	float frame_width = 1.0 / float(hframes);
+	vec2 uv = UV;
+	uv.x = uv.x * frame_width + float(frame) * frame_width;
+	
+	// 采样纹理
+	COLOR = texture(TEXTURE, uv);
+}
+""" % hframes
+
 func _initialize_enemy_types():
 	# 等待 EnemyRegistry 初始化
 	await get_tree().process_frame
 	
 	var enemy_ids = EnemyRegistry.get_all_enemy_ids()
+	print("  开始初始化 %d 种敌人类型..." % enemy_ids.size())
 	
+	# 第一步：批量预加载所有配置（快速）
+	var configs = {}
 	for enemy_id in enemy_ids:
-		var enemy_data = EnemyRegistry.get_enemy_data(enemy_id)
+		configs[enemy_id] = _load_enemy_config(enemy_id)
+	
+	var init_count = 0
+	for enemy_id in enemy_ids:
+		init_count += 1
+		var _enemy_data = EnemyRegistry.get_enemy_data(enemy_id)
 		var scene = EnemyRegistry.get_enemy_scene(enemy_id)
 		
 		if scene == null:
@@ -88,54 +125,59 @@ func _initialize_enemy_types():
 			if shape_node and shape_node.shape:
 				collision_shape = shape_node.shape.duplicate()
 		
-		# 加载配置
-		var config = _load_enemy_config(enemy_id)
+		# 使用预加载的配置
+		var config = configs.get(enemy_id, {})
 		
 		# 创建类型数据
 		var type_data = EnemyTypeData.new(enemy_id, texture, config)
 		type_data.collision_shape = collision_shape
+		type_data.hframes = hframes
 		
-		# 创建 MultiMesh
+		# 创建单个 MultiMesh（使用 Shader 控制帧）
 		if texture and container:
+			var tex_size = texture.get_size()
+			var frame_width = tex_size.x / float(hframes) if hframes > 1 else tex_size.x
+			
 			var multimesh_instance = MultiMeshInstance2D.new()
 			var multimesh = MultiMesh.new()
 			
-			# 使用 QuadMesh 作为基础网格
 			var quad = QuadMesh.new()
-			var tex_size = texture.get_size()
-			
-			# 如果是精灵表，创建 AtlasTexture 只使用第一帧
-			var final_texture = texture
-			if hframes > 1:
-				var atlas = AtlasTexture.new()
-				atlas.atlas = texture
-				var frame_width = tex_size.x / float(hframes)
-				atlas.region = Rect2(0, 0, frame_width, tex_size.y)
-				final_texture = atlas
-				tex_size = Vector2(frame_width, tex_size.y)
-			
-			# 设置 quad 大小（应用缩放）
-			quad.size = tex_size * sprite_scale
+			quad.size = Vector2(frame_width, tex_size.y) * sprite_scale
 			
 			multimesh.mesh = quad
 			multimesh.transform_format = MultiMesh.TRANSFORM_2D
-			multimesh.instance_count = 0  # 初始为 0，动态调整
+			multimesh.use_colors = true  # 使用 color 通道传递帧索引
+			multimesh.instance_count = 0
 			
 			multimesh_instance.multimesh = multimesh
-			multimesh_instance.texture = final_texture
+			multimesh_instance.texture = texture
 			multimesh_instance.z_index = 0
+			
+			# 创建 Shader 材质
+			if hframes > 1:
+				var shader_material = ShaderMaterial.new()
+				var shader = Shader.new()
+				shader.code = _create_sprite_sheet_shader(hframes)
+				shader_material.shader = shader
+				multimesh_instance.material = shader_material
 			
 			container.add_child(multimesh_instance)
 			type_data.multimesh_instance = multimesh_instance
 			
-			print("    - 创建 MultiMesh: %s (纹理: %dx%d, 帧: %d/%d)" % [enemy_id, tex_size.x, tex_size.y, frame, hframes])
+			print("    - 创建 MultiMesh: %s (纹理: %dx%d, %d 帧)" % [enemy_id, tex_size.x, tex_size.y, hframes])
 		
 		enemy_types[enemy_id] = type_data
 		temp_enemy.queue_free()
 		
-		print("  ✓ 初始化敌人类型: %s" % enemy_id)
+		print("  ✓ [%d/%d] 初始化敌人类型: %s" % [init_count, enemy_ids.size(), enemy_id])
+		
+		# 每初始化一个类型，等待一帧（避免卡顿）
+		if init_count < enemy_ids.size():
+			await get_tree().process_frame
 	
-	print("✓ GPU 实例化系统就绪\n")
+	print("✓ GPU 实例化系统就绪（共 %d 种敌人）\n" % enemy_ids.size())
+	is_initialized = true
+	emit_signal("initialization_complete")
 
 func _load_enemy_config(enemy_id: String) -> Dictionary:
 	var file = FileAccess.open("res://config/enemy_config.ini", FileAccess.READ)
@@ -189,6 +231,8 @@ func spawn_enemy(enemy_type: String, pos: Vector2) -> int:
 		hurt_box.collision_layer = 0
 		hurt_box.collision_mask = 4  # 检测武器层
 		hurt_box.position = pos
+		hurt_box.monitoring = true
+		hurt_box.monitorable = true
 		
 		var collision_shape_node = CollisionShape2D.new()
 		collision_shape_node.shape = type_data.collision_shape
@@ -238,13 +282,15 @@ func _update_enemy_type(type_data: EnemyTypeData, delta: float):
 	var movement_speed = config.get("movement_speed", 20.0)
 	var knockback_recovery = config.get("knockback_recovery", 3.5)
 	
-	var active_index = 0
-	
+	# 第一遍：更新逻辑并计算活跃数量
+	var active_count = 0
 	for i in range(type_data.instances.size()):
 		var inst = type_data.instances[i]
 		
 		if not inst.active:
 			continue
+		
+		active_count += 1
 		
 		# 更新击退
 		inst.knockback = inst.knockback.move_toward(Vector2.ZERO, knockback_recovery)
@@ -255,29 +301,54 @@ func _update_enemy_type(type_data: EnemyTypeData, delta: float):
 		inst.velocity += inst.knockback
 		inst.position += inst.velocity * delta
 		
-		# 更新翻转
+		# 更新动画时间
+		inst.anim_time += delta
+		
+		# 更新翻转（因为 Y 轴翻转，X 轴逻辑也要反转）
 		if direction.x > 0.1:
-			inst.flip_h = true
+			inst.flip_h = true   # 向右，需要翻转（因为 Y 轴已翻转）
 		elif direction.x < -0.1:
-			inst.flip_h = false
+			inst.flip_h = false  # 向左，不翻转
 		
 		# 更新碰撞体位置
 		if inst.hurt_box and is_instance_valid(inst.hurt_box):
 			inst.hurt_box.global_position = inst.position
+	
+	# 先更新 instance_count，避免闪现
+	if type_data.multimesh_instance:
+		type_data.multimesh_instance.multimesh.instance_count = active_count
+	
+	# 第二遍：更新 MultiMesh Transform 和颜色
+	var active_index = 0
+	for i in range(type_data.instances.size()):
+		var inst = type_data.instances[i]
 		
-		# 更新 MultiMesh Transform
+		if not inst.active:
+			continue
+		
+		# 更新 MultiMesh Transform 和动画帧
 		if type_data.multimesh_instance:
-			# 创建基础 Transform
-			var transform = Transform2D()
+			# 创建 Transform（Y 轴翻转以匹配 Sprite2D 坐标系）
+			var scale_x = -1.0 if inst.flip_h else 1.0
+			var scale_y = -1.0  # 翻转 Y 轴修正上下颠倒
 			
-			# 应用翻转（如果需要）
-			if inst.flip_h:
-				transform.x.x = -1.0  # 翻转 X 轴
-			
-			# 设置位置
-			transform.origin = inst.position
+			var transform = Transform2D(
+				Vector2(scale_x, 0),    # X 轴
+				Vector2(0, scale_y),     # Y 轴（翻转）
+				inst.position            # 位置
+			)
 			
 			type_data.multimesh_instance.multimesh.set_instance_transform_2d(active_index, transform)
+			
+			# 计算当前帧并通过 COLOR 传递给 Shader
+			if type_data.hframes > 1:
+				var total_time = inst.anim_time + inst.anim_offset
+				var current_frame = int(total_time / 0.3) % type_data.hframes
+				var frame_normalized = float(current_frame) / float(type_data.hframes)
+				
+				# 使用 COLOR.r 传递帧索引（0-1 范围）
+				var color = Color(frame_normalized, 0, 0, 1)
+				type_data.multimesh_instance.multimesh.set_instance_color(active_index, color)
 		
 		active_index += 1
 
@@ -333,9 +404,18 @@ func _kill_enemy(type_data: EnemyTypeData, inst: EnemyInstance, _instance_id: in
 		inst.hurt_box.queue_free()
 		inst.hurt_box = null
 	
-	# 生成经验宝石
+	# 生成经验宝石（直接实例化，不使用信号）
 	var exp_amount = type_data.config.get("experience", 1)
-	EventBus.emit_enemy_killed(inst.type_id, inst.position, exp_amount)
+	var exp_gem_scene = load("res://Objects/experience_gem.tscn")
+	var exp_gem = ObjectPool.get_object("experience_gem", exp_gem_scene)
+	if exp_gem:
+		exp_gem.global_position = inst.position
+		exp_gem.experience = exp_amount
+		
+		# 添加到 Loot 节点（如果已有父节点，ObjectPool 会处理）
+		var loot_base = get_tree().get_first_node_in_group("loot")
+		if loot_base and exp_gem.get_parent() == null:
+			loot_base.call_deferred("add_child", exp_gem)
 	
 	# 更新 MultiMesh
 	_update_multimesh(inst.type_id)

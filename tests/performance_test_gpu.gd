@@ -22,21 +22,31 @@ func _ready():
 	print("每种敌人: %d 个" % enemies_per_type)
 	print("提示: 按 ESC 退出并查看性能总结\n")
 	
+	# 显示加载提示
+	info_label.text = "正在初始化 GPU 实例化系统...\n请稍候..."
+	
 	# 等待注册系统初始化
 	await get_tree().process_frame
 	
 	# 加载并初始化敌人管理器
+	print("加载敌人管理器...")
 	var manager_script = load("res://Utility/enemy_instance_manager.gd")
 	enemy_manager = manager_script.new()
 	enemy_manager.set_container(enemy_container)
 	enemy_manager.set_player(player)
 	add_child(enemy_manager)
 	
-	# 等待管理器初始化
-	await get_tree().process_frame
-	await get_tree().process_frame
+	# 等待管理器初始化完成（分帧处理）
+	info_label.text = "正在初始化敌人类型...\n(分帧处理以避免卡顿)"
+	
+	# 等待初始化完成信号
+	await enemy_manager.initialization_complete
 	
 	_spawn_enemies()
+	
+	# 等待一帧确保敌人完全生成
+	await get_tree().process_frame
+	
 	_update_info()
 	
 	print("场景运行中... 按 ESC 退出")

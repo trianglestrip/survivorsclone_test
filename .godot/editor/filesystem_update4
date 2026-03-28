@@ -31,3 +31,5 @@ res://tests/test_registry_loading.gd
 res://Utility/enemy_spawner.gd
 res://tests/performance_test.gd
 res://tests/fps_display.gd
+res://tests/performance_test_gpu.gd
+res://Utility/enemy_instance_manager.gd
