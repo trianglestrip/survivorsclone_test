@@ -466,34 +466,23 @@ func _kill_enemy(type_data: EnemyTypeData, inst: EnemyInstance, _instance_id: in
 		inst.hurt_box.queue_free()
 		inst.hurt_box = null
 	
-	# 生成死亡爆炸动画
+	# 生成死亡爆炸动画（直接实例化，避免对象池的父节点冲突）
 	var death_anim_scene = load("res://Enemy/explosion.tscn")
-	var explosion = ObjectPool.get_object("explosion", death_anim_scene)
-	if explosion and is_instance_valid(explosion):
-		# 如果对象还在场景树中，先移除
-		if explosion.is_inside_tree():
-			var parent = explosion.get_parent()
-			if parent:
-				parent.remove_child(explosion)
-		
+	var explosion = death_anim_scene.instantiate()
+	
+	if explosion:
 		explosion.global_position = inst.position
 		
 		# 添加到容器
 		if container:
 			container.call_deferred("add_child", explosion)
 	
-	# 生成经验宝石
+	# 生成经验宝石（直接实例化，避免对象池的父节点冲突）
 	var exp_amount = type_data.config.get("experience", 1)
 	var exp_gem_scene = load("res://Objects/experience_gem.tscn")
-	var exp_gem = ObjectPool.get_object("experience_gem", exp_gem_scene)
+	var exp_gem = exp_gem_scene.instantiate()
 	
-	if exp_gem and is_instance_valid(exp_gem):
-		# 如果对象还在场景树中，先移除
-		if exp_gem.is_inside_tree():
-			var parent = exp_gem.get_parent()
-			if parent:
-				parent.remove_child(exp_gem)
-		
+	if exp_gem:
 		exp_gem.global_position = inst.position
 		exp_gem.experience = exp_amount
 		
