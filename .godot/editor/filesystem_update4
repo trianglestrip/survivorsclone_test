@@ -12,3 +12,4 @@ res://Enemy/enemy_cyclops.tscn
 res://Enemy/explosion.gd
 res://Objects/experience_gem.gd
 res://Player/Components/upgrade_manager.gd
+res://Utility/base_skill.gd
