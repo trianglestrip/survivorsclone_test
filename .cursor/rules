@@ -1,0 +1,56 @@
+# Cursor Rules for SurvivorsClone_Test
+
+## Godot 环境配置
+
+### Godot 可执行文件路径
+- **Godot 编辑器**: `F:\project\godot\Godot_v4.6.1-stable_win64.exe`
+- **Godot 控制台**: `F:\project\godot\Godot_v4.6.1-stable_win64_console.exe`
+
+### 测试命令
+运行 headless 测试：
+```powershell
+F:\project\godot\Godot_v4.6.1-stable_win64_console.exe --headless --path . --script tests/test_xxx.gd
+```
+
+运行游戏：
+```powershell
+F:\project\godot\Godot_v4.6.1-stable_win64.exe --path .
+```
+
+## 项目架构原则
+
+### 配置驱动设计
+- **所有游戏数据必须从配置文件加载**，不使用硬编码的默认值
+- 配置文件路径：
+  - `config/upgrade_config.ini` - 升级和武器配置
+  - `config/spawn_waves.ini` - 敌人波次配置
+- 启动时必须验证配置完整性，如果配置加载失败，游戏应该退出并报错
+
+### 组件化架构
+- Player 使用组件系统：`PlayerStats`, `SkillManager`, `ExperienceManager`, `UpgradeManager`
+- 所有技能继承自 `BaseSkill`
+- 所有升级效果继承自 `BaseEffect`
+
+### 事件驱动
+- 使用 `EventBus` 进行系统间通信
+- 避免直接耦合
+
+### 性能优化
+- 使用 `ObjectPool` 管理频繁创建/销毁的对象
+- 避免在 `_process()` 中进行昂贵的操作
+
+## 编码规范
+
+### GDScript 风格
+- 使用 snake_case 命名变量和函数
+- 使用 PascalCase 命名类和场景
+- 添加类型提示以提高代码可读性
+
+### 错误处理
+- 使用 `push_error()` 报告严重错误
+- 使用 `push_warning()` 报告警告
+- 在关键路径添加验证检查
+
+### 配置文件编码
+- 所有 INI 文件必须使用 UTF-8 编码（无 BOM）
+- 使用自定义 `ini_parser.gd` 处理编码问题

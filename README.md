@@ -12,9 +12,19 @@
 
 ## 运行方式
 
-1. 使用 Godot 打开本项目目录 `f:\project\SurvivorsClone_Test`。
-2. 选择 `project.godot` 项目文件。
-3. 运行场景或直接启动主场景。
+### 使用 Godot 编辑器
+1. 使用 Godot 打开本项目目录 `f:\project\SurvivorsClone_Test`
+2. 选择 `project.godot` 项目文件
+3. 运行场景或直接启动主场景
+
+### 使用命令行
+```powershell
+# 运行游戏
+F:\project\godot\Godot_v4.6.1-stable_win64.exe --path .
+
+# 运行测试
+F:\project\godot\Godot_v4.6.1-stable_win64_console.exe --headless --path . --script tests/test_config_loading.gd
+```
 
 ## 架构特性
 
@@ -31,11 +41,14 @@
 - **ObjectPool**: 对象池优化性能
 - **BaseSkill**: 技能基类，统一技能行为
 
-### 配置驱动
-- `config/upgrade_config.ini` - 升级和武器配置
-- `config/skill_config.ini` - 技能属性配置
-- `config/enemy_config.ini` - 敌人属性配置
+### 配置驱动（完全数据分离）
+- `config/upgrade_config.ini` - 升级和武器配置（31 个升级）
+- `config/spawn_waves.ini` - 敌人波次配置
+- **无硬编码默认值** - 所有数据从配置文件加载
+- **启动时验证** - 确保配置完整性
+- **失败即退出** - 防止不完整配置进入游戏
 
+详细配置系统说明请查看 [CONFIG_SYSTEM.md](CONFIG_SYSTEM.md)  
 详细架构说明请查看 [ARCHITECTURE.md](ARCHITECTURE.md)
 
 ## 提交与编码设置
@@ -131,9 +144,13 @@ F:\project\godot\Godot_v4.6.1-stable_win64_console.exe --headless --path . --scr
 - 已启用 `.gitattributes`
 - 配置文件使用 UTF-8 编码
 
-### 重构说明
-项目正在进行架构重构，当前保留了两个版本：
-- `player.gd` - 原始版本（当前使用）
-- `player_refactored.gd` - 重构版本（待集成）
+### 重构完成
+项目已完成架构重构：
+- `player.gd` - 已集成组件化架构
+- `player_backup.gd` / `player_original.gd` - 原始版本备份
 
-重构计划详见 [REFACTORING_PLAN.md](REFACTORING_PLAN.md) 和 [TASKS.md](TASKS.md)
+重构详情请查看：
+- [REFACTORING_PLAN.md](REFACTORING_PLAN.md) - 重构计划
+- [TASKS.md](TASKS.md) - 任务清单
+- [FINAL_STATUS.md](FINAL_STATUS.md) - 最终状态报告
+- [BUGFIX_SUMMARY.md](BUGFIX_SUMMARY.md) - Bug 修复记录
