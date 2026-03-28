@@ -1,24 +1,15 @@
-extends Area2D
-
-var level = 1
-var hp = 9999
-var speed = 100.0
-var damage = 5
-var attack_size = 1.0
-var knockback_amount = 100
+extends "res://Utility/base_skill.gd"
 
 var last_movement = Vector2.ZERO
 var angle = Vector2.ZERO
 var angle_less = Vector2.ZERO
 var angle_more = Vector2.ZERO
 
-signal remove_from_array(object)
+func _init():
+	config_section = "Tornado"
+	skill_name = "Tornado"
 
-@onready var player = get_tree().get_first_node_in_group("player")
-
-func _ready():
-	_load_skill_config()
-
+func on_skill_ready():
 	var move_to_less = Vector2.ZERO
 	var move_to_more = Vector2.ZERO
 	match last_movement:
@@ -62,21 +53,14 @@ func _ready():
 		tween.tween_property(self,"angle", angle_more,2)
 	tween.play()
 
+func load_level_config(cfg: ConfigFile):
+	super.load_level_config(cfg)
+	var level_knockback_key = "level%d_knockback_amount" % level
+	if cfg.has_section_key(config_section, level_knockback_key):
+		knockback_amount = cfg.get_value(config_section, level_knockback_key, knockback_amount)
+
 func _physics_process(delta):
 	position += angle*speed*delta
 
-func _load_skill_config():
-	var cfg = ConfigFile.new()
-	if cfg.load("res://config/skill_config.ini") != OK:
-		return
-	var section = "Tornado"
-	hp = cfg.get_value(section, "base_hp", hp)
-	speed = cfg.get_value(section, "base_speed", speed)
-	damage = cfg.get_value(section, "base_damage", damage)
-	knockback_amount = cfg.get_value(section, "base_knockback_amount", knockback_amount)
-	attack_size = cfg.get_value(section, "base_attack_size", attack_size) * (1 + player.spell_size)
-	knockback_amount = cfg.get_value(section, "level%d_knockback_amount" % level, knockback_amount)
-
 func _on_timer_timeout():
-	emit_signal("remove_from_array",self)
-	queue_free()
+	on_skill_destroyed()

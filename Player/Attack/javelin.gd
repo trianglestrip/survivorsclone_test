@@ -1,12 +1,6 @@
-extends Area2D
+extends "res://Utility/base_skill.gd"
 
-var level = 1
-var hp = 9999
-var speed = 200.0
-var damage = 10
-var knockback_amount = 100
 var paths = 1
-var attack_size = 1.0
 var attack_speed = 5.0
 
 var target = Vector2.ZERO
@@ -18,7 +12,6 @@ var reset_pos = Vector2.ZERO
 var spr_jav_reg = preload("res://Textures/Items/Weapons/javelin_3_new.png")
 var spr_jav_atk = preload("res://Textures/Items/Weapons/javelin_3_new_attack.png")
 
-@onready var player = get_tree().get_first_node_in_group("player")
 @onready var sprite = $Sprite2D
 @onready var collision = $CollisionShape2D
 @onready var attackTimer = get_node("%AttackTimer")
@@ -26,35 +19,47 @@ var spr_jav_atk = preload("res://Textures/Items/Weapons/javelin_3_new_attack.png
 @onready var resetPosTimer = get_node ("%ResetPosTimer")
 @onready var snd_attack = $snd_attack
 
-signal remove_from_array(object)
+func _init():
+	config_section = "Javelin"
+	skill_name = "Javelin"
 
-func _ready():
-	_load_skill_config()
-	update_javelin()
-	_on_reset_pos_timer_timeout()
-
-func _load_skill_config():
+func load_skill_config():
+	super.load_skill_config()
+	
 	var cfg = ConfigFile.new()
 	if cfg.load("res://config/skill_config.ini") != OK:
 		return
-	var section = "Javelin"
-	speed = cfg.get_value(section, "base_speed", speed)
-	damage = cfg.get_value(section, "base_damage", damage)
-	knockback_amount = cfg.get_value(section, "base_knockback_amount", knockback_amount)
-	attack_size = cfg.get_value(section, "base_attack_size", attack_size) * (1 + player.spell_size)
-	attack_speed = cfg.get_value(section, "base_attack_speed", attack_speed) * (1-player.spell_cooldown)
+	
+	attack_speed = cfg.get_value(config_section, "base_attack_speed", attack_speed)
+
+func apply_player_modifiers():
+	super.apply_player_modifiers()
+	if player:
+		attack_speed = attack_speed * (1 - player.spell_cooldown)
+
+func on_skill_ready():
+	update_javelin()
+	_on_reset_pos_timer_timeout()
 
 func update_javelin():
-	_load_skill_config()
+	load_skill_config()
+	apply_player_modifiers()
+	
 	level = player.javelin_level
 	var cfg = ConfigFile.new()
 	if cfg.load("res://config/skill_config.ini") != OK:
 		return
-	var section = "Javelin"
-	paths = cfg.get_value(section, "level%d_paths" % level, paths)
-	damage = cfg.get_value(section, "level%d_damage" % level, damage)
-	knockback_amount = cfg.get_value(section, "level%d_knockback_amount" % level, knockback_amount)
-	attack_speed = cfg.get_value(section, "base_attack_speed", attack_speed) * (1-player.spell_cooldown)
+	
+	var level_paths_key = "level%d_paths" % level
+	var level_damage_key = "level%d_damage" % level
+	var level_knockback_key = "level%d_knockback_amount" % level
+	
+	if cfg.has_section_key(config_section, level_paths_key):
+		paths = cfg.get_value(config_section, level_paths_key, paths)
+	if cfg.has_section_key(config_section, level_damage_key):
+		damage = cfg.get_value(config_section, level_damage_key, damage)
+	if cfg.has_section_key(config_section, level_knockback_key):
+		knockback_amount = cfg.get_value(config_section, level_knockback_key, knockback_amount)
 	
 	scale = Vector2(1.0,1.0) * attack_size
 	attackTimer.wait_time = attack_speed
