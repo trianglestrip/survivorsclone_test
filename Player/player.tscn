@@ -1,6 +1,6 @@
-[gd_scene load_steps=18 format=3 uid="uid://dncgepmkc4jf4"]
+[gd_scene format=3 uid="uid://dncgepmkc4jf4"]
 
-[ext_resource type="Script" path="res://Player/player.gd" id="1_37q80"]
+[ext_resource type="Script" uid="uid://x7dyj0ifp3h4" path="res://Player/player.gd" id="1_37q80"]
 [ext_resource type="Texture2D" uid="uid://doa3scrwgj2oq" path="res://Textures/Player/player_sprite.png" id="1_jefax"]
 [ext_resource type="PackedScene" uid="uid://xy3cvpwdy828" path="res://Utility/hurt_box.tscn" id="3_gs51i"]
 [ext_resource type="Texture2D" uid="uid://dx7xx6vfahxlq" path="res://Textures/GUI/exp_background.png" id="4_pbpj5"]
@@ -28,26 +28,26 @@ radius = 50.0
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_6vwp8"]
 
-[node name="Player" type="CharacterBody2D" groups=["player"]]
+[node name="Player" type="CharacterBody2D" unique_id=769747381 groups=["player"]]
 motion_mode = 1
 script = ExtResource("1_37q80")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=282775252]
 texture = ExtResource("1_jefax")
 hframes = 2
 
-[node name="Camera2D" type="Camera2D" parent="."]
+[node name="Camera2D" type="Camera2D" parent="." unique_id=1638887076]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=1714374652]
 position = Vector2(2, 3)
 shape = SubResource("CapsuleShape2D_nffdp")
 
-[node name="walkTimer" type="Timer" parent="."]
+[node name="walkTimer" type="Timer" parent="." unique_id=2064921974]
 unique_name_in_owner = true
 wait_time = 0.2
 one_shot = true
 
-[node name="HurtBox" parent="." instance=ExtResource("3_gs51i")]
+[node name="HurtBox" parent="." unique_id=1407038233 instance=ExtResource("3_gs51i")]
 collision_mask = 2
 HurtBoxType = 2
 
@@ -55,59 +55,59 @@ HurtBoxType = 2
 position = Vector2(2, 3)
 shape = SubResource("RectangleShape2D_yfi4i")
 
-[node name="Attack" type="Node2D" parent="."]
+[node name="Attack" type="Node2D" parent="." unique_id=517135782]
 
-[node name="IceSpearTimer" type="Timer" parent="Attack"]
+[node name="IceSpearTimer" type="Timer" parent="Attack" unique_id=805363858]
 unique_name_in_owner = true
 wait_time = 1.5
 
-[node name="IceSpearAttackTimer" type="Timer" parent="Attack/IceSpearTimer"]
+[node name="IceSpearAttackTimer" type="Timer" parent="Attack/IceSpearTimer" unique_id=1195983750]
 unique_name_in_owner = true
 wait_time = 0.075
 
-[node name="TornadoTimer" type="Timer" parent="Attack"]
+[node name="TornadoTimer" type="Timer" parent="Attack" unique_id=671963946]
 unique_name_in_owner = true
 wait_time = 3.0
 
-[node name="TornadoAttackTimer" type="Timer" parent="Attack/TornadoTimer"]
+[node name="TornadoAttackTimer" type="Timer" parent="Attack/TornadoTimer" unique_id=1097820788]
 unique_name_in_owner = true
 wait_time = 0.2
 
-[node name="JavelinBase" type="Node2D" parent="Attack"]
+[node name="JavelinBase" type="Node2D" parent="Attack" unique_id=723786608]
 unique_name_in_owner = true
 
-[node name="EnemyDetectionArea" type="Area2D" parent="."]
+[node name="EnemyDetectionArea" type="Area2D" parent="." unique_id=797117944]
 visible = false
 collision_layer = 4
 collision_mask = 4
 monitorable = false
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="EnemyDetectionArea"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="EnemyDetectionArea" unique_id=996897634]
 shape = SubResource("CircleShape2D_anwqc")
 
-[node name="GrabArea" type="Area2D" parent="."]
+[node name="GrabArea" type="Area2D" parent="." unique_id=1625642094]
 collision_layer = 0
 collision_mask = 8
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="GrabArea"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="GrabArea" unique_id=690744914]
 shape = SubResource("CircleShape2D_p2554")
 
-[node name="CollectArea" type="Area2D" parent="."]
+[node name="CollectArea" type="Area2D" parent="." unique_id=906016440]
 collision_layer = 0
 collision_mask = 8
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="CollectArea"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CollectArea" unique_id=1173505309]
 shape = SubResource("CircleShape2D_6vwp8")
 
-[node name="GUILayer" type="CanvasLayer" parent="."]
+[node name="GUILayer" type="CanvasLayer" parent="." unique_id=490916264]
 
-[node name="GUI" type="Control" parent="GUILayer"]
+[node name="GUI" type="Control" parent="GUILayer" unique_id=1547597682]
 layout_mode = 3
 anchors_preset = 0
 offset_right = 640.0
 offset_bottom = 360.0
 
-[node name="ExperienceBar" type="TextureProgressBar" parent="GUILayer/GUI"]
+[node name="ExperienceBar" type="TextureProgressBar" parent="GUILayer/GUI" unique_id=415853668]
 unique_name_in_owner = true
 layout_mode = 0
 offset_right = 640.0
@@ -115,7 +115,7 @@ offset_bottom = 40.0
 texture_under = ExtResource("4_pbpj5")
 texture_progress = ExtResource("5_5ive2")
 
-[node name="lbl_level" type="Label" parent="GUILayer/GUI/ExperienceBar"]
+[node name="lbl_level" type="Label" parent="GUILayer/GUI/ExperienceBar" unique_id=431291051]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 540.0
@@ -123,11 +123,11 @@ offset_right = 640.0
 offset_bottom = 20.0
 theme_override_fonts/font = ExtResource("6_okx7u")
 theme_override_font_sizes/font_size = 16
-text = "Level: 1"
+text = "等级：1"
 horizontal_alignment = 1
 vertical_alignment = 2
 
-[node name="HealthBar" type="TextureProgressBar" parent="GUILayer/GUI"]
+[node name="HealthBar" type="TextureProgressBar" parent="GUILayer/GUI" unique_id=1432564162]
 unique_name_in_owner = true
 self_modulate = Color(1, 1, 1, 0.392157)
 layout_mode = 0
@@ -139,7 +139,7 @@ value = 50.0
 texture_over = ExtResource("8_flesq")
 texture_progress = ExtResource("9_uker1")
 
-[node name="LevelUp" type="Panel" parent="GUILayer/GUI"]
+[node name="LevelUp" type="Panel" parent="GUILayer/GUI" unique_id=1177994388]
 unique_name_in_owner = true
 process_mode = 2
 visible = false
@@ -149,16 +149,16 @@ offset_top = 50.0
 offset_right = 1000.0
 offset_bottom = 300.0
 
-[node name="lbl_LevelUP" type="Label" parent="GUILayer/GUI/LevelUp"]
+[node name="lbl_LevelUP" type="Label" parent="GUILayer/GUI/LevelUp" unique_id=2079621698]
 layout_mode = 0
 offset_right = 200.0
 offset_bottom = 50.0
 theme_override_fonts/font = ExtResource("6_okx7u")
-text = "Level Up !"
+text = "升级！"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="UpgradeOptions" type="VBoxContainer" parent="GUILayer/GUI/LevelUp"]
+[node name="UpgradeOptions" type="VBoxContainer" parent="GUILayer/GUI/LevelUp" unique_id=882389002]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 10.0
@@ -166,12 +166,12 @@ offset_top = 50.0
 offset_right = 190.0
 offset_bottom = 100.0
 
-[node name="snd_levelup" type="AudioStreamPlayer" parent="GUILayer/GUI/LevelUp"]
+[node name="snd_levelup" type="AudioStreamPlayer" parent="GUILayer/GUI/LevelUp" unique_id=1090126869]
 unique_name_in_owner = true
 stream = ExtResource("7_wl7d2")
 volume_db = -10.0
 
-[node name="DeathPanel" type="Panel" parent="GUILayer/GUI"]
+[node name="DeathPanel" type="Panel" parent="GUILayer/GUI" unique_id=865564908]
 unique_name_in_owner = true
 process_mode = 2
 visible = false
@@ -181,35 +181,35 @@ offset_top = -266.0
 offset_right = 430.0
 offset_bottom = -16.0
 
-[node name="lbl_Result" type="Label" parent="GUILayer/GUI/DeathPanel"]
+[node name="lbl_Result" type="Label" parent="GUILayer/GUI/DeathPanel" unique_id=1590262418]
 unique_name_in_owner = true
 layout_mode = 0
 offset_right = 200.0
 offset_bottom = 50.0
 theme_override_fonts/font = ExtResource("6_okx7u")
-text = "Result"
+text = "结果"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="snd_victory" type="AudioStreamPlayer" parent="GUILayer/GUI/DeathPanel"]
+[node name="snd_victory" type="AudioStreamPlayer" parent="GUILayer/GUI/DeathPanel" unique_id=1226827083]
 unique_name_in_owner = true
 stream = ExtResource("10_rwm3p")
 volume_db = -10.0
 
-[node name="snd_lose" type="AudioStreamPlayer" parent="GUILayer/GUI/DeathPanel"]
+[node name="snd_lose" type="AudioStreamPlayer" parent="GUILayer/GUI/DeathPanel" unique_id=1614225539]
 unique_name_in_owner = true
 stream = ExtResource("11_28kfi")
 volume_db = -10.0
 
-[node name="btn_menu" parent="GUILayer/GUI/DeathPanel" instance=ExtResource("12_i8esf")]
+[node name="btn_menu" parent="GUILayer/GUI/DeathPanel" unique_id=973670981 instance=ExtResource("12_i8esf")]
 layout_mode = 0
 offset_left = 60.0
 offset_top = 200.0
 offset_right = 140.0
 offset_bottom = 230.0
-text = "Menu"
+text = "菜单"
 
-[node name="lblTimer" type="Label" parent="GUILayer/GUI"]
+[node name="lblTimer" type="Label" parent="GUILayer/GUI" unique_id=1583551610]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 280.0
@@ -222,7 +222,7 @@ text = "00:00"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="CollectedWeapons" type="GridContainer" parent="GUILayer/GUI"]
+[node name="CollectedWeapons" type="GridContainer" parent="GUILayer/GUI" unique_id=1439260105]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 8.0
@@ -231,7 +231,7 @@ offset_right = 208.0
 offset_bottom = 40.0
 columns = 10
 
-[node name="CollectedUpgrades" type="GridContainer" parent="GUILayer/GUI"]
+[node name="CollectedUpgrades" type="GridContainer" parent="GUILayer/GUI" unique_id=1865415837]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 8.0

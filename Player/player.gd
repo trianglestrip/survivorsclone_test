@@ -232,7 +232,7 @@ func set_expbar(set_value = 1, set_max_value = 100):
 
 func levelup():
 	sndLevelUp.play()
-	lblLevel.text = str("Level: ",experience_level)
+	lblLevel.text = str("等级：", experience_level)
 	var tween = levelPanel.create_tween()
 	tween.tween_property(levelPanel,"position",Vector2(220,50),0.2).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_IN)
 	tween.play()
@@ -364,10 +364,10 @@ func death():
 	tween.tween_property(deathPanel,"position",Vector2(220,50),3.0).set_trans(Tween.TRANS_QUINT).set_ease(Tween.EASE_OUT)
 	tween.play()
 	if time >= 300:
-		lblResult.text = "You Win"
+		lblResult.text = "你赢了"
 		sndVictory.play()
 	else:
-		lblResult.text = "You Lose"
+		lblResult.text = "你输了"
 		sndLose.play()
 
 

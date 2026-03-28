@@ -1,0 +1,13 @@
+.godot/
+*.uid
+*.import
+*.cache
+*.tmp
+*.log
+*.csv
+*.exe
+*.dll
+*.pdb
+*.obj
+*.pyc
+__pycache__/
