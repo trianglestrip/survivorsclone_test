@@ -227,15 +227,15 @@ F:\project\godot\Godot_v4.6.1-stable_win64_console.exe --headless --script tests
 敌人生成使用对象池复用实例，避免频繁创建/销毁：
 
 ```gdscript
-# enemy_spawner.gd
-var pool_name = "enemy_" + new_enemy.resource_path.get_file().get_basename()
-var enemy_spawn = ObjectPool.get_object(pool_name, new_enemy)
+# enemy_spawner_gpu.gd (GPU 实例化版本)
+# 使用 EnemyInstanceManager 的 MultiMesh 批量渲染
+var spawn_id = enemy_manager.spawn_enemy(enemy_type, position)
 ```
 
-**优势**：
-- 减少内存分配开销
-- 避免 GC 压力
-- 提升大量敌人时的性能
+**GPU 实例化优势**：
+- MultiMesh 批量渲染，性能提升 10-100 倍
+- 单次 draw call 渲染所有同类型敌人
+- 支持数千个敌人同时在屏幕上
 
 ### 敌人状态重置
 

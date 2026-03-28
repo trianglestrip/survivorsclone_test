@@ -12,7 +12,8 @@ class EnemyInstance:
 	var type_id: String
 	var active: bool = true
 	var flip_h: bool = false
-	var hurt_box: Area2D = null  # 碰撞检测区域
+	var hurt_box: Area2D = null  # 受击检测区域（被武器攻击）
+	var hit_box: Area2D = null   # 攻击检测区域（攻击玩家）
 	var anim_time: float = 0.0  # 动画时间
 	var anim_offset: float = 0.0  # 动画偏移（让敌人不同步）
 	
@@ -32,7 +33,8 @@ class EnemyTypeData:
 	var multimesh_instance: MultiMeshInstance2D
 	var instances: Array[EnemyInstance] = []
 	var config: Dictionary
-	var collision_shape: Shape2D = null  # 碰撞形状模板
+	var hurt_collision_shape: Shape2D = null  # HurtBox 碰撞形状（被攻击）
+	var hit_collision_shape: Shape2D = null   # HitBox 碰撞形状（攻击玩家）
 	var hframes: int = 1  # 精灵表帧数
 	
 	func _init(id: String, tex: Texture2D, cfg: Dictionary):
@@ -106,14 +108,15 @@ func _coerce_texture2d(pval: Variant) -> Texture2D:
 				return loaded
 	return null
 
-## 从 PackedScene 读取精灵与 HurtBox 碰撞数据。
+## 从 PackedScene 读取精灵与碰撞数据。
 ## 精灵数据用 SceneState 读取（快），碰撞形状用 instantiate（准确）。
 func _parse_enemy_scene_from_state(packed: PackedScene) -> Dictionary:
 	var out := {
 		"texture": null,
 		"sprite_scale": Vector2(0.75, 0.75),
 		"hframes": 1,
-		"collision_shape": null,
+		"hurt_collision_shape": null,
+		"hit_collision_shape": null,
 	}
 	if packed == null:
 		return out
@@ -138,13 +141,22 @@ func _parse_enemy_scene_from_state(packed: PackedScene) -> Dictionary:
 								out.hframes = pval
 	
 	# 用 instantiate 读取碰撞形状（准确，但需要临时实例化）
-	# 注意：只在初始化时执行一次，每种敌人一次，开销可接受
 	var temp_enemy := packed.instantiate()
+	
+	# 获取 HurtBox（被攻击）
 	var hurt_box := temp_enemy.get_node_or_null("HurtBox")
 	if hurt_box:
 		var shape_node := hurt_box.get_node_or_null("CollisionShape2D")
 		if shape_node and shape_node.shape:
-			out.collision_shape = shape_node.shape.duplicate()
+			out.hurt_collision_shape = shape_node.shape.duplicate()
+	
+	# 获取 HitBox（攻击玩家）
+	var hit_box := temp_enemy.get_node_or_null("HitBox")
+	if hit_box:
+		var shape_node := hit_box.get_node_or_null("CollisionShape2D")
+		if shape_node and shape_node.shape:
+			out.hit_collision_shape = shape_node.shape.duplicate()
+	
 	temp_enemy.queue_free()
 	
 	return out
@@ -184,12 +196,14 @@ func _initialize_enemy_types():
 		var texture: Texture2D = meta.texture
 		var sprite_scale: Vector2 = meta.sprite_scale
 		var hframes: int = meta.hframes
-		var collision_shape: Shape2D = meta.collision_shape
+		var hurt_shape: Shape2D = meta.hurt_collision_shape
+		var hit_shape: Shape2D = meta.hit_collision_shape
 		
 		var config: Dictionary = configs.get(enemy_id, {})
 		
 		var type_data := EnemyTypeData.new(enemy_id, texture, config)
-		type_data.collision_shape = collision_shape
+		type_data.hurt_collision_shape = hurt_shape
+		type_data.hit_collision_shape = hit_shape
 		type_data.hframes = hframes
 		
 		if texture and container:
@@ -222,8 +236,10 @@ func _initialize_enemy_types():
 		# 调试信息
 		if not texture:
 			push_warning("⚠️ 敌人 %s 没有纹理！" % enemy_id)
-		if not collision_shape:
-			push_warning("⚠️ 敌人 %s 没有碰撞形状！" % enemy_id)
+		if not hurt_shape:
+			push_warning("⚠️ 敌人 %s 没有 HurtBox 碰撞形状！" % enemy_id)
+		if not hit_shape:
+			push_warning("⚠️ 敌人 %s 没有 HitBox 碰撞形状！" % enemy_id)
 		if hframes > 1:
 			print("    📽 敌人 %s 有 %d 帧动画" % [enemy_id, hframes])
 		
@@ -283,30 +299,46 @@ func spawn_enemy(enemy_type: String, pos: Vector2) -> int:
 	var instance = EnemyInstance.new(pos, enemy_type, hp)
 	
 	# 创建碰撞检测区域
-	if type_data.collision_shape and container:
-		var hurt_box = Area2D.new()
-		# Layer 3 (Enemy) = bit 3 = 值 4
-		# 武器在 Layer 3，collision_mask = 4 表示检测 Layer 3
-		hurt_box.collision_layer = 4  # 敌人 HurtBox 在 Layer 3 (Enemy)
-		hurt_box.collision_mask = 4   # 检测 Layer 3（武器也在这层）
-		hurt_box.position = pos
-		hurt_box.monitoring = true
-		hurt_box.monitorable = true
-		hurt_box.add_to_group("enemy_hurtbox")  # 添加到组，便于调试
-		
-		var collision_shape_node = CollisionShape2D.new()
-		collision_shape_node.shape = type_data.collision_shape
-		hurt_box.add_child(collision_shape_node)
-		
-		# 连接信号
+	if container:
 		var instance_id = type_data.instances.size()
-		hurt_box.area_entered.connect(_on_enemy_hurt.bind(enemy_type, instance_id))
 		
-		container.add_child(hurt_box)
-		instance.hurt_box = hurt_box
-	else:
-		if not type_data.collision_shape:
-			push_warning("⚠️ 敌人 %s 没有碰撞形状！" % enemy_type)
+		# 创建 HurtBox（被武器攻击）
+		if type_data.hurt_collision_shape:
+			var hurt_box = Area2D.new()
+			hurt_box.collision_layer = 4  # Layer 3 (Enemy)
+			hurt_box.collision_mask = 4   # 检测 Layer 3（武器）
+			hurt_box.position = pos
+			hurt_box.monitoring = true
+			hurt_box.monitorable = true
+			hurt_box.add_to_group("enemy_hurtbox")
+			
+			var hurt_shape_node = CollisionShape2D.new()
+			hurt_shape_node.shape = type_data.hurt_collision_shape
+			hurt_box.add_child(hurt_shape_node)
+			
+			hurt_box.area_entered.connect(_on_enemy_hurt.bind(enemy_type, instance_id))
+			container.add_child(hurt_box)
+			instance.hurt_box = hurt_box
+		
+		# 创建 HitBox（攻击玩家）
+		if type_data.hit_collision_shape:
+			var hit_box = Area2D.new()
+			hit_box.collision_layer = 2  # Layer 2 (Enemy Attack)
+			hit_box.collision_mask = 1   # 检测 Layer 1（玩家）
+			hit_box.position = pos
+			hit_box.monitoring = true
+			hit_box.monitorable = true
+			hit_box.add_to_group("enemy_hitbox")
+			
+			var hit_shape_node = CollisionShape2D.new()
+			hit_shape_node.shape = type_data.hit_collision_shape
+			hit_box.add_child(hit_shape_node)
+			
+			var enemy_damage = type_data.config.get("enemy_damage", 1)
+			hit_box.area_entered.connect(_on_enemy_hit_player.bind(enemy_type, instance_id, enemy_damage))
+			
+			container.add_child(hit_box)
+			instance.hit_box = hit_box
 	
 	type_data.instances.append(instance)
 	
@@ -379,6 +411,8 @@ func _update_enemy_type(type_data: EnemyTypeData, delta: float):
 		# 更新碰撞体位置
 		if inst.hurt_box and is_instance_valid(inst.hurt_box):
 			inst.hurt_box.global_position = inst.position
+		if inst.hit_box and is_instance_valid(inst.hit_box):
+			inst.hit_box.global_position = inst.position
 		
 		# 准备 Transform
 		var scale_x = -1.0 if inst.flip_h else 1.0
@@ -458,6 +492,22 @@ func _on_enemy_hurt(area: Area2D, enemy_type: String, instance_id: int):
 			angle = area.global_position.direction_to(inst.position)
 			damage_enemy(enemy_type, instance_id, damage, angle, knockback_amount)
 
+# 敌人攻击玩家
+func _on_enemy_hit_player(area: Area2D, enemy_type: String, instance_id: int, enemy_damage: int):
+	if not enemy_types.has(enemy_type):
+		return
+	if instance_id < 0 or instance_id >= enemy_types[enemy_type].instances.size():
+		return
+	
+	var inst = enemy_types[enemy_type].instances[instance_id]
+	if not inst.active:
+		return
+	
+	# 检查是否是玩家的 HurtBox
+	if area.has_signal("hurt"):
+		var angle = inst.position.direction_to(area.global_position)
+		area.emit_signal("hurt", enemy_damage, angle, 0)
+
 func _kill_enemy(type_data: EnemyTypeData, inst: EnemyInstance, _instance_id: int):
 	inst.active = false
 	
@@ -465,6 +515,9 @@ func _kill_enemy(type_data: EnemyTypeData, inst: EnemyInstance, _instance_id: in
 	if inst.hurt_box and is_instance_valid(inst.hurt_box):
 		inst.hurt_box.queue_free()
 		inst.hurt_box = null
+	if inst.hit_box and is_instance_valid(inst.hit_box):
+		inst.hit_box.queue_free()
+		inst.hit_box = null
 	
 	# 生成死亡爆炸动画（直接实例化，避免对象池的父节点冲突）
 	var death_anim_scene = load("res://Enemy/explosion.tscn")

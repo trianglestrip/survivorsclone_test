@@ -51,7 +51,7 @@ Area2D + CollisionShape2D
 
 #### 2. 系统组件
 
-**EnemyInstanceManager** (`Utility/enemy_instance_manager.gd`):
+**EnemyInstanceManager** (`Enemy/enemy_instance_manager.gd`):
 - 管理所有敌人实例的逻辑数据
 - 为每种敌人类型创建 MultiMesh
 - 每帧更新敌人位置和状态

@@ -30,7 +30,7 @@ func _ready():
 	
 	# 加载并初始化敌人管理器
 	print("加载敌人管理器...")
-	var manager_script = load("res://Utility/enemy_instance_manager.gd")
+	var manager_script = load("res://Enemy/enemy_instance_manager.gd")
 	enemy_manager = manager_script.new()
 	enemy_manager.set_container(enemy_container)
 	enemy_manager.set_player(player)

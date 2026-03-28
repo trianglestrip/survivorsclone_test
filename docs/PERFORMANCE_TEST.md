@@ -66,10 +66,10 @@ F:\project\godot\Godot_v4.6.1-stable_win64_console.exe --headless tests/performa
 ### 2. 预热机制（Prewarm）
 
 ```gdscript
-# enemy_spawner.gd
+# enemy_spawner_gpu.gd (GPU 实例化版本)
 func _prewarm_enemy_pools():
-    for enemy_type in unique_enemies:
-        ObjectPool.prewarm_pool(pool_name, enemy_scene, 20)
+    # GPU 版本使用 EnemyInstanceManager，无需对象池预热
+    print("=== 预热敌人对象池 ===")
 ```
 
 **效果**：

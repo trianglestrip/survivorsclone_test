@@ -22,7 +22,7 @@ func _initialize_enemy_manager():
 	print("\n=== 初始化 GPU 敌人管理器 ===")
 	
 	# 创建敌人管理器
-	var manager_script = load("res://Utility/enemy_instance_manager.gd")
+	var manager_script = load("res://Enemy/enemy_instance_manager.gd")
 	enemy_manager = manager_script.new()
 	enemy_manager.set_container(self)
 	enemy_manager.set_player(player)

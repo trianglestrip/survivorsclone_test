@@ -282,6 +282,10 @@ func change_time(argtime: int = 0):
 	if get_s < 10:
 		get_s = str(0, get_s)
 	lblTimer.text = str(get_m, ":", get_s)
+	
+	# 检查是否达到胜利条件（5分钟 = 300秒）
+	if time >= 300:
+		death()
 
 func adjust_gui_collection(upgrade_id: String):
 	var upgrade_db = get_node_or_null("/root/UpgradeDb")
