@@ -70,8 +70,19 @@ func apply_player_modifiers():
 	if player == null:
 		return
 	
-	if player.has("spell_size"):
-		attack_size *= (1 + player.spell_size)
+	# 尝试通过多种方式获取 spell_size
+	var spell_size = 0.0
+	
+	# 方法 1：直接访问 stats 组件（新架构）
+	if player.has_node("PlayerStats") or (player.get("stats") != null):
+		var stats = player.get("stats")
+		if stats and stats.get("spell_size") != null:
+			spell_size = stats.spell_size
+	# 方法 2：直接属性访问（旧架构）
+	elif "spell_size" in player:
+		spell_size = player.spell_size
+	
+	attack_size *= (1 + spell_size)
 
 # 子类可以重写此方法来执行初始化逻辑
 func on_skill_ready():
