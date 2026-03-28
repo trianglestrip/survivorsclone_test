@@ -16,12 +16,12 @@ signal player_died()
 
 # 技能相关事件
 signal skill_upgraded(skill_name: String, new_level: int)
-signal skill_activated(skill_name: String)  # 预留：技能激活效果
-signal skill_unlocked(skill_name: String)  # 预留：技能解锁提示
+# signal skill_activated(skill_name: String)  # 预留：技能激活效果
+# signal skill_unlocked(skill_name: String)  # 预留：技能解锁提示
 
 # 升级相关事件
 signal upgrade_collected(upgrade_id: String)
-signal upgrade_available(upgrade_options: Array)  # 预留：升级选项生成
+# signal upgrade_available(upgrade_options: Array)  # 预留：升级选项生成
 
 # 游戏流程事件
 signal game_won()
