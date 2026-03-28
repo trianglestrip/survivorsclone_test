@@ -123,12 +123,37 @@ func apply_player_modifiers():
 
 ### Git 提交
 
-- **提交**: `ef2c484`
-- **消息**: "fix: 修复 BaseSkill 属性访问，武器现在能正常发射"
-- **状态**: ✅ 已推送到 origin/main
+修复分为多个提交完成：
+
+1. **ef2c484** - 修复 BaseSkill 属性访问
+   - 修复 `apply_player_modifiers()` 访问 player.stats 的方式
+   - 使用 `"stats" in player` 检查
+
+2. **fce53f3** - 修复 UpgradeDb 配置加载不完整
+   - 添加所有技能相关字段的加载（spell, set_level, add_baseammo等）
+   - 添加所有属性修改字段的加载
+   - 确保配置文件加载后数据完整
+
+### 完整修复列表
+
+#### 修复 1：BaseSkill 属性访问 ✅
+**问题**: `player.has("spell_size")` 无法检查组件中的属性  
+**修复**: 使用 `"stats" in player` 并访问 `player.stats.spell_size`  
+**验证**: ✅ 测试通过
+
+#### 修复 2：UpgradeDb 配置加载 ✅
+**问题**: 只加载基础字段，缺少技能和属性字段  
+**修复**: 添加完整的字段加载逻辑  
+**影响**: 所有升级现在都能正确加载
+
+#### 修复 3：UpgradeDb 默认配置 ✅
+**问题**: 默认配置缺少技能数据  
+**修复**: 添加完整的 icespear1, tornado1, javelin1 默认配置  
+**用途**: 当配置文件加载失败时的回退
 
 ---
 
 **修复日期**: 2026-03-28  
 **严重程度**: 🔴 严重（游戏核心功能无法使用）  
-**修复状态**: ✅ 已修复并验证
+**修复状态**: ✅ 已修复并验证  
+**测试状态**: ✅ 所有测试通过
