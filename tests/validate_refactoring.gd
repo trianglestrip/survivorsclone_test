@@ -13,7 +13,7 @@ func _init():
 	print("阶段 1: 基础架构组件")
 	all_passed = check_file("res://Utility/event_bus.gd", "EventBus") and all_passed
 	all_passed = check_file("res://Utility/config_manager.gd", "ConfigManager") and all_passed
-	all_passed = check_file("res://Utility/base_skill.gd", "BaseSkill") and all_passed
+	all_passed = check_file("res://Skills/base_skill.gd", "BaseSkill") and all_passed
 	all_passed = check_file("res://Utility/Effects/base_effect.gd", "BaseEffect") and all_passed
 	all_passed = check_file("res://Utility/Effects/stat_modifier_effect.gd", "StatModifierEffect") and all_passed
 	all_passed = check_file("res://Utility/Effects/skill_unlock_effect.gd", "SkillUnlockEffect") and all_passed
@@ -22,15 +22,15 @@ func _init():
 	
 	# 阶段 2 验证
 	print("\n阶段 2: 技能系统重构")
-	all_passed = check_file("res://Utility/skill_registry.gd", "SkillRegistry") and all_passed
-	all_passed = check_skill_inheritance("res://Player/Attack/ice_spear.gd", "IceSpear") and all_passed
-	all_passed = check_skill_inheritance("res://Player/Attack/tornado.gd", "Tornado") and all_passed
-	all_passed = check_skill_inheritance("res://Player/Attack/javelin.gd", "Javelin") and all_passed
+	all_passed = check_file("res://Skills/skill_registry.gd", "SkillRegistry") and all_passed
+	all_passed = check_skill_inheritance("res://Skills/ice_spear.gd", "IceSpear") and all_passed
+	all_passed = check_skill_inheritance("res://Skills/tornado.gd", "Tornado") and all_passed
+	all_passed = check_skill_inheritance("res://Skills/javelin.gd", "Javelin") and all_passed
 	
 	# 阶段 3 验证
 	print("\n阶段 3: 玩家组件")
 	all_passed = check_file("res://Player/Components/player_stats.gd", "PlayerStats") and all_passed
-	all_passed = check_file("res://Player/Components/skill_manager.gd", "SkillManager") and all_passed
+	all_passed = check_file("res://Skills/skill_instance_manager.gd", "SkillInstanceManager") and all_passed
 	all_passed = check_file("res://Player/Components/experience_manager.gd", "ExperienceManager") and all_passed
 	all_passed = check_file("res://Player/Components/upgrade_manager.gd", "UpgradeManager") and all_passed
 	

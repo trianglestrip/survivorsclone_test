@@ -3,8 +3,6 @@ extends Node
 # GPU 实例化敌人管理器
 # 使用 MultiMesh 批量渲染同类型敌人，大幅提升性能
 
-const DEBUG_LOGGING := false  # 编辑器模式下关闭日志以加快启动
-
 class EnemyInstance:
 	var position: Vector2
 	var velocity: Vector2
@@ -26,7 +24,7 @@ class EnemyInstance:
 		max_hp = health
 		velocity = Vector2.ZERO
 		knockback = Vector2.ZERO
-		anim_offset = randf() * 0.6  # 随机偏移 0-0.6 秒
+		anim_offset = randf() * GameConfig.ENEMY_ANIM_OFFSET_RANGE
 
 # 敌人类型数据
 class EnemyTypeData:
@@ -166,26 +164,26 @@ func _parse_enemy_scene_from_state(packed: PackedScene) -> Dictionary:
 func _initialize_enemy_types():
 	var start_time := Time.get_ticks_msec()
 	
-	var enemy_ids = EnemyRegistry.get_all_enemy_ids()
-	if DEBUG_LOGGING:
+	var enemy_ids = EnemyRegistry.get_all_item_ids()
+	if GameConfig.DEBUG_LOGGING:
 		print("  开始初始化 %d 种敌人类型..." % enemy_ids.size())
 	
 	# 异步并行加载配置和场景数据
 	var config_load_start := Time.get_ticks_msec()
 	var configs := _load_all_enemy_configs_from_ini()
 	var config_load_time := Time.get_ticks_msec() - config_load_start
-	if DEBUG_LOGGING:
+	if GameConfig.DEBUG_LOGGING:
 		print("    ⏱ 配置加载: %d ms" % config_load_time)
 	
 	# 批量解析场景数据（CPU 密集，但很快）
 	var scene_parse_start := Time.get_ticks_msec()
 	var scene_metas := {}
 	for enemy_id in enemy_ids:
-		var scene = EnemyRegistry.get_enemy_scene(enemy_id)
+		var scene = EnemyRegistry.get_item_scene(enemy_id)
 		if scene:
 			scene_metas[enemy_id] = _parse_enemy_scene_from_state(scene)
 	var scene_parse_time := Time.get_ticks_msec() - scene_parse_start
-	if DEBUG_LOGGING:
+	if GameConfig.DEBUG_LOGGING:
 		print("    ⏱ 场景解析: %d ms" % scene_parse_time)
 	
 	# 创建 MultiMesh（分帧执行，避免卡顿）
@@ -246,7 +244,7 @@ func _initialize_enemy_types():
 		if not hit_shape:
 			push_warning("⚠️ 敌人 %s 没有 HitBox 碰撞形状！" % enemy_id)
 		
-		if DEBUG_LOGGING and hframes > 1:
+		if GameConfig.DEBUG_LOGGING and hframes > 1:
 			print("    📽 敌人 %s 有 %d 帧动画" % [enemy_id, hframes])
 		
 		# 每创建一个类型，让出一帧（避免长时间阻塞）
@@ -256,7 +254,7 @@ func _initialize_enemy_types():
 	var mesh_create_time := Time.get_ticks_msec() - mesh_create_start
 	var total_time := Time.get_ticks_msec() - start_time
 	
-	if DEBUG_LOGGING:
+	if GameConfig.DEBUG_LOGGING:
 		print("    ⏱ MultiMesh 创建: %d ms" % mesh_create_time)
 		print("✓ GPU 实例化系统就绪（共 %d 种敌人，总耗时 %d ms）\n" % [enemy_ids.size(), total_time])
 	
@@ -274,7 +272,7 @@ func _parse_enemy_config_line(section: String, key: String, value: String, into:
 ## 只读一次 enemy_config.ini，避免每种敌人整文件扫一遍。
 func _load_all_enemy_configs_from_ini() -> Dictionary:
 	var result: Dictionary = {}
-	var file = FileAccess.open("res://config/enemy_config.ini", FileAccess.READ)
+	var file = FileAccess.open(GameConfig.PATH_ENEMY_CONFIG, FileAccess.READ)
 	if file == null:
 		return result
 	var current_section: String = ""
@@ -435,7 +433,7 @@ func _update_enemy_type(type_data: EnemyTypeData, delta: float):
 		# 准备 Color（动画帧）
 		if type_data.hframes > 1:
 			var total_time = inst.anim_time + inst.anim_offset
-			var current_frame = int(total_time / 0.3) % type_data.hframes
+			var current_frame = int(total_time / GameConfig.ENEMY_ANIM_FRAME_DURATION) % type_data.hframes
 			# 映射到 [0, 1) 范围，确保 Shader 能正确计算帧索引
 			# 例如 2 帧：frame 0 -> 0.0, frame 1 -> 0.5
 			var frame_normalized = (float(current_frame) + 0.5) / float(type_data.hframes)
@@ -477,11 +475,11 @@ func damage_enemy(enemy_type: String, instance_id: int, damage: int, angle: Vect
 # 碰撞处理
 func _on_enemy_hurt(area: Area2D, enemy_type: String, instance_id: int):
 	if not area.is_in_group("attack"):
-		if DEBUG_LOGGING:
+		if GameConfig.DEBUG_COLLISION:
 			print("⚠️ 碰撞区域不在 attack 组: ", area.name)
 		return
 	
-	if DEBUG_LOGGING:
+	if GameConfig.DEBUG_COLLISION:
 		print("✓ 敌人受击: %s[%d] 被 %s 击中" % [enemy_type, instance_id, area.name])
 	
 	# 获取武器伤害

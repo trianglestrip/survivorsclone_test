@@ -20,7 +20,7 @@ func _init():
 	print("  通过 _get 访问: ", mock_player.spell_size)
 	
 	# 创建技能
-	var base_skill_script = load("res://Utility/base_skill.gd")
+	var base_skill_script = load("res://Skills/base_skill.gd")
 	var skill = base_skill_script.new()
 	skill.player = mock_player
 	skill.attack_size = 1.0

@@ -19,7 +19,7 @@ func _ready():
 	stats = stats_script.new()
 	test_player.add_child(stats)
 	
-	var skill_mgr_script = load("res://Player/Components/skill_manager.gd")
+	var skill_mgr_script = load("res://Skills/skill_manager.gd")
 	skill_mgr = skill_mgr_script.new()
 	skill_mgr.set_player(test_player)
 	test_player.add_child(skill_mgr)

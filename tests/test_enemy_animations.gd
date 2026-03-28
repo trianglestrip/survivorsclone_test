@@ -12,7 +12,7 @@ func _init():
 	]
 	
 	for enemy_id in enemies:
-		var scene := EnemyRegistry.get_enemy_scene(enemy_id)
+		var scene := EnemyRegistry.get_item_scene(enemy_id)
 		if scene:
 			var state := scene.get_state()
 			var hframes := 1

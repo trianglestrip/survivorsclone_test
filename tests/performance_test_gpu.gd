@@ -54,7 +54,7 @@ func _ready():
 func _spawn_enemies():
 	print("\n直接生成 500 个敌人...")
 	
-	var enemy_types = EnemyRegistry.get_all_enemy_ids()
+	var enemy_types = EnemyRegistry.get_all_item_ids()
 	var spawn_positions = []
 	
 	# 预先计算所有生成位置

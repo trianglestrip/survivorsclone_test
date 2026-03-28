@@ -71,7 +71,7 @@ func test_stage1() -> bool:
 	var tests = [
 		check_file("res://Utility/event_bus.gd", "EventBus"),
 		check_file("res://Utility/config_manager.gd", "ConfigManager"),
-		check_file("res://Utility/base_skill.gd", "BaseSkill"),
+		check_file("res://Skills/base_skill.gd", "BaseSkill"),
 		check_file("res://Utility/Effects/base_effect.gd", "BaseEffect"),
 		check_file("res://Utility/Effects/stat_modifier_effect.gd", "StatModifierEffect"),
 	]
@@ -79,17 +79,17 @@ func test_stage1() -> bool:
 
 func test_stage2() -> bool:
 	var tests = [
-		check_file("res://Utility/skill_registry.gd", "SkillRegistry"),
-		check_skill_inheritance("res://Player/Attack/ice_spear.gd", "IceSpear"),
-		check_skill_inheritance("res://Player/Attack/tornado.gd", "Tornado"),
-		check_skill_inheritance("res://Player/Attack/javelin.gd", "Javelin"),
+		check_file("res://Skills/skill_registry.gd", "SkillRegistry"),
+		check_skill_inheritance("res://Skills/ice_spear.gd", "IceSpear"),
+		check_skill_inheritance("res://Skills/tornado.gd", "Tornado"),
+		check_skill_inheritance("res://Skills/javelin.gd", "Javelin"),
 	]
 	return tests.all(func(x): return x)
 
 func test_stage3() -> bool:
 	var tests = [
 		check_file("res://Player/Components/player_stats.gd", "PlayerStats"),
-		check_file("res://Player/Components/skill_manager.gd", "SkillManager"),
+		check_file("res://Skills/skill_instance_manager.gd", "SkillInstanceManager"),
 		check_file("res://Player/Components/experience_manager.gd", "ExperienceManager"),
 		check_file("res://Player/Components/upgrade_manager.gd", "UpgradeManager"),
 	]

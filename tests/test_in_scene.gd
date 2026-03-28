@@ -32,7 +32,7 @@ func _ready():
 	var stats = stats_script.new()
 	add_child(stats)
 	
-	var skill_mgr_script = load("res://Player/Components/skill_manager.gd")
+	var skill_mgr_script = load("res://Skills/skill_manager.gd")
 	var skill_mgr = skill_mgr_script.new()
 	add_child(skill_mgr)
 	

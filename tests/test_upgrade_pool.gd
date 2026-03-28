@@ -51,7 +51,7 @@ func _init():
 	var stats_script = load("res://Player/Components/player_stats.gd")
 	var stats = stats_script.new()
 	
-	var skill_mgr_script = load("res://Player/Components/skill_manager.gd")
+	var skill_mgr_script = load("res://Skills/skill_manager.gd")
 	var skill_mgr = skill_mgr_script.new()
 	
 	var upgrade_mgr_script = load("res://Player/Components/upgrade_manager.gd")

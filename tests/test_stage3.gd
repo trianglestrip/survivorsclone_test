@@ -66,7 +66,7 @@ func test_player_stats() -> bool:
 func test_skill_manager() -> bool:
 	print("测试 2: SkillManager 组件")
 	
-	var skill_mgr_script = load("res://Player/Components/skill_manager.gd")
+	var skill_mgr_script = load("res://Skills/skill_manager.gd")
 	if skill_mgr_script == null:
 		print("  ✗ 无法加载 skill_manager.gd")
 		return false
@@ -139,7 +139,7 @@ func test_upgrade_manager() -> bool:
 		return false
 	
 	var stats_script = load("res://Player/Components/player_stats.gd")
-	var skill_mgr_script = load("res://Player/Components/skill_manager.gd")
+	var skill_mgr_script = load("res://Skills/skill_manager.gd")
 	
 	var stats = stats_script.new()
 	var skill_mgr = skill_mgr_script.new()

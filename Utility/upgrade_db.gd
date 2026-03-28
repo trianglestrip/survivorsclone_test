@@ -1,7 +1,5 @@
 extends Node
 
-const DEBUG_LOGGING := false  # 编辑器模式下关闭日志以加快启动
-
 var UPGRADES = {}
 
 func _ready():
@@ -10,15 +8,15 @@ func _ready():
 
 func _load_upgrade_config():
 	var start_time := Time.get_ticks_msec()
-	if DEBUG_LOGGING:
+	if GameConfig.DEBUG_LOGGING:
 		print("\n=== 加载升级配置 ===")
-		print("配置文件: res://config/upgrade_config.ini")
+		print("配置文件: %s" % GameConfig.PATH_UPGRADE_CONFIG)
 	
 	# 使用 FileAccess 直接读取文件以避免编码问题
-	var file = FileAccess.open("res://config/upgrade_config.ini", FileAccess.READ)
+	var file = FileAccess.open(GameConfig.PATH_UPGRADE_CONFIG, FileAccess.READ)
 	
 	if file == null:
-		push_error("❌ 无法打开配置文件: res://config/upgrade_config.ini")
+		push_error("❌ 无法打开配置文件: %s" % GameConfig.PATH_UPGRADE_CONFIG)
 		push_error("文件不存在或无法访问！")
 		push_error("游戏无法继续，请确保配置文件存在！")
 		get_tree().quit(1)
@@ -80,12 +78,12 @@ func _load_upgrade_config():
 		return
 	
 	var total_time := Time.get_ticks_msec() - start_time
-	if DEBUG_LOGGING:
+	if GameConfig.DEBUG_LOGGING:
 		print("✓ 成功解析 %d 个升级配置 (耗时 %d ms)" % [parsed_sections, total_time])
 
 # 验证升级配置的完整性
 func _validate_upgrades():
-	if DEBUG_LOGGING:
+	if GameConfig.DEBUG_LOGGING:
 		print("\n=== 升级配置验证 ===")
 		print("总升级数: ", UPGRADES.size())
 	
@@ -123,7 +121,7 @@ func _validate_upgrades():
 			_:
 				errors.append("升级 '%s' 类型无效: %s" % [upgrade_id, type])
 	
-	if DEBUG_LOGGING:
+	if GameConfig.DEBUG_LOGGING:
 		print("  武器: ", weapons)
 		print("  属性升级: ", upgrades)
 		print("  道具: ", items)
@@ -146,7 +144,7 @@ func _validate_upgrades():
 			push_error("  - " + error)
 		push_error("请修复配置文件！")
 		get_tree().quit(1)
-	elif DEBUG_LOGGING:
+	elif GameConfig.DEBUG_LOGGING:
 		print("  ✓ 配置验证通过")
 	
 	var sep = "============================================================"

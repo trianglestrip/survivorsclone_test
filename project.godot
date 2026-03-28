@@ -21,10 +21,11 @@ config/icon="res://icon.svg"
 
 [autoload]
 
+GameConfig="*res://Utility/game_config.gd"
 EventBus="*res://Utility/event_bus.gd"
 ConfigManager="*res://Utility/config_manager.gd"
-SkillRegistry="*res://Utility/skill_registry.gd"
-EnemyRegistry="*res://Utility/enemy_registry.gd"
+SkillRegistry="*res://Skills/skill_registry.gd"
+EnemyRegistry="*res://Enemy/enemy_registry.gd"
 ObjectPool="*res://Utility/object_pool.gd"
 UpgradeDb="*res://Utility/upgrade_db.tscn"
 AudioManager="*res://Utility/audio_manager.gd"

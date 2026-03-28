@@ -28,7 +28,7 @@ func _init():
 func test_skill_registry() -> bool:
 	print("测试 1: SkillRegistry 技能注册系统")
 	
-	var registry_script = load("res://Utility/skill_registry.gd")
+	var registry_script = load("res://Skills/skill_registry.gd")
 	if registry_script == null:
 		print("  ✗ 无法加载 skill_registry.gd")
 		return false
@@ -55,7 +55,7 @@ func test_skill_registry() -> bool:
 func test_ice_spear_refactor() -> bool:
 	print("测试 2: IceSpear 重构验证")
 	
-	var ice_spear_script = load("res://Player/Attack/ice_spear.gd")
+	var ice_spear_script = load("res://Skills/ice_spear.gd")
 	if ice_spear_script == null:
 		print("  ✗ 无法加载 ice_spear.gd")
 		return false
@@ -76,7 +76,7 @@ func test_ice_spear_refactor() -> bool:
 func test_tornado_refactor() -> bool:
 	print("测试 3: Tornado 重构验证")
 	
-	var tornado_script = load("res://Player/Attack/tornado.gd")
+	var tornado_script = load("res://Skills/tornado.gd")
 	if tornado_script == null:
 		print("  ✗ 无法加载 tornado.gd")
 		return false
@@ -97,7 +97,7 @@ func test_tornado_refactor() -> bool:
 func test_javelin_refactor() -> bool:
 	print("测试 4: Javelin 重构验证")
 	
-	var javelin_script = load("res://Player/Attack/javelin.gd")
+	var javelin_script = load("res://Skills/javelin.gd")
 	if javelin_script == null:
 		print("  ✗ 无法加载 javelin.gd")
 		return false

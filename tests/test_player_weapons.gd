@@ -46,7 +46,7 @@ func test_upgrade_db():
 		print("  ✗ icespear1 不存在于 UPGRADES")
 
 func test_skill_manager():
-	var skill_mgr_script = load("res://Player/Components/skill_manager.gd")
+	var skill_mgr_script = load("res://Skills/skill_manager.gd")
 	var skill_mgr = skill_mgr_script.new()
 	
 	print("  初始 icespear 等级: ", skill_mgr.get_skill_level("icespear"))
@@ -63,7 +63,7 @@ func test_upgrade_application():
 	var stats_script = load("res://Player/Components/player_stats.gd")
 	var stats = stats_script.new()
 	
-	var skill_mgr_script = load("res://Player/Components/skill_manager.gd")
+	var skill_mgr_script = load("res://Skills/skill_manager.gd")
 	var skill_mgr = skill_mgr_script.new()
 	
 	var upgrade_mgr_script = load("res://Player/Components/upgrade_manager.gd")
