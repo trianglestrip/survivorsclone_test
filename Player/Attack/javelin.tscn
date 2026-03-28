@@ -10,7 +10,7 @@ size = Vector2(4.24264, 32.5269)
 [node name="Javelin" type="Area2D" groups=["attack"]]
 top_level = true
 collision_layer = 4
-collision_mask = 0
+collision_mask = 4
 script = ExtResource("1_ro7n8")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]

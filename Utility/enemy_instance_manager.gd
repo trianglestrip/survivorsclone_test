@@ -106,7 +106,8 @@ func _coerce_texture2d(pval: Variant) -> Texture2D:
 				return loaded
 	return null
 
-## 从 PackedScene 的 SceneState 读取精灵与 HurtBox 碰撞数据，不实例化节点。
+## 从 PackedScene 读取精灵与 HurtBox 碰撞数据。
+## 精灵数据用 SceneState 读取（快），碰撞形状用 instantiate（准确）。
 func _parse_enemy_scene_from_state(packed: PackedScene) -> Dictionary:
 	var out := {
 		"texture": null,
@@ -116,34 +117,36 @@ func _parse_enemy_scene_from_state(packed: PackedScene) -> Dictionary:
 	}
 	if packed == null:
 		return out
+	
+	# 用 SceneState 读取精灵数据（快速，无副作用）
 	var state := packed.get_state()
-	if state == null:
-		return out
-	for i in state.get_node_count():
-		var node_type := state.get_node_type(i)
-		var node_path := state.get_node_path(i)
-		var path_str := str(node_path)
-		if node_type == &"Sprite2D":
-			for j in state.get_node_property_count(i):
-				var pname: StringName = state.get_node_property_name(i, j)
-				var pval: Variant = state.get_node_property_value(i, j)
-				match pname:
-					&"texture":
-						out.texture = _coerce_texture2d(pval)
-					&"scale":
-						if pval is Vector2:
-							out.sprite_scale = pval
-					&"hframes":
-						if pval is int and pval > 0:
-							out.hframes = pval
-		elif node_type == &"CollisionShape2D" and path_str.contains("HurtBox"):
-			for j in state.get_node_property_count(i):
-				if state.get_node_property_name(i, j) != &"shape":
-					continue
-				var pval: Variant = state.get_node_property_value(i, j)
-				if pval is Shape2D:
-					out.collision_shape = pval.duplicate()
-					break
+	if state:
+		for i in state.get_node_count():
+			var node_type := state.get_node_type(i)
+			if node_type == &"Sprite2D":
+				for j in state.get_node_property_count(i):
+					var pname: StringName = state.get_node_property_name(i, j)
+					var pval: Variant = state.get_node_property_value(i, j)
+					match pname:
+						&"texture":
+							out.texture = _coerce_texture2d(pval)
+						&"scale":
+							if pval is Vector2:
+								out.sprite_scale = pval
+						&"hframes":
+							if pval is int and pval > 0:
+								out.hframes = pval
+	
+	# 用 instantiate 读取碰撞形状（准确，但需要临时实例化）
+	# 注意：只在初始化时执行一次，每种敌人一次，开销可接受
+	var temp_enemy := packed.instantiate()
+	var hurt_box := temp_enemy.get_node_or_null("HurtBox")
+	if hurt_box:
+		var shape_node := hurt_box.get_node_or_null("CollisionShape2D")
+		if shape_node and shape_node.shape:
+			out.collision_shape = shape_node.shape.duplicate()
+	temp_enemy.queue_free()
+	
 	return out
 
 func _initialize_enemy_types():
