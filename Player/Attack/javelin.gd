@@ -29,45 +29,32 @@ var spr_jav_atk = preload("res://Textures/Items/Weapons/javelin_3_new_attack.png
 signal remove_from_array(object)
 
 func _ready():
+	_load_skill_config()
 	update_javelin()
 	_on_reset_pos_timer_timeout()
 
+func _load_skill_config():
+	var cfg = ConfigFile.new()
+	if cfg.load("res://config/skill_config.ini") != OK:
+		return
+	var section = "Javelin"
+	speed = cfg.get_value(section, "base_speed", speed)
+	damage = cfg.get_value(section, "base_damage", damage)
+	knockback_amount = cfg.get_value(section, "base_knockback_amount", knockback_amount)
+	attack_size = cfg.get_value(section, "base_attack_size", attack_size) * (1 + player.spell_size)
+	attack_speed = cfg.get_value(section, "base_attack_speed", attack_speed) * (1-player.spell_cooldown)
+
 func update_javelin():
+	_load_skill_config()
 	level = player.javelin_level
-	match level:
-		1:
-			hp = 9999
-			speed = 200.0
-			damage = 10
-			knockback_amount = 100
-			paths = 1
-			attack_size = 1.0 * (1 + player.spell_size)
-			attack_speed = 5.0 * (1-player.spell_cooldown)
-		2:
-			hp = 9999
-			speed = 200.0
-			damage = 10
-			knockback_amount = 100
-			paths = 2
-			attack_size = 1.0 * (1 + player.spell_size)
-			attack_speed = 5.0 * (1-player.spell_cooldown)
-		3:
-			hp = 9999
-			speed = 200.0
-			damage = 10
-			knockback_amount = 100
-			paths = 3
-			attack_size = 1.0 * (1 + player.spell_size)
-			attack_speed = 5.0 * (1-player.spell_cooldown)
-		4:
-			hp = 9999
-			speed = 200.0
-			damage = 15
-			knockback_amount = 120
-			paths = 3
-			attack_size = 1.0 * (1 + player.spell_size)
-			attack_speed = 5.0 * (1-player.spell_cooldown)
-			
+	var cfg = ConfigFile.new()
+	if cfg.load("res://config/skill_config.ini") != OK:
+		return
+	var section = "Javelin"
+	paths = cfg.get_value(section, "level%d_paths" % level, paths)
+	damage = cfg.get_value(section, "level%d_damage" % level, damage)
+	knockback_amount = cfg.get_value(section, "level%d_knockback_amount" % level, knockback_amount)
+	attack_speed = cfg.get_value(section, "base_attack_speed", attack_speed) * (1-player.spell_cooldown)
 	
 	scale = Vector2(1.0,1.0) * attack_size
 	attackTimer.wait_time = attack_speed

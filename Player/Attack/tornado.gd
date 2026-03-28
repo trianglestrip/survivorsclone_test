@@ -17,33 +17,8 @@ signal remove_from_array(object)
 @onready var player = get_tree().get_first_node_in_group("player")
 
 func _ready():
-	match level:
-		1:
-			hp = 9999
-			speed = 100.0
-			damage = 5
-			knockback_amount = 100
-			attack_size = 1.0 * (1 + player.spell_size)
-		2:
-			hp = 9999
-			speed = 100.0
-			damage = 5
-			knockback_amount = 100
-			attack_size = 1.0 * (1 + player.spell_size)
-		3:
-			hp = 9999
-			speed = 100.0
-			damage = 5
-			knockback_amount = 100
-			attack_size = 1.0 * (1 + player.spell_size)
-		4:
-			hp = 9999
-			speed = 100.0
-			damage = 5
-			knockback_amount = 125
-			attack_size = 1.0 * (1 + player.spell_size)
+	_load_skill_config()
 
-			
 	var move_to_less = Vector2.ZERO
 	var move_to_more = Vector2.ZERO
 	match last_movement:
@@ -89,6 +64,18 @@ func _ready():
 
 func _physics_process(delta):
 	position += angle*speed*delta
+
+func _load_skill_config():
+	var cfg = ConfigFile.new()
+	if cfg.load("res://config/skill_config.ini") != OK:
+		return
+	var section = "Tornado"
+	hp = cfg.get_value(section, "base_hp", hp)
+	speed = cfg.get_value(section, "base_speed", speed)
+	damage = cfg.get_value(section, "base_damage", damage)
+	knockback_amount = cfg.get_value(section, "base_knockback_amount", knockback_amount)
+	attack_size = cfg.get_value(section, "base_attack_size", attack_size) * (1 + player.spell_size)
+	knockback_amount = cfg.get_value(section, "level%d_knockback_amount" % level, knockback_amount)
 
 func _on_timer_timeout():
 	emit_signal("remove_from_array",self)

@@ -22,8 +22,22 @@ signal remove_from_array(object)
 
 
 func _ready():
+	_load_config()
 	anim.play("walk")
 	hitBox.damage = enemy_damage
+
+func _load_config():
+	var cfg = ConfigFile.new()
+	if cfg.load("res://config/enemy_config.ini") != OK:
+		return
+	var section = get_name()
+	if not cfg.has_section(section):
+		return
+	movement_speed = cfg.get_value(section, "movement_speed", movement_speed)
+	hp = cfg.get_value(section, "hp", hp)
+	knockback_recovery = cfg.get_value(section, "knockback_recovery", knockback_recovery)
+	experience = cfg.get_value(section, "experience", experience)
+	enemy_damage = cfg.get_value(section, "enemy_damage", enemy_damage)
 
 func _physics_process(_delta):
 	knockback = knockback.move_toward(Vector2.ZERO, knockback_recovery)

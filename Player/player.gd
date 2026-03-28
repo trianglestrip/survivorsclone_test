@@ -247,52 +247,10 @@ func levelup():
 	get_tree().paused = true
 
 func upgrade_character(upgrade):
-	match upgrade:
-		"icespear1":
-			icespear_level = 1
-			icespear_baseammo += 1
-		"icespear2":
-			icespear_level = 2
-			icespear_baseammo += 1
-		"icespear3":
-			icespear_level = 3
-		"icespear4":
-			icespear_level = 4
-			icespear_baseammo += 2
-		"tornado1":
-			tornado_level = 1
-			tornado_baseammo += 1
-		"tornado2":
-			tornado_level = 2
-			tornado_baseammo += 1
-		"tornado3":
-			tornado_level = 3
-			tornado_attackspeed -= 0.5
-		"tornado4":
-			tornado_level = 4
-			tornado_baseammo += 1
-		"javelin1":
-			javelin_level = 1
-			javelin_ammo = 1
-		"javelin2":
-			javelin_level = 2
-		"javelin3":
-			javelin_level = 3
-		"javelin4":
-			javelin_level = 4
-		"armor1","armor2","armor3","armor4":
-			armor += 1
-		"speed1","speed2","speed3","speed4":
-			movement_speed += 20.0
-		"tome1","tome2","tome3","tome4":
-			spell_size += 0.10
-		"scroll1","scroll2","scroll3","scroll4":
-			spell_cooldown += 0.05
-		"ring1","ring2":
-			additional_attacks += 1
-		"food":
-			hp += 20
-			hp = clamp(hp,0,maxhp)
+	var config = UpgradeDb.UPGRADES.get(upgrade, null)
+	if config == null:
+		return
+	_apply_upgrade_effect(config)
 	adjust_gui_collection(upgrade)
 	attack()
 	var option_children = upgradeOptions.get_children()
@@ -304,7 +262,31 @@ func upgrade_character(upgrade):
 	levelPanel.position = Vector2(800,50)
 	get_tree().paused = false
 	calculate_experience(0)
-	
+
+func _apply_upgrade_effect(config):
+	if config.has("spell"):
+		match config["spell"]:
+			"IceSpear":
+				icespear_level = config.get("set_level", icespear_level)
+				icespear_baseammo += config.get("add_baseammo", 0)
+			"Tornado":
+				tornado_level = config.get("set_level", tornado_level)
+				tornado_baseammo += config.get("add_baseammo", 0)
+				if config.has("set_tornado_attackspeed"):
+					tornado_attackspeed = config["set_tornado_attackspeed"]
+			"Javelin":
+				javelin_level = config.get("set_level", javelin_level)
+				javelin_ammo = config.get("set_ammo", javelin_ammo)
+
+	armor += config.get("add_armor", 0)
+	movement_speed += config.get("add_movement_speed", 0)
+	spell_size += config.get("add_spell_size", 0)
+	spell_cooldown += config.get("add_spell_cooldown", 0)
+	additional_attacks += config.get("add_additional_attacks", 0)
+	if config.has("heal"):
+		hp += config["heal"]
+		hp = clamp(hp, 0, maxhp)
+
 func get_random_item():
 	var dblist = []
 	for i in UpgradeDb.UPGRADES:
