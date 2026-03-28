@@ -3,6 +3,8 @@ extends Node
 # GPU 实例化敌人管理器
 # 使用 MultiMesh 批量渲染同类型敌人，大幅提升性能
 
+const DEBUG_LOGGING := false  # 编辑器模式下关闭日志以加快启动
+
 class EnemyInstance:
 	var position: Vector2
 	var velocity: Vector2
@@ -165,13 +167,15 @@ func _initialize_enemy_types():
 	var start_time := Time.get_ticks_msec()
 	
 	var enemy_ids = EnemyRegistry.get_all_enemy_ids()
-	print("  开始初始化 %d 种敌人类型..." % enemy_ids.size())
+	if DEBUG_LOGGING:
+		print("  开始初始化 %d 种敌人类型..." % enemy_ids.size())
 	
 	# 异步并行加载配置和场景数据
 	var config_load_start := Time.get_ticks_msec()
 	var configs := _load_all_enemy_configs_from_ini()
 	var config_load_time := Time.get_ticks_msec() - config_load_start
-	print("    ⏱ 配置加载: %d ms" % config_load_time)
+	if DEBUG_LOGGING:
+		print("    ⏱ 配置加载: %d ms" % config_load_time)
 	
 	# 批量解析场景数据（CPU 密集，但很快）
 	var scene_parse_start := Time.get_ticks_msec()
@@ -181,7 +185,8 @@ func _initialize_enemy_types():
 		if scene:
 			scene_metas[enemy_id] = _parse_enemy_scene_from_state(scene)
 	var scene_parse_time := Time.get_ticks_msec() - scene_parse_start
-	print("    ⏱ 场景解析: %d ms" % scene_parse_time)
+	if DEBUG_LOGGING:
+		print("    ⏱ 场景解析: %d ms" % scene_parse_time)
 	
 	# 创建 MultiMesh（分帧执行，避免卡顿）
 	var mesh_create_start := Time.get_ticks_msec()
@@ -233,14 +238,15 @@ func _initialize_enemy_types():
 		
 		enemy_types[enemy_id] = type_data
 		
-		# 调试信息
+		# 调试信息（仅在出错时显示）
 		if not texture:
 			push_warning("⚠️ 敌人 %s 没有纹理！" % enemy_id)
 		if not hurt_shape:
 			push_warning("⚠️ 敌人 %s 没有 HurtBox 碰撞形状！" % enemy_id)
 		if not hit_shape:
 			push_warning("⚠️ 敌人 %s 没有 HitBox 碰撞形状！" % enemy_id)
-		if hframes > 1:
+		
+		if DEBUG_LOGGING and hframes > 1:
 			print("    📽 敌人 %s 有 %d 帧动画" % [enemy_id, hframes])
 		
 		# 每创建一个类型，让出一帧（避免长时间阻塞）
@@ -250,8 +256,9 @@ func _initialize_enemy_types():
 	var mesh_create_time := Time.get_ticks_msec() - mesh_create_start
 	var total_time := Time.get_ticks_msec() - start_time
 	
-	print("    ⏱ MultiMesh 创建: %d ms" % mesh_create_time)
-	print("✓ GPU 实例化系统就绪（共 %d 种敌人，总耗时 %d ms）\n" % [enemy_ids.size(), total_time])
+	if DEBUG_LOGGING:
+		print("    ⏱ MultiMesh 创建: %d ms" % mesh_create_time)
+		print("✓ GPU 实例化系统就绪（共 %d 种敌人，总耗时 %d ms）\n" % [enemy_ids.size(), total_time])
 	
 	is_initialized = true
 	call_deferred("emit_signal", "initialization_complete")
@@ -470,10 +477,12 @@ func damage_enemy(enemy_type: String, instance_id: int, damage: int, angle: Vect
 # 碰撞处理
 func _on_enemy_hurt(area: Area2D, enemy_type: String, instance_id: int):
 	if not area.is_in_group("attack"):
-		print("⚠️ 碰撞区域不在 attack 组: ", area.name)
+		if DEBUG_LOGGING:
+			print("⚠️ 碰撞区域不在 attack 组: ", area.name)
 		return
 	
-	print("✓ 敌人受击: %s[%d] 被 %s 击中" % [enemy_type, instance_id, area.name])
+	if DEBUG_LOGGING:
+		print("✓ 敌人受击: %s[%d] 被 %s 击中" % [enemy_type, instance_id, area.name])
 	
 	# 获取武器伤害
 	var damage = 1

@@ -1,5 +1,7 @@
 extends Node
 
+const DEBUG_LOGGING := false  # 编辑器模式下关闭日志以加快启动
+
 var UPGRADES = {}
 
 func _ready():
@@ -8,8 +10,9 @@ func _ready():
 
 func _load_upgrade_config():
 	var start_time := Time.get_ticks_msec()
-	print("\n=== 加载升级配置 ===")
-	print("配置文件: res://config/upgrade_config.ini")
+	if DEBUG_LOGGING:
+		print("\n=== 加载升级配置 ===")
+		print("配置文件: res://config/upgrade_config.ini")
 	
 	# 使用 FileAccess 直接读取文件以避免编码问题
 	var file = FileAccess.open("res://config/upgrade_config.ini", FileAccess.READ)
@@ -77,12 +80,14 @@ func _load_upgrade_config():
 		return
 	
 	var total_time := Time.get_ticks_msec() - start_time
-	print("✓ 成功解析 %d 个升级配置 (耗时 %d ms)" % [parsed_sections, total_time])
+	if DEBUG_LOGGING:
+		print("✓ 成功解析 %d 个升级配置 (耗时 %d ms)" % [parsed_sections, total_time])
 
 # 验证升级配置的完整性
 func _validate_upgrades():
-	print("\n=== 升级配置验证 ===")
-	print("总升级数: ", UPGRADES.size())
+	if DEBUG_LOGGING:
+		print("\n=== 升级配置验证 ===")
+		print("总升级数: ", UPGRADES.size())
 	
 	if UPGRADES.size() == 0:
 		push_error("❌ 升级配置为空！")
@@ -118,29 +123,30 @@ func _validate_upgrades():
 			_:
 				errors.append("升级 '%s' 类型无效: %s" % [upgrade_id, type])
 	
-	print("  武器: ", weapons)
-	print("  属性升级: ", upgrades)
-	print("  道具: ", items)
+	if DEBUG_LOGGING:
+		print("  武器: ", weapons)
+		print("  属性升级: ", upgrades)
+		print("  道具: ", items)
+		
+		# 检查升级池是否足够
+		var available_for_selection = weapons + upgrades
+		print("  可选升级数: ", available_for_selection)
+		
+		if available_for_selection < 15:
+			push_warning("⚠️ 升级池较小（%d 个），建议至少 20-30 个" % available_for_selection)
+		elif available_for_selection < 30:
+			print("  ✓ 升级池充足（支持 %d+ 级）" % available_for_selection)
+		else:
+			print("  ✓ 升级池丰富（支持 %d+ 级）" % available_for_selection)
 	
-	# 检查升级池是否足够
-	var available_for_selection = weapons + upgrades
-	print("  可选升级数: ", available_for_selection)
-	
-	if available_for_selection < 15:
-		push_warning("⚠️ 升级池较小（%d 个），建议至少 20-30 个" % available_for_selection)
-	elif available_for_selection < 30:
-		print("  ✓ 升级池充足（支持 %d+ 级）" % available_for_selection)
-	else:
-		print("  ✓ 升级池丰富（支持 %d+ 级）" % available_for_selection)
-	
-	# 报告错误
+	# 报告错误（保留，因为这是关键错误）
 	if errors.size() > 0:
 		push_error("❌ 发现 %d 个配置错误:" % errors.size())
 		for error in errors:
 			push_error("  - " + error)
 		push_error("请修复配置文件！")
 		get_tree().quit(1)
-	else:
+	elif DEBUG_LOGGING:
 		print("  ✓ 配置验证通过")
 	
 	var sep = "============================================================"

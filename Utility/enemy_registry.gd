@@ -2,6 +2,8 @@ extends Node
 
 # 敌人注册系统 - 管理所有敌人类型
 
+const DEBUG_LOGGING := false  # 编辑器模式下关闭日志以加快启动
+
 var registered_enemies = {}
 
 # 注册敌人
@@ -46,8 +48,9 @@ func _ready():
 
 func _load_enemies_from_config():
 	var start_time := Time.get_ticks_msec()
-	print("\n=== 加载敌人注册配置 ===")
-	print("配置文件: res://config/enemy_registry.ini")
+	if DEBUG_LOGGING:
+		print("\n=== 加载敌人注册配置 ===")
+		print("配置文件: res://config/enemy_registry.ini")
 	
 	var file = FileAccess.open("res://config/enemy_registry.ini", FileAccess.READ)
 	
@@ -111,12 +114,14 @@ func _load_enemies_from_config():
 		}
 		
 		register_enemy(enemy_id, scene, enemy_data)
-		print("  ✓ 注册敌人: %s (%s) [Tier %d%s]" % [
-			enemy_id, 
-			enemy_data["name"], 
-			enemy_data["tier"],
-			" BOSS" if enemy_data["is_boss"] else ""
-		])
+		if DEBUG_LOGGING:
+			print("  ✓ 注册敌人: %s (%s) [Tier %d%s]" % [
+				enemy_id, 
+				enemy_data["name"], 
+				enemy_data["tier"],
+				" BOSS" if enemy_data["is_boss"] else ""
+			])
 	
 	var total_time := Time.get_ticks_msec() - start_time
-	print("✓ 成功注册 %d 个敌人 (耗时 %d ms)\n" % [registered_enemies.size(), total_time])
+	if DEBUG_LOGGING:
+		print("✓ 成功注册 %d 个敌人 (耗时 %d ms)\n" % [registered_enemies.size(), total_time])

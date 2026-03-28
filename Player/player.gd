@@ -2,6 +2,8 @@ extends CharacterBody2D
 
 # 重构后的玩家类 - 使用组件化架构
 
+const DEBUG_LOGGING := false  # 编辑器模式下关闭调试日志
+
 # 组件
 var stats
 var skill_mgr
@@ -115,14 +117,17 @@ func movement():
 
 func attack():
 	var icespear_level = skill_mgr.get_skill_level("icespear")
-	print("[DEBUG] attack() - icespear_level: ", icespear_level)
+	if DEBUG_LOGGING:
+		print("[DEBUG] attack() - icespear_level: ", icespear_level)
 	if icespear_level > 0:
 		var attack_speed = skill_mgr.get_skill_attack_speed("icespear")
 		iceSpearTimer.wait_time = attack_speed * (1 - stats.spell_cooldown)
-		print("[DEBUG] 启动 IceSpearTimer, wait_time: ", iceSpearTimer.wait_time)
+		if DEBUG_LOGGING:
+			print("[DEBUG] 启动 IceSpearTimer, wait_time: ", iceSpearTimer.wait_time)
 		if iceSpearTimer.is_stopped():
 			iceSpearTimer.start()
-			print("[DEBUG] IceSpearTimer 已启动")
+			if DEBUG_LOGGING:
+				print("[DEBUG] IceSpearTimer 已启动")
 	
 	var tornado_level = skill_mgr.get_skill_level("tornado")
 	if tornado_level > 0:
@@ -144,20 +149,26 @@ func _on_hurt_box_hurt(damage, _angle, _knockback):
 		death()
 
 func _on_ice_spear_timer_timeout():
-	print("[DEBUG] IceSpearTimer 超时触发")
+	if DEBUG_LOGGING:
+		print("[DEBUG] IceSpearTimer 超时触发")
 	var base_ammo = skill_mgr.get_skill_base_ammo("icespear")
 	var total_ammo = base_ammo + stats.additional_attacks
-	print("[DEBUG] base_ammo: ", base_ammo, " additional_attacks: ", stats.additional_attacks, " total: ", total_ammo)
+	if DEBUG_LOGGING:
+		print("[DEBUG] base_ammo: ", base_ammo, " additional_attacks: ", stats.additional_attacks, " total: ", total_ammo)
 	skill_mgr.set_skill_ammo("icespear", total_ammo)
 	iceSpearAttackTimer.start()
-	print("[DEBUG] IceSpearAttackTimer 已启动")
+	if DEBUG_LOGGING:
+		print("[DEBUG] IceSpearAttackTimer 已启动")
 
 func _on_ice_spear_attack_timer_timeout():
-	print("[DEBUG] IceSpearAttackTimer 超时触发")
+	if DEBUG_LOGGING:
+		print("[DEBUG] IceSpearAttackTimer 超时触发")
 	var ammo = skill_mgr.get_skill_ammo("icespear")
-	print("[DEBUG] 当前弹药: ", ammo)
+	if DEBUG_LOGGING:
+		print("[DEBUG] 当前弹药: ", ammo)
 	if ammo > 0:
-		print("[DEBUG] 发射冰矛！")
+		if DEBUG_LOGGING:
+			print("[DEBUG] 发射冰矛！")
 		var icespear_attack = iceSpear.instantiate()
 		icespear_attack.position = position
 		icespear_attack.target = get_random_target()

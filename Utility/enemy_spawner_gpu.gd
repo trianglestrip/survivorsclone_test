@@ -3,6 +3,8 @@ extends Node2D
 # GPU 实例化敌人生成器
 # 使用 EnemyInstanceManager 生成敌人，性能大幅提升
 
+const DEBUG_LOGGING := false  # 编辑器模式下关闭日志
+
 @export var spawns: Array[Spawn_info] = []
 
 @onready var player = get_tree().get_first_node_in_group("player")
@@ -19,7 +21,8 @@ func _ready():
 	_prewarm_enemy_pools()
 
 func _initialize_enemy_manager():
-	print("\n=== 初始化 GPU 敌人管理器 ===")
+	if DEBUG_LOGGING:
+		print("\n=== 初始化 GPU 敌人管理器 ===")
 	
 	# 创建敌人管理器
 	var manager_script = load("res://Enemy/enemy_instance_manager.gd")
@@ -31,10 +34,12 @@ func _initialize_enemy_manager():
 	# 等待初始化完成
 	await enemy_manager.initialization_complete
 	
-	print("✓ GPU 敌人管理器就绪\n")
+	if DEBUG_LOGGING:
+		print("✓ GPU 敌人管理器就绪\n")
 
 func _prewarm_enemy_pools():
-	print("=== 预热敌人对象池 ===")
+	if DEBUG_LOGGING:
+		print("=== 预热敌人对象池 ===")
 	
 	# 为每种敌人类型预热
 	var unique_enemies = {}
@@ -43,10 +48,10 @@ func _prewarm_enemy_pools():
 			var enemy_name = spawn_info.enemy.resource_path.get_file().get_basename()
 			unique_enemies[enemy_name] = true
 	
-	for enemy_name in unique_enemies:
-		print("  ✓ 预热: %s (GPU 实例化)" % enemy_name)
-	
-	print("✓ 对象池预热完成\n")
+	if DEBUG_LOGGING:
+		for enemy_name in unique_enemies:
+			print("  ✓ 预热: %s (GPU 实例化)" % enemy_name)
+		print("✓ 对象池预热完成\n")
 
 func _on_timer_timeout():
 	time += 1

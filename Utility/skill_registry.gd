@@ -2,6 +2,8 @@ extends Node
 
 # 技能注册系统 - 管理所有技能的注册和查询
 
+const DEBUG_LOGGING := false  # 编辑器模式下关闭日志以加快启动
+
 var registered_skills = {}
 
 # 注册技能
@@ -43,8 +45,9 @@ func _ready():
 
 func _load_skills_from_config():
 	var start_time := Time.get_ticks_msec()
-	print("\n=== 加载技能注册配置 ===")
-	print("配置文件: res://config/skill_registry.ini")
+	if DEBUG_LOGGING:
+		print("\n=== 加载技能注册配置 ===")
+		print("配置文件: res://config/skill_registry.ini")
 	
 	var file = FileAccess.open("res://config/skill_registry.ini", FileAccess.READ)
 	
@@ -108,7 +111,9 @@ func _load_skills_from_config():
 		}
 		
 		register_skill(skill_id, scene, skill_data)
-		print("  ✓ 注册技能: %s (%s)" % [skill_id, skill_data["name"]])
+		if DEBUG_LOGGING:
+			print("  ✓ 注册技能: %s (%s)" % [skill_id, skill_data["name"]])
 	
 	var total_time := Time.get_ticks_msec() - start_time
-	print("✓ 成功注册 %d 个技能 (耗时 %d ms)\n" % [registered_skills.size(), total_time])
+	if DEBUG_LOGGING:
+		print("✓ 成功注册 %d 个技能 (耗时 %d ms)\n" % [registered_skills.size(), total_time])
