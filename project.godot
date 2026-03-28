@@ -27,6 +27,7 @@ SkillRegistry="*res://Utility/skill_registry.gd"
 EnemyRegistry="*res://Utility/enemy_registry.gd"
 ObjectPool="*res://Utility/object_pool.gd"
 UpgradeDb="*res://Utility/upgrade_db.tscn"
+AudioManager="*res://Utility/audio_manager.gd"
 
 [display]
 

@@ -38,13 +38,22 @@ offset_right = 360.0
 offset_bottom = 280.0
 text = "开始"
 
-[node name="btn_exit" parent="." unique_id=2092257630 instance=ExtResource("3_kwsdd")]
+[node name="btn_sound" parent="." unique_id=1234567890 instance=ExtResource("3_kwsdd")]
 layout_mode = 0
 offset_left = 280.0
 offset_top = 290.0
 offset_right = 360.0
 offset_bottom = 320.0
+text = "声音：关"
+
+[node name="btn_exit" parent="." unique_id=2092257630 instance=ExtResource("3_kwsdd")]
+layout_mode = 0
+offset_left = 280.0
+offset_top = 330.0
+offset_right = 360.0
+offset_bottom = 360.0
 text = "退出"
 
 [connection signal="click_end" from="btn_play" to="." method="_on_btn_play_click_end"]
+[connection signal="click_end" from="btn_sound" to="." method="_on_btn_sound_click_end"]
 [connection signal="click_end" from="btn_exit" to="." method="_on_btn_exit_click_end"]
