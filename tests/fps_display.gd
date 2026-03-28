@@ -13,8 +13,14 @@ func _ready():
 	add_theme_color_override("font_outline_color", Color.BLACK)
 	add_theme_constant_override("outline_size", 2)
 	
-	# 设置位置（左上角）
-	position = Vector2(10, 10)
+	# 设置位置（左下角）
+	# 使用 anchors 确保在不同分辨率下都在左下角
+	anchor_top = 1.0
+	anchor_bottom = 1.0
+	offset_left = 10.0
+	offset_top = -40.0
+	offset_right = 150.0
+	offset_bottom = -10.0
 	z_index = 100
 
 func _process(delta):

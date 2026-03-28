@@ -15,8 +15,10 @@ var total_enemies = 0
 var enemy_counts = {}
 
 func _ready():
-	print("\n=== 性能测试开始 ===")
+	print("\n=== 性能测试开始（普通对象池） ===")
 	print("每种敌人生成数量: %d" % enemies_per_type)
+	print("渲染方式: CharacterBody2D 节点")
+	print("提示: 按 ESC 退出并查看性能总结\n")
 	
 	# 等待一帧确保 EnemyRegistry 已初始化
 	await get_tree().process_frame
@@ -26,6 +28,8 @@ func _ready():
 	
 	_spawn_test_enemies()
 	_update_info_label()
+	
+	print("场景运行中... 按 ESC 退出")
 
 func _prewarm_pools():
 	print("\n预热对象池...")

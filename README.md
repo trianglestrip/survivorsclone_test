@@ -110,10 +110,11 @@ F:\project\godot\Godot_v4.6.1-stable_win64.exe --path .
 
 ### 性能优化
 
+- **GPU 实例化** - 使用 MultiMesh 批量渲染（性能提升 20-40 倍）
 - **对象池** - 复用敌人、爆炸和经验宝石对象
 - **事件驱动** - 减少轮询和直接耦合
 - **组件化** - 按需加载和更新
-- **敌人复用** - 大量敌人时性能提升显著
+- **预热机制** - 启动时预创建对象，避免运行时卡顿
 
 ---
 
@@ -251,11 +252,22 @@ F:\project\godot\Godot_v4.6.1-stable_win64_console.exe --headless --path . --scr
 ```
 
 ### 性能测试（500 个敌人）
-```powershell
-# GUI 模式 - 可视化 FPS
-F:\project\godot\Godot_v4.6.1-stable_win64.exe tests/performance_test.tscn
 
-# 按 ESC 退出并查看性能总结
+#### 普通对象池测试
+```powershell
+F:\project\godot\Godot_v4.6.1-stable_win64.exe tests/performance_test.tscn
+# 预期 FPS: 7-15（卡顿）
+```
+
+#### GPU 实例化测试（推荐）
+```powershell
+F:\project\godot\Godot_v4.6.1-stable_win64.exe tests/performance_test_gpu.tscn
+# 预期 FPS: 100-300（流畅）
+```
+
+#### 性能对比说明
+```powershell
+F:\project\godot\Godot_v4.6.1-stable_win64_console.exe --headless --script tests/benchmark_comparison.gd
 ```
 
 ---
