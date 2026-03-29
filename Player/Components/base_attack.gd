@@ -11,7 +11,7 @@ signal attack_ended()
 
 ## 攻击属性（从配置加载）
 var cooldown: float = 0.3
-var range: float = 90.0
+var attack_range: float = 90.0
 var damage: int = 12
 var knockback: int = 180
 var attack_duration: float = 0.2
@@ -36,7 +36,7 @@ func get_attack_direction() -> Vector2:
 func play_attack_animation():
 	push_error("BaseAttack: play_attack_animation() must be implemented by subclass")
 
-func spawn_attack_effect(position: Vector2, direction: Vector2):
+func spawn_attack_effect(attack_position: Vector2, attack_direction: Vector2):
 	push_error("BaseAttack: spawn_attack_effect() must be implemented by subclass")
 
 ## 公共方法
@@ -48,7 +48,7 @@ func load_config(config: Dictionary):
 		return
 	
 	cooldown = config.get("base_cooldown", 0.3)
-	range = config.get("base_range", 90.0)
+	attack_range = config.get("base_range", 90.0)
 	damage = config.get("base_damage", 12)
 	knockback = config.get("base_knockback", 180)
 	animation_speed = config.get("animation_speed", 1.5)
@@ -91,7 +91,7 @@ func _execute_attack():
 	if not player:
 		return
 	
-	var attack_pos = player.global_position + attack_direction * (range * 0.5)
+	var attack_pos = player.global_position + attack_direction * (attack_range * 0.5)
 	spawn_attack_effect(attack_pos, attack_direction)
 	emit_signal("attack_executed", attack_pos, attack_direction, damage, knockback)
 

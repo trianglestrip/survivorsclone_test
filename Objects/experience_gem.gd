@@ -26,10 +26,10 @@ func _update_sprite():
 	else:
 		sprite.texture = spr_red
 
-func _physics_process(delta):
+func _physics_process(delta: float):
 	if target != null:
 		global_position = global_position.move_toward(target.global_position, speed)
-		speed += 2*delta
+		speed += 2.0 * delta
 
 func collect():
 	sound.play()

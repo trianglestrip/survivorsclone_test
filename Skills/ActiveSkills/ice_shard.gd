@@ -7,7 +7,7 @@ extends BaseActiveSkill
 ## 设计：完全配置驱动，无硬编码数值
 
 var projectile_count: int = 0
-var range: float = 0.0
+var skill_range: float = 0.0
 var slow_duration: float = 0.0
 var slow_percent: float = 0.0
 var projectile_speed: float = 400.0
@@ -15,7 +15,7 @@ var angle_spread: float = 20.0
 
 func _load_skill_config(cfg: Dictionary):
 	projectile_count = cfg.get("projectile_count", 3)
-	range = cfg.get("range", 250.0)
+	skill_range = cfg.get("range", 250.0)
 	slow_duration = cfg.get("slow_duration", 2.0)
 	slow_percent = cfg.get("slow_percent", 0.3)
 	projectile_speed = cfg.get("projectile_speed", 400.0)
@@ -49,7 +49,7 @@ func _spawn_projectile(pos: Vector2, dir: Vector2):
 	projectile.set_script(projectile_script)
 	projectile.set("direction", dir)
 	projectile.set("speed", projectile_speed)
-	projectile.set("max_range", range)
+	projectile.set("max_range", skill_range)
 	projectile.set("skill_instance", self)
 	
 	if player and player.get_parent():

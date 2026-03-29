@@ -6,7 +6,7 @@ extends BaseActiveSkill
 ## 
 ## 设计：完全配置驱动，使用工具类
 
-var range: float = 0.0
+var skill_range: float = 0.0
 var poison_damage: float = 0.0
 var poison_duration: float = 0.0
 var projectile_speed: float = 450.0
@@ -39,7 +39,7 @@ func _spawn_dart(pos: Vector2, dir: Vector2):
 	dart.set_script(projectile_script)
 	dart.set("direction", dir)
 	dart.set("speed", projectile_speed)
-	dart.set("max_range", range)
+	dart.set("max_range", skill_range)
 	dart.set("skill_instance", self)
 	
 	if player and player.get_parent():

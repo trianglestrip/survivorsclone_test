@@ -46,7 +46,7 @@ func _get_attack_direction() -> Vector2:
 		return (mouse_pos - player.global_position).normalized()
 	return Vector2.RIGHT
 
-func spawn_attack_effect(position: Vector2, direction: Vector2):
+func spawn_attack_effect(attack_position: Vector2, attack_direction: Vector2):
 	VisualEffectsHelper.trigger_screen_shake(self, GameConstants.Values.SHAKE_ATTACK)
 	
 	for i in range(projectile_count):
@@ -54,8 +54,8 @@ func spawn_attack_effect(position: Vector2, direction: Vector2):
 		if projectile_count > 1:
 			offset_angle = (i - projectile_count / 2.0) * spread_angle
 		
-		var projectile_dir = direction.rotated(deg_to_rad(offset_angle))
-		_spawn_projectile(position, projectile_dir)
+		var projectile_dir = attack_direction.rotated(deg_to_rad(offset_angle))
+		_spawn_projectile(attack_position, projectile_dir)
 
 func _spawn_projectile(pos: Vector2, dir: Vector2):
 	var projectile = Node2D.new()
@@ -78,7 +78,7 @@ func _spawn_projectile(pos: Vector2, dir: Vector2):
 
 func _animate_projectile(projectile: Node2D, direction: Vector2):
 	var distance_traveled = 0.0
-	var max_range = range
+	var max_range = attack_range
 	var hit_count = 0
 	
 	while distance_traveled < max_range and is_instance_valid(projectile):

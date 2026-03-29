@@ -10,7 +10,7 @@ signal enemy_killed(enemy_type: String, position: Vector2, experience: int)
 
 # 玩家相关事件
 signal player_leveled_up(new_level: int)
-signal player_died()
+# signal player_died()  # 预留：玩家死亡事件
 # signal player_damaged(damage: int, current_hp: int)  # 预留：伤害反馈
 # signal player_healed(amount: int, current_hp: int)  # 预留：治疗效果
 
@@ -25,7 +25,7 @@ signal upgrade_collected(upgrade_id: String)
 
 # 游戏流程事件
 signal game_won()
-signal game_lost()
+# signal game_lost()  # 预留：游戏失败事件
 # signal wave_started(wave_number: int)  # 预留：波次开始提示
 # signal wave_completed(wave_number: int)  # 预留：波次完成奖励
 # signal boss_spawned(boss_type: String)  # 预留：Boss 出现警告

@@ -120,12 +120,12 @@ static func scale_pulse(node: Node2D, from_scale: float, to_scale: float, durati
 # 发光效果
 # ========================================
 
-static func create_glow_background(size: Vector2, color: Color, alpha: float = 0.0) -> ColorRect:
+static func create_glow_background(bg_size: Vector2, color: Color, alpha: float = 0.0) -> ColorRect:
 	var glow = ColorRect.new()
 	glow.name = "GlowBackground"
 	glow.color = color
 	glow.color.a = alpha
-	glow.size = size
+	glow.size = bg_size
 	glow.z_index = -1
 	return glow
 
@@ -139,10 +139,10 @@ static func pulse_glow(glow: ColorRect, base_alpha: float, pulse_amount: float, 
 # 边框创建
 # ========================================
 
-static func create_border(size: Vector2, color: Color, width: int = 2) -> Panel:
+static func create_border(border_size: Vector2, color: Color, width: int = 2) -> Panel:
 	var border = Panel.new()
 	border.name = "Border"
-	border.size = size
+	border.size = border_size
 	
 	var style = StyleBoxFlat.new()
 	style.bg_color = Color.TRANSPARENT
@@ -159,9 +159,9 @@ static func create_border(size: Vector2, color: Color, width: int = 2) -> Panel:
 # 占位纹理创建
 # ========================================
 
-static func create_placeholder_texture(size: Vector2) -> PlaceholderTexture2D:
+static func create_placeholder_texture(texture_size: Vector2) -> PlaceholderTexture2D:
 	var placeholder = PlaceholderTexture2D.new()
-	placeholder.size = size
+	placeholder.size = texture_size
 	return placeholder
 
 static func load_texture_or_placeholder(path: String, placeholder_size: Vector2 = Vector2(64, 64)) -> Texture2D:
@@ -174,13 +174,13 @@ static func load_texture_or_placeholder(path: String, placeholder_size: Vector2 
 # 粒子效果创建
 # ========================================
 
-static func create_simple_particle(pos: Vector2, color: Color, size: float, parent: Node):
+static func create_simple_particle(pos: Vector2, color: Color, particle_size: float, parent: Node):
 	if not parent:
 		return
 	
 	var particle = Sprite2D.new()
 	particle.position = pos
-	particle.scale = Vector2(size, size)
+	particle.scale = Vector2(particle_size, particle_size)
 	particle.modulate = color
 	particle.z_index = 10
 	particle.texture = create_placeholder_texture(Vector2(8, 8))

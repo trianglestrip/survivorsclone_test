@@ -151,13 +151,13 @@ func _start_dash(direction: Vector2):
 	
 	emit_signal("dash_started")
 
-func _play_dash_effect(position: Vector2):
+func _play_dash_effect(dash_position: Vector2):
 	if _dash_frames.is_empty():
 		return
 	
 	_current_effect_node = Node2D.new()
 	_current_effect_node.name = "DashEffect"
-	_current_effect_node.position = position
+	_current_effect_node.position = dash_position
 	_current_effect_node.z_index = 10
 	
 	_current_effect_sprite = Sprite2D.new()
@@ -202,7 +202,7 @@ func get_cooldown_progress() -> float:
 		return 1.0
 	return 1.0 - (current_cooldown / cooldown)
 
-func _create_trail_effect(position: Vector2):
+func _create_trail_effect(trail_position: Vector2):
 	if not player or not player.has_node("Sprite2D"):
 		return
 	
@@ -217,7 +217,7 @@ func _create_trail_effect(position: Vector2):
 		trail.frame = player_sprite.frame
 	
 	trail.flip_h = player_sprite.flip_h
-	trail.position = position
+	trail.position = trail_position
 	trail.modulate = GameConstants.Colors.EFFECT_DASH_TRAIL
 	trail.z_index = player.z_index - 1
 	

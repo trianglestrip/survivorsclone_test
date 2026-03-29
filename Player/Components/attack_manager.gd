@@ -86,6 +86,3 @@ func can_secondary_attack() -> bool:
 ## 向后兼容 - 旧的方法
 func start_attacks():
 	pass
-
-func set_skill_instance_manager(skill_mgr: Node):
-	pass

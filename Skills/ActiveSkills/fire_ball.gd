@@ -10,14 +10,14 @@ var radius: float = 0.0
 var burn_damage: float = 0.0
 var burn_duration: float = 0.0
 var projectile_speed: float = 350.0
-var range: float = 400.0
+var skill_range: float = 400.0
 
 func _load_skill_config(cfg: Dictionary):
 	radius = cfg.get("radius", 80.0)
 	burn_damage = cfg.get("burn_damage", 5.0)
 	burn_duration = cfg.get("burn_duration", 3.0)
 	projectile_speed = cfg.get("projectile_speed", 350.0)
-	range = cfg.get("range", 400.0)
+	skill_range = cfg.get("range", 400.0)
 
 func _on_skill_cast(cast_position: Vector2, _cast_direction: Vector2):
 	var direction = get_mouse_direction()
@@ -42,7 +42,7 @@ func _spawn_fireball(pos: Vector2, dir: Vector2):
 	fireball.set_script(fireball_script)
 	fireball.set("direction", dir)
 	fireball.set("speed", projectile_speed)
-	fireball.set("max_range", range)
+	fireball.set("max_range", skill_range)
 	fireball.set("skill_instance", self)
 	fireball.set("hit_radius", 20.0)
 	

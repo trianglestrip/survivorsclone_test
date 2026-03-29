@@ -247,13 +247,13 @@ func _on_hurt_box_hurt(damage, _angle, _knockback):
 	if not stats.is_alive():
 		death()
 
-func _play_hit_effect(position: Vector2):
+func _play_hit_effect(hit_position: Vector2):
 	if _hit_frames.is_empty():
 		return
 	
 	var effect_node = Node2D.new()
 	effect_node.name = "HitEffect"
-	effect_node.position = position
+	effect_node.position = hit_position
 	effect_node.z_index = 10
 	
 	var sprite = Sprite2D.new()
