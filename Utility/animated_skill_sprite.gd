@@ -70,8 +70,13 @@ func stop():
 ## 从技能名称加载动画帧
 func load_from_skill(skill_name: String, texture_loader: Node = null):
 	if not texture_loader:
-		# 尝试查找全局加载器
-		texture_loader = get_node_or_null("/root/SkillTextureLoader")
+		# 尝试查找全局加载器（只在已加入场景树时）
+		if is_inside_tree():
+			texture_loader = get_node_or_null("/root/SkillTextureLoader")
+		
+		# 如果没有全局加载器，创建临时加载器
+		if not texture_loader:
+			texture_loader = load("res://Utility/skill_texture_loader.gd").new()
 	
 	if texture_loader and texture_loader.has_method("load_skill_frames"):
 		var loaded_frames = texture_loader.load_skill_frames(skill_name)
