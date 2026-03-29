@@ -1,0 +1,247 @@
+{
+  "upgrades": {
+    "hp_boost1": {
+      "id": "hp_boost1",
+      "name": "生命强化",
+      "displayname": "生命强化 I",
+      "details": "提升最大生命值，增加生存能力",
+      "level": "1",
+      "prerequisite": [],
+      "type": "upgrade",
+      "rarity": "common",
+      "icon": "res://icon.svg",
+      "effects": {
+        "max_hp": 20
+      }
+    },
+    "hp_boost2": {
+      "id": "hp_boost2",
+      "name": "生命强化",
+      "displayname": "生命强化 II",
+      "details": "大幅提升最大生命值",
+      "level": "2",
+      "prerequisite": ["hp_boost1"],
+      "type": "upgrade",
+      "rarity": "uncommon",
+      "icon": "res://icon.svg",
+      "effects": {
+        "max_hp": 40
+      }
+    },
+    "hp_boost3": {
+      "id": "hp_boost3",
+      "name": "生命强化",
+      "displayname": "生命强化 III",
+      "details": "极大提升最大生命值",
+      "level": "3",
+      "prerequisite": ["hp_boost2"],
+      "type": "upgrade",
+      "rarity": "rare",
+      "icon": "res://icon.svg",
+      "effects": {
+        "max_hp": 60
+      }
+    },
+    "speed_boost1": {
+      "id": "speed_boost1",
+      "name": "迅捷步伐",
+      "displayname": "迅捷步伐 I",
+      "details": "提升移动速度，更灵活的走位",
+      "level": "1",
+      "prerequisite": [],
+      "type": "upgrade",
+      "rarity": "common",
+      "icon": "res://icon.svg",
+      "effects": {
+        "move_speed": 10
+      }
+    },
+    "speed_boost2": {
+      "id": "speed_boost2",
+      "name": "迅捷步伐",
+      "displayname": "迅捷步伐 II",
+      "details": "大幅提升移动速度",
+      "level": "2",
+      "prerequisite": ["speed_boost1"],
+      "type": "upgrade",
+      "rarity": "uncommon",
+      "icon": "res://icon.svg",
+      "effects": {
+        "move_speed": 20
+      }
+    },
+    "damage_boost1": {
+      "id": "damage_boost1",
+      "name": "力量强化",
+      "displayname": "力量强化 I",
+      "details": "提升攻击伤害，更快击败敌人",
+      "level": "1",
+      "prerequisite": [],
+      "type": "upgrade",
+      "rarity": "common",
+      "icon": "res://icon.svg",
+      "effects": {
+        "attack_damage": 5
+      }
+    },
+    "damage_boost2": {
+      "id": "damage_boost2",
+      "name": "力量强化",
+      "displayname": "力量强化 II",
+      "details": "大幅提升攻击伤害",
+      "level": "2",
+      "prerequisite": ["damage_boost1"],
+      "type": "upgrade",
+      "rarity": "uncommon",
+      "icon": "res://icon.svg",
+      "effects": {
+        "attack_damage": 10
+      }
+    },
+    "armor_boost1": {
+      "id": "armor_boost1",
+      "name": "坚韧护甲",
+      "displayname": "坚韧护甲 I",
+      "details": "提升护甲值，减少受到的伤害",
+      "level": "1",
+      "prerequisite": [],
+      "type": "upgrade",
+      "rarity": "common",
+      "icon": "res://icon.svg",
+      "effects": {
+        "armor": 5
+      }
+    },
+    "crit_chance1": {
+      "id": "crit_chance1",
+      "name": "致命一击",
+      "displayname": "致命一击 I",
+      "details": "提升暴击率，造成额外伤害",
+      "level": "1",
+      "prerequisite": [],
+      "type": "upgrade",
+      "rarity": "uncommon",
+      "icon": "res://icon.svg",
+      "effects": {
+        "critical_chance": 0.1
+      }
+    },
+    "crit_damage1": {
+      "id": "crit_damage1",
+      "name": "暴击强化",
+      "displayname": "暴击强化 I",
+      "details": "提升暴击伤害倍率",
+      "level": "1",
+      "prerequisite": ["crit_chance1"],
+      "type": "upgrade",
+      "rarity": "rare",
+      "icon": "res://icon.svg",
+      "effects": {
+        "critical_damage": 0.5
+      }
+    },
+    "skill_damage1": {
+      "id": "skill_damage1",
+      "name": "技能精通",
+      "displayname": "技能精通 I",
+      "details": "提升所有技能伤害",
+      "level": "1",
+      "prerequisite": [],
+      "type": "upgrade",
+      "rarity": "uncommon",
+      "icon": "res://icon.svg",
+      "effects": {
+        "skill_damage": 0.15
+      }
+    },
+    "skill_cooldown1": {
+      "id": "skill_cooldown1",
+      "name": "急速冷却",
+      "displayname": "急速冷却 I",
+      "details": "缩短技能冷却时间",
+      "level": "1",
+      "prerequisite": [],
+      "type": "upgrade",
+      "rarity": "rare",
+      "icon": "res://icon.svg",
+      "effects": {
+        "skill_cooldown": -0.1
+      }
+    },
+    "attack_speed1": {
+      "id": "attack_speed1",
+      "name": "疾风连击",
+      "displayname": "疾风连击 I",
+      "details": "提升攻击速度",
+      "level": "1",
+      "prerequisite": [],
+      "type": "upgrade",
+      "rarity": "uncommon",
+      "icon": "res://icon.svg",
+      "effects": {
+        "attack_speed": 0.15
+      }
+    },
+    "melee_damage1": {
+      "id": "melee_damage1",
+      "name": "近战大师",
+      "displayname": "近战大师 I",
+      "details": "提升近战武器伤害",
+      "level": "1",
+      "prerequisite": [],
+      "type": "upgrade",
+      "rarity": "uncommon",
+      "icon": "res://icon.svg",
+      "effects": {
+        "melee_damage": 0.2
+      }
+    },
+    "all_stats1": {
+      "id": "all_stats1",
+      "name": "全能强化",
+      "displayname": "全能强化",
+      "details": "小幅提升所有属性",
+      "level": "1",
+      "prerequisite": [],
+      "type": "upgrade",
+      "rarity": "epic",
+      "icon": "res://icon.svg",
+      "effects": {
+        "max_hp": 15,
+        "move_speed": 5,
+        "attack_damage": 3,
+        "armor": 3
+      }
+    },
+    "relic_white_tiger": {
+      "id": "relic_white_tiger",
+      "name": "白虎之魂",
+      "displayname": "白虎之魂",
+      "details": "近战攻击有35%几率追加额外攻击",
+      "level": "1",
+      "prerequisite": [],
+      "type": "relic",
+      "rarity": "legendary",
+      "icon": "res://icon.svg",
+      "effects": {
+        "melee_damage": 0.3,
+        "attack_speed": 0.21
+      }
+    },
+    "relic_azure_dragon": {
+      "id": "relic_azure_dragon",
+      "name": "青龙之魂",
+      "displayname": "青龙之魂",
+      "details": "技能伤害提升50%，冷却缩短20%",
+      "level": "1",
+      "prerequisite": [],
+      "type": "relic",
+      "rarity": "legendary",
+      "icon": "res://icon.svg",
+      "effects": {
+        "skill_damage": 0.5,
+        "skill_cooldown": -0.2
+      }
+    }
+  }
+}
