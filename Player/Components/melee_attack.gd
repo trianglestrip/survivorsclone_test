@@ -70,6 +70,7 @@ func _play_slash_effect(position: Vector2, direction: Vector2):
 	effect_node.name = "SlashEffect"
 	effect_node.position = position
 	effect_node.rotation = direction.angle()
+	effect_node.z_index = 10
 	
 	var sprite = Sprite2D.new()
 	sprite.texture = _slash_frames[0]

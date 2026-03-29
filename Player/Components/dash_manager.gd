@@ -141,6 +141,7 @@ func _play_dash_effect(position: Vector2):
 	_current_effect_node = Node2D.new()
 	_current_effect_node.name = "DashEffect"
 	_current_effect_node.position = position
+	_current_effect_node.z_index = 10
 	
 	_current_effect_sprite = Sprite2D.new()
 	_current_effect_sprite.texture = _dash_frames[0]

@@ -177,6 +177,7 @@ func _play_hit_effect(position: Vector2):
 	var effect_node = Node2D.new()
 	effect_node.name = "HitEffect"
 	effect_node.position = position
+	effect_node.z_index = 10
 	
 	var sprite = Sprite2D.new()
 	sprite.texture = _hit_frames[0]
