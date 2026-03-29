@@ -11,6 +11,7 @@ var dash_mgr
 var active_skill_mgr
 var sect_mgr
 var weapon_registry
+var relic_mgr
 
 # 基础变量
 var last_movement = Vector2.UP
@@ -115,6 +116,19 @@ func _initialize_components():
 	sect_mgr.set_player(self)
 	sect_mgr.set_active_skill_manager(active_skill_mgr)
 	add_child(sect_mgr)
+	
+	# 创建圣物注册表
+	var relic_registry_script = load("res://Utility/relic_registry.gd")
+	var relic_registry = relic_registry_script.new()
+	add_child(relic_registry)
+	
+	# 创建圣物管理器
+	var relic_mgr_script = load("res://Player/Components/relic_manager.gd")
+	relic_mgr = relic_mgr_script.new()
+	relic_mgr.set_player(self)
+	relic_mgr.set_player_stats(stats)
+	relic_mgr.set_relic_registry(relic_registry)
+	add_child(relic_mgr)
 
 func _connect_signals():
 	exp_mgr.level_up.connect(_on_level_up)

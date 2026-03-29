@@ -88,21 +88,7 @@ func _update_display():
 			icon.texture = _create_weapon_placeholder(weapon.get("weapon_type", "sword"))
 
 func _create_weapon_placeholder(weapon_type: String) -> Texture2D:
-	# 根据武器类型选择颜色
-	var color = Color.WHITE
-	match weapon_type:
-		"sword":
-			color = Color(0.7, 0.7, 0.9)
-		"hammer":
-			color = Color(0.9, 0.7, 0.5)
-		"staff":
-			color = Color(0.9, 0.5, 0.5)
-		"dagger":
-			color = Color(0.6, 0.9, 0.6)
-		"spear":
-			color = Color(0.8, 0.8, 0.5)
-	
-	return VisualEffectsHelper.create_placeholder_texture(Vector2(32, 32), color)
+	return VisualEffectsHelper.create_placeholder_texture(Vector2(32, 32))
 
 func switch_weapon(weapon_id: String):
 	if weapon_registry and weapon_registry.equip_weapon(weapon_id):

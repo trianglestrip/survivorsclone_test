@@ -248,9 +248,17 @@
 - ✅ 武器与AttackManager集成
 - ✅ 测试覆盖（test_stage3_weapons.gd - 5/5通过）
 
+✅ **阶段4：圣物系统基础（100%）**
+
+- ✅ 圣物数据结构（relic_config.json - 8种圣物）
+- ✅ 圣物注册表（RelicRegistry）
+- ✅ 圣物效果应用（RelicManager - 属性加成系统）
+- ✅ 圣物掉落系统（RelicDrop + RelicSpawner）
+- ✅ 圣物显示UI（RelicDisplayUI）
+- ✅ 测试覆盖（test_stage4_relics.gd - 4/4通过）
+
 ⏳ **待开始：**
 
-- 阶段4：圣物系统基础
 - 阶段5：敌人系统升级
 - 阶段6：关卡系统
 

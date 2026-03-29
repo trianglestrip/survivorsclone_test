@@ -1,0 +1,234 @@
+{
+  "relics": {
+    "white_tiger": {
+      "id": "white_tiger",
+      "name": "白虎之魂",
+      "name_en": "White Tiger Soul",
+      "description": "近战攻击有几率追加额外攻击",
+      "rarity": "legendary",
+      "icon": "res://Assets/UI/Relics/icon_white_tiger.png",
+      "effects": {
+        "core": {
+          "type": "extra_attack",
+          "trigger": "melee_attack",
+          "chance": 0.35,
+          "damage_multiplier": 1.0
+        },
+        "power": {
+          "type": "stat_bonus",
+          "melee_damage": 0.3
+        },
+        "agility": {
+          "type": "stat_bonus",
+          "attack_speed": 0.21,
+          "move_speed": 0.15
+        },
+        "utility": {
+          "type": "stat_bonus",
+          "melee_damage": 0.15,
+          "defense": 0.12
+        }
+      }
+    },
+    "azure_dragon": {
+      "id": "azure_dragon",
+      "name": "青龙之魂",
+      "name_en": "Azure Dragon Soul",
+      "description": "技能伤害提升，技能冷却缩短",
+      "rarity": "legendary",
+      "icon": "res://Assets/UI/Relics/icon_azure_dragon.png",
+      "effects": {
+        "core": {
+          "type": "skill_enhancement",
+          "skill_damage": 0.5,
+          "skill_cooldown": -0.2
+        },
+        "power": {
+          "type": "stat_bonus",
+          "skill_damage": 0.25
+        },
+        "agility": {
+          "type": "stat_bonus",
+          "cooldown_reduction": 0.15
+        },
+        "utility": {
+          "type": "stat_bonus",
+          "max_hp": 20
+        }
+      }
+    },
+    "vermillion_bird": {
+      "id": "vermillion_bird",
+      "name": "朱雀之魂",
+      "name_en": "Vermillion Bird Soul",
+      "description": "火焰伤害提升，攻击附带灼烧",
+      "rarity": "legendary",
+      "icon": "res://Assets/UI/Relics/icon_vermillion_bird.png",
+      "effects": {
+        "core": {
+          "type": "element_boost",
+          "element": "fire",
+          "damage_bonus": 0.4,
+          "burn_chance": 0.3,
+          "burn_damage": 5
+        },
+        "power": {
+          "type": "stat_bonus",
+          "fire_damage": 0.3
+        },
+        "agility": {
+          "type": "stat_bonus",
+          "move_speed": 0.1
+        },
+        "utility": {
+          "type": "stat_bonus",
+          "critical_chance": 0.1
+        }
+      }
+    },
+    "black_tortoise": {
+      "id": "black_tortoise",
+      "name": "玄武之魂",
+      "name_en": "Black Tortoise Soul",
+      "description": "提升防御和生命恢复",
+      "rarity": "legendary",
+      "icon": "res://Assets/UI/Relics/icon_black_tortoise.png",
+      "effects": {
+        "core": {
+          "type": "defense_boost",
+          "damage_reduction": 0.25,
+          "hp_regen": 2
+        },
+        "power": {
+          "type": "stat_bonus",
+          "max_hp": 30
+        },
+        "agility": {
+          "type": "stat_bonus",
+          "defense": 0.2
+        },
+        "utility": {
+          "type": "lifesteal",
+          "lifesteal_percent": 0.1
+        }
+      }
+    },
+    "fallen_dragon": {
+      "id": "fallen_dragon",
+      "name": "堕龙",
+      "name_en": "Fallen Dragon",
+      "description": "召唤四圣剑，造成大范围伤害",
+      "rarity": "mythic",
+      "icon": "res://Assets/UI/Relics/icon_fallen_dragon.png",
+      "effects": {
+        "core": {
+          "type": "active_ability",
+          "ability": "four_holy_swords",
+          "cooldown": 60.0,
+          "duration": 30.0,
+          "damage": 50
+        },
+        "power": {
+          "type": "stat_bonus",
+          "all_damage": 0.2
+        },
+        "agility": {
+          "type": "stat_bonus",
+          "attack_speed": 0.15,
+          "move_speed": 0.1
+        },
+        "utility": {
+          "type": "stat_bonus",
+          "critical_damage": 0.5
+        }
+      }
+    },
+    "ice_heart": {
+      "id": "ice_heart",
+      "name": "冰心",
+      "name_en": "Ice Heart",
+      "description": "冰霜伤害提升，攻击减速敌人",
+      "rarity": "epic",
+      "icon": "res://Assets/UI/Relics/icon_ice_heart.png",
+      "effects": {
+        "core": {
+          "type": "element_boost",
+          "element": "ice",
+          "damage_bonus": 0.3,
+          "slow_chance": 0.4,
+          "slow_percent": 0.3
+        },
+        "power": {
+          "type": "stat_bonus",
+          "ice_damage": 0.25
+        },
+        "agility": {
+          "type": "stat_bonus",
+          "cooldown_reduction": 0.1
+        },
+        "utility": {
+          "type": "stat_bonus",
+          "max_hp": 15
+        }
+      }
+    },
+    "thunder_mark": {
+      "id": "thunder_mark",
+      "name": "雷印",
+      "name_en": "Thunder Mark",
+      "description": "雷电伤害提升，攻击触发连锁",
+      "rarity": "epic",
+      "icon": "res://Assets/UI/Relics/icon_thunder_mark.png",
+      "effects": {
+        "core": {
+          "type": "element_boost",
+          "element": "thunder",
+          "damage_bonus": 0.35,
+          "chain_chance": 0.25,
+          "chain_count": 2
+        },
+        "power": {
+          "type": "stat_bonus",
+          "thunder_damage": 0.3
+        },
+        "agility": {
+          "type": "stat_bonus",
+          "attack_speed": 0.15
+        },
+        "utility": {
+          "type": "stat_bonus",
+          "critical_chance": 0.08
+        }
+      }
+    },
+    "poison_fang": {
+      "id": "poison_fang",
+      "name": "毒牙",
+      "name_en": "Poison Fang",
+      "description": "毒素伤害提升，中毒效果增强",
+      "rarity": "epic",
+      "icon": "res://Assets/UI/Relics/icon_poison_fang.png",
+      "effects": {
+        "core": {
+          "type": "element_boost",
+          "element": "poison",
+          "damage_bonus": 0.3,
+          "poison_damage": 5,
+          "poison_duration": 2.0
+        },
+        "power": {
+          "type": "stat_bonus",
+          "poison_damage": 0.35
+        },
+        "agility": {
+          "type": "stat_bonus",
+          "move_speed": 0.12
+        },
+        "utility": {
+          "type": "stat_bonus",
+          "max_hp": 20
+        }
+      }
+    }
+  }
+}
