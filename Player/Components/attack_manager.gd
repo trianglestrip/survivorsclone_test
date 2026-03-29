@@ -42,7 +42,7 @@ func _initialize_attack():
 
 func _on_attack_pressed():
 	if current_attack and current_attack.try_attack():
-		if current_attack is MeleeAttack and player and player.has("last_movement"):
+		if current_attack is MeleeAttack and player and "last_movement" in player:
 			current_attack.set_last_movement(player.last_movement)
 		emit_signal("attack_launched", "melee")
 

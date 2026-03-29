@@ -11,7 +11,7 @@ func set_last_movement(dir: Vector2):
 		_last_movement = dir
 
 func get_attack_direction() -> Vector2:
-	if player and player.has("last_movement"):
+	if player and "last_movement" in player:
 		var player_dir = player.last_movement
 		if player_dir != Vector2.ZERO:
 			return player_dir.normalized()
@@ -20,7 +20,8 @@ func get_attack_direction() -> Vector2:
 func play_attack_animation():
 	if player and player.has_node("Sprite2D"):
 		var sprite = player.get_node("Sprite2D")
-		sprite.frame = 2
+		if sprite.frame < sprite.hframes - 1:
+			sprite.frame = 1
 
 func spawn_attack_effect(position: Vector2, direction: Vector2):
 	if player:

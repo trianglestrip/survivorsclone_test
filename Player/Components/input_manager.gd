@@ -43,7 +43,7 @@ func _update_movement():
 
 func _update_attack():
 	var was_pressed = is_attack_pressed
-	is_attack_pressed = Input.is_action_pressed("click") or Input.is_action_just_pressed("attack")
+	is_attack_pressed = Input.is_action_just_pressed("click") or Input.is_action_just_pressed("attack")
 	
 	if is_attack_pressed and not was_pressed:
 		emit_signal("attack_pressed")
