@@ -55,7 +55,28 @@
 
 ## 快速开始
 
-### 运行游戏
+### 🎮 交互式测试场景（推荐）
+
+**快速启动**：
+```powershell
+# 双击运行
+quick_test.bat
+
+# 或使用命令行
+& "F:\project\godot\Godot_v4.6.1-stable_win64_console.exe" tests/interactive_test_world.tscn
+```
+
+**测试功能**：
+- 按 **1-4** 切换宗派（冰心、雷鸣、烈焰、毒瘴）
+- 按 **5-0** 切换武器（6种武器）
+- 按 **Q/E/R** 测试技能
+- 按 **F** 生成测试敌人
+- 按 **G** 清除所有敌人
+- 按 **H** 显示完整帮助
+
+详细说明：[QUICK_TEST.md](QUICK_TEST.md)
+
+### 🎯 运行完整游戏
 
 ```powershell
 # 使用 Godot 编辑器
@@ -64,10 +85,11 @@ F:\project\godot\Godot_v4.6.1-stable_win64.exe --path .
 
 ### 操作方式
 
-- **移动**: WASD 或方向键
-- **攻击**: 自动攻击（武器自动发射）
+- **移动**: WASD
+- **攻击**: 空格 / 鼠标左键
+- **冲刺**: Shift
+- **技能**: Q / E / R
 - **升级**: 升级时点击选择升级选项
-- **声音**: 开始菜单中切换
 
 ---
 
@@ -280,33 +302,40 @@ add_armor=5
 
 ## 测试
 
-### 配置加载测试
+### 🚀 快速测试（推荐）
+
+**运行所有自动化测试**：
 ```powershell
-F:\project\godot\Godot_v4.6.1-stable_win64_console.exe --headless --path . --script tests/test_config_loading.gd
+# 双击运行
+run_all_tests.bat
+
+# 或手动运行
+& "F:\project\godot\Godot_v4.6.1-stable_win64_console.exe" --headless --script tests/test_all_systems.gd
 ```
 
-### 完整测试套件
-```powershell
-F:\project\godot\Godot_v4.6.1-stable_win64_console.exe --headless --path . --script tests/test_complete.gd
-```
+**测试覆盖**：
+- ✅ 操作控制系统（9个测试）
+- ✅ 宗派系统（8个技能测试）
+- ✅ 武器系统（5个测试）
+- ✅ 圣物系统（4个测试）
+- ✅ 敌人系统（5个测试）
+- ✅ 关卡系统（5个测试）
+- ✅ 伤害系统（4个测试）
+- ✅ 特效系统（3个测试）
 
-### 性能测试（500 个敌人）
+**总计**：43个测试，100%通过率
 
-#### 普通对象池测试
-```powershell
-F:\project\godot\Godot_v4.6.1-stable_win64.exe tests/performance_test.tscn
-# 预期 FPS: 7-15（卡顿）
-```
+### 📋 单独测试
 
-#### GPU 实例化测试（推荐）
 ```powershell
-F:\project\godot\Godot_v4.6.1-stable_win64.exe tests/performance_test_gpu.tscn
-# 预期 FPS: 100-300（流畅）
-```
+# 技能系统
+& "F:\project\godot\Godot_v4.6.1-stable_win64_console.exe" --headless --script tests/test_stage2_skills.gd
 
-#### 性能对比说明
-```powershell
-F:\project\godot\Godot_v4.6.1-stable_win64_console.exe --headless --script tests/benchmark_comparison.gd
+# 武器系统
+& "F:\project\godot\Godot_v4.6.1-stable_win64_console.exe" --headless --script tests/test_stage3_weapons.gd
+
+# 特效可视化
+& "F:\project\godot\Godot_v4.6.1-stable_win64_console.exe" --headless --script tests/test_skill_effects_visual.gd
 ```
 
 ---
