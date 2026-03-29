@@ -17,41 +17,48 @@ F:\project\godot\Godot_v4.6.1-stable_win64_console.exe --headless --path . --scr
 F:\project\godot\Godot_v4.6.1-stable_win64.exe --path .
 ```
 
-## 项目架构原则
+## 项目架构原则（暖雪风格）
 
-### 配置驱动设计
-- **所有游戏数据必须从配置文件加载**，不使用硬编码的默认值
-- 配置文件路径：
-  - `config/upgrade_config.ini` - 升级和武器配置
-  - `config/spawn_waves.ini` - 敌人波次配置
-- 启动时必须验证配置完整性，如果配置加载失败，游戏应该退出并报错
+### 设计原则
+1. **零硬编码**：所有数值在GameConstants或配置文件中
+2. **基类继承**：清晰的继承体系（BaseAttack, BaseActiveSkill, BaseEnemy, StatusEffect）
+3. **逻辑解耦**：数值、逻辑、特效完全分离
+4. **高度封装**：重复代码封装为工具类（VisualEffectsHelper）
+5. **配置驱动**：完全由JSON配置文件驱动
 
-### 组件化架构
-- Player 使用组件系统：
-  - `PlayerStats` - 属性管理
-  - `ExperienceManager` - 经验系统
-  - `UpgradeManager` - 升级管理
-  - `AttackManager` - 攻击逻辑管理（新增）
-- 所有技能继承自 `BaseSkill`
-  - 技能逻辑在各自独立文件中实现
-  - BaseSkill 定义接口和通用方法
-- 所有敌人继承自 `BaseEnemy`
-- 所有升级效果继承自 `BaseEffect`
+### 核心架构
+- **GameConstants**：统一管理颜色、数值、枚举
+- **VisualEffectsHelper**：封装所有特效逻辑（震动、闪烁、淡出）
+- **StatusEffect**：状态效果基类（减速、灼烧、中毒、冻结）
+- **BaseActiveSkill**：主动技能基类（QER技能）
+- **BaseAttack**：攻击基类（MeleeAttack, RangedAttack）
 
-### 技能系统架构
-- **基类 `BaseSkill`** - 定义接口（`get_spawn_params()`, `update_skill_instance()`）
-- **子类** - 独立实现技能行为（`IceSpear`, `Tornado`, `Javelin`）
-- **SkillInstanceManager** - 统一管理技能实例，使用 GPU 实例化优化
-- **AttackManager** - 管理技能计时器和攻击触发
+### Player组件系统
+- InputManager - 输入处理
+- AttackManager - 双攻击模式（主攻击+副攻击）
+- DashManager - 冲刺闪避
+- ActiveSkillManager - QER技能管理
+- SectManager - 宗派系统
+- UpgradeManager - 升级管理（简化版）
+- ExperienceManager - 经验系统
+- PlayerStats - 属性管理
 
-### 事件驱动
-- 使用 `EventBus` 进行系统间通信
-- 避免直接耦合
+### 宗派系统（阶段2）
+- 4大宗派：冰心宗、雷鸣宗、烈焰宗、毒瘴宗
+- 每个宗派3个技能（Q/E/R）
+- 配置文件：config/sect_config.json
 
-### 性能优化
-- 使用 `ObjectPool` 管理频繁创建/销毁的对象
-- 使用 `SkillInstanceManager` 和 `EnemyInstanceManager` 进行 GPU 实例化
-- 避免在 `_process()` 中进行昂贵的操作
+### 配置文件
+- stage1_controls.json - 操作和攻击配置
+- sect_config.json - 宗派和技能配置
+- upgrade_config.json - 升级配置（简化）
+
+### 已删除的旧系统
+- ❌ 旧被动技能系统（ice_spear, tornado, javelin）
+- ❌ GPU实例化管理器（skill_instance_manager, enemy_instance_manager）
+- ❌ 复杂的Effect工厂系统
+- ❌ 旧注册系统（base_registry, skill_registry, enemy_registry）
+- ❌ 旧敌人生成器（enemy_spawner_gpu, spawn_info）
 
 ## 编码规范
 
@@ -71,19 +78,18 @@ F:\project\godot\Godot_v4.6.1-stable_win64.exe --path .
 
 ## 文档管理
 
-### 文档组织
-- **所有 MD 文档必须放在 `docs/` 目录中**
-- **只有 `README.md` 保留在项目根目录**
-- 文档分类：
-  - 架构设计文档
-  - 系统说明文档
-  - 开发指南文档
-  - 历史记录文档
+### 文档原则
+- **精简文档**：不要频繁创建总结性文档
+- **重要信息记录到rules**：架构、设计原则、关键配置
+- **保留必要文档**：
+  - README.md - 项目说明
+  - QUICK_REFERENCE.md - 快速参考
+  - .trae/documents/ - 详细技术文档（仅必要时）
 
-### Git 提交前检查
-- **每次提交前必须更新 `README.md`**
-- README.md 必须包含：
-  - 当前游戏内容（敌人类型、技能、玩法）
-  - 最新功能说明
-  - 文档索引（指向 docs/ 目录）
-- 确保文档链接正确指向 docs/ 目录
+### 当前状态（2026-03-29）
+- 提交：f32978f
+- 阶段1：✅ 操作控制系统（100%）
+- 阶段2：✅ 宗派系统基础（90%，Q技能完成）
+- 阶段3：✅ 武器系统（100%）
+- 测试通过率：95%（48.5/51）
+- 代码净减少：3930行（-40%）
