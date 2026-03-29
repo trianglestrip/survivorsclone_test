@@ -127,7 +127,7 @@ func try_dash() -> bool:
 		move_dir = input_manager.get_move_direction()
 	
 	if move_dir == Vector2.ZERO:
-		if player and player.has("last_movement"):
+		if player and "last_movement" in player:
 			move_dir = player.last_movement
 	
 	if move_dir == Vector2.ZERO:

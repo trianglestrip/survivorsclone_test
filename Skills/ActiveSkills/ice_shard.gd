@@ -46,15 +46,25 @@ func _spawn_projectile(pos: Vector2, dir: Vector2):
 	
 	if player and player.get_parent():
 		player.get_parent().call_deferred("add_child", projectile)
-	
-	_animate_projectile(projectile, dir)
+		call_deferred("_animate_projectile", projectile, dir)
+	else:
+		projectile.queue_free()
 
 func _animate_projectile(projectile: Node2D, direction: Vector2):
+	if not is_instance_valid(projectile):
+		return
+	
+	if not projectile.is_inside_tree():
+		await projectile.tree_entered
+	
+	if not is_instance_valid(projectile) or not projectile.is_inside_tree():
+		return
+	
 	var distance_traveled = 0.0
 	var lifetime = range / projectile_speed
 	
 	for t in range(int(lifetime * 60)):
-		await get_tree().create_timer(1.0 / 60.0).timeout
+		await projectile.get_tree().create_timer(1.0 / 60.0).timeout
 		
 		if not is_instance_valid(projectile):
 			return
