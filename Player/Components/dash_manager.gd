@@ -31,8 +31,21 @@ var dash_target_pos: Vector2 = Vector2.ZERO
 var player: Node = null
 var input_manager: Node = null
 
+## 特效
+var _dash_frames: Array = []
+var _current_effect_node: Node2D = null
+var _current_effect_sprite: Sprite2D = null
+
 func _ready():
 	_load_config()
+	_load_dash_frames()
+
+func _load_dash_frames():
+	for i in range(8):
+		var texture_path = "res://Textures/Placeholder/Effects/Dash/dash_%d.png" % i
+		if ResourceLoader.exists(texture_path):
+			var texture = load(texture_path)
+			_dash_frames.append(texture)
 
 func _load_config():
 	var json_data = ConfigManager.load_json_config("res://config/stage1_controls.json")
@@ -117,7 +130,40 @@ func _start_dash(direction: Vector2):
 	dash_start_pos = player.global_position
 	dash_target_pos = dash_start_pos + direction * distance
 	
+	_play_dash_effect(dash_start_pos)
+	
 	emit_signal("dash_started")
+
+func _play_dash_effect(position: Vector2):
+	if _dash_frames.is_empty():
+		return
+	
+	_current_effect_node = Node2D.new()
+	_current_effect_node.name = "DashEffect"
+	_current_effect_node.position = position
+	
+	_current_effect_sprite = Sprite2D.new()
+	_current_effect_sprite.texture = _dash_frames[0]
+	_current_effect_sprite.scale = Vector2(1.5, 1.5)
+	_current_effect_node.add_child(_current_effect_sprite)
+	
+	if player and player.get_parent():
+		player.get_parent().add_child(_current_effect_node)
+	
+	_animate_dash_effect()
+
+func _animate_dash_effect():
+	for i in range(_dash_frames.size()):
+		await get_tree().create_timer(0.03).timeout
+		if is_instance_valid(_current_effect_sprite):
+			if i < _dash_frames.size():
+				_current_effect_sprite.texture = _dash_frames[i]
+	
+	await get_tree().create_timer(0.1).timeout
+	if is_instance_valid(_current_effect_node):
+		_current_effect_node.queue_free()
+		_current_effect_node = null
+		_current_effect_sprite = null
 
 func _end_dash():
 	is_dashing = false

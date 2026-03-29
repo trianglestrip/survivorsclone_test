@@ -5,6 +5,18 @@ extends BaseAttack
 ## 继承 BaseAttack，实现具体攻击逻辑
 
 var _last_movement: Vector2 = Vector2.RIGHT
+var _slash_frames: Array = []
+var _current_frame: int = 0
+
+func _ready():
+	_load_slash_frames()
+
+func _load_slash_frames():
+	for i in range(8):
+		var texture_path = "res://Textures/Placeholder/Effects/Slash/slash_%d.png" % i
+		if ResourceLoader.exists(texture_path):
+			var texture = load(texture_path)
+			_slash_frames.append(texture)
 
 func set_last_movement(dir: Vector2):
 	if dir != Vector2.ZERO:
@@ -44,9 +56,41 @@ func spawn_attack_effect(position: Vector2, direction: Vector2):
 		
 		hit_box.area_entered.connect(_on_attack_hit.bind(damage, knockback, direction))
 		
+		_play_slash_effect(position, direction)
+		
 		await get_tree().create_timer(0.1).timeout
 		if is_instance_valid(hit_box):
 			hit_box.queue_free()
+
+func _play_slash_effect(position: Vector2, direction: Vector2):
+	if _slash_frames.is_empty():
+		return
+	
+	var effect_node = Node2D.new()
+	effect_node.name = "SlashEffect"
+	effect_node.position = position
+	effect_node.rotation = direction.angle()
+	
+	var sprite = Sprite2D.new()
+	sprite.texture = _slash_frames[0]
+	sprite.scale = Vector2(1.5, 1.5)
+	effect_node.add_child(sprite)
+	
+	if player and player.get_parent():
+		player.get_parent().add_child(effect_node)
+	
+	_animate_slash(sprite, effect_node)
+
+func _animate_slash(sprite: Sprite2D, effect_node: Node2D):
+	for i in range(_slash_frames.size()):
+		await get_tree().create_timer(0.05).timeout
+		if is_instance_valid(sprite):
+			if i < _slash_frames.size():
+				sprite.texture = _slash_frames[i]
+	
+	await get_tree().create_timer(0.1).timeout
+	if is_instance_valid(effect_node):
+		effect_node.queue_free()
 
 func _on_attack_hit(area: Area2D, dmg: int, kb: int, dir: Vector2):
 	if area.has_signal("hurt"):
