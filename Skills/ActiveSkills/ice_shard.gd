@@ -36,11 +36,19 @@ func _spawn_projectile(pos: Vector2, dir: Vector2):
 	projectile.position = pos
 	projectile.z_index = 5
 	
-	var sprite = Sprite2D.new()
+	# 使用动画精灵
+	var sprite = preload("res://Utility/animated_skill_sprite.gd").new()
 	sprite.rotation = dir.angle()
-	sprite.scale = Vector2(1.5, 1.5)
-	sprite.modulate = GameConstants.Colors.SECT_ICE
-	sprite.texture = VisualEffectsHelper.create_placeholder_texture(Vector2(16, 8))
+	sprite.scale = Vector2(2.0, 2.0)
+	sprite.modulate = Color(1.0, 1.0, 1.0, 1.0)  # 不再需要着色，纹理已有颜色
+	sprite.fps = 15.0
+	sprite.loop = true
+	
+	# 尝试加载动画帧
+	if not sprite.load_from_skill("ice_shard"):
+		# 回退到占位纹理
+		sprite.texture = VisualEffectsHelper.create_placeholder_texture(Vector2(16, 8))
+		sprite.modulate = GameConstants.Colors.SECT_ICE
 	
 	projectile.add_child(sprite)
 	

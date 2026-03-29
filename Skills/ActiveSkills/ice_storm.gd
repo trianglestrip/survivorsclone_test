@@ -28,20 +28,32 @@ func _create_ice_storm(pos: Vector2):
 	storm_node.global_position = pos
 	storm_node.z_index = 3
 	
-	# 创建视觉效果（5层，更强烈）
-	for i in range(5):
-		var sprite = Sprite2D.new()
-		var layer_size = radius * 2.0 * (1.0 - i * 0.15)
-		sprite.texture = VisualEffectsHelper.create_glow_background(
-			Vector2(layer_size, layer_size),
-			GameConstants.Colors.SECT_ICE
-		)
-		sprite.modulate = GameConstants.Colors.SECT_ICE
-		sprite.modulate.a = 0.6 - i * 0.1
-		sprite.scale = Vector2(1.0, 1.0)
-		sprite.rotation = i * PI / 5
-		sprite.name = "Layer" + str(i)
-		storm_node.add_child(sprite)
+	# 创建动画精灵作为主视觉效果
+	var animated_sprite = preload("res://Utility/animated_skill_sprite.gd").new()
+	animated_sprite.scale = Vector2(radius / 96.0, radius / 96.0)  # 缩放到合适大小（R技能图更大）
+	animated_sprite.modulate = Color(1.0, 1.0, 1.0, 0.9)
+	animated_sprite.fps = 12.0
+	animated_sprite.loop = true
+	animated_sprite.name = "AnimatedLayer"
+	
+	# 尝试加载动画帧
+	if animated_sprite.load_from_skill("ice_storm"):
+		storm_node.add_child(animated_sprite)
+	else:
+		# 回退到原来的多层效果
+		for i in range(5):
+			var sprite = Sprite2D.new()
+			var layer_size = radius * 2.0 * (1.0 - i * 0.15)
+			sprite.texture = VisualEffectsHelper.create_glow_background(
+				Vector2(layer_size, layer_size),
+				GameConstants.Colors.SECT_ICE
+			)
+			sprite.modulate = GameConstants.Colors.SECT_ICE
+			sprite.modulate.a = 0.6 - i * 0.1
+			sprite.scale = Vector2(1.0, 1.0)
+			sprite.rotation = i * PI / 5
+			sprite.name = "Layer" + str(i)
+			storm_node.add_child(sprite)
 	
 	# 添加伤害区域
 	var damage_area = Area2D.new()

@@ -30,18 +30,29 @@ func _create_ice_field(pos: Vector2):
 	field_node.global_position = pos
 	field_node.z_index = 1
 	
-	# 创建多层视觉效果（更明显）
-	# 底层：大范围低透明度
-	var base_layer = Sprite2D.new()
-	base_layer.texture = VisualEffectsHelper.create_glow_background(
-		Vector2(radius * 2, radius * 2),
-		GameConstants.Colors.SECT_ICE
-	)
-	base_layer.modulate = GameConstants.Colors.SECT_ICE
-	base_layer.modulate.a = 0.3
-	base_layer.scale = Vector2(1.0, 1.0)
-	base_layer.name = "BaseLayer"
-	field_node.add_child(base_layer)
+	# 创建动画精灵作为主视觉效果
+	var animated_sprite = preload("res://Utility/animated_skill_sprite.gd").new()
+	animated_sprite.scale = Vector2(radius / 64.0, radius / 64.0)  # 缩放到合适大小
+	animated_sprite.modulate = Color(1.0, 1.0, 1.0, 0.8)
+	animated_sprite.fps = 8.0
+	animated_sprite.loop = true
+	animated_sprite.name = "AnimatedLayer"
+	
+	# 尝试加载动画帧
+	if animated_sprite.load_from_skill("ice_field"):
+		field_node.add_child(animated_sprite)
+	else:
+		# 回退到原来的多层效果
+		var base_layer = Sprite2D.new()
+		base_layer.texture = VisualEffectsHelper.create_glow_background(
+			Vector2(radius * 2, radius * 2),
+			GameConstants.Colors.SECT_ICE
+		)
+		base_layer.modulate = GameConstants.Colors.SECT_ICE
+		base_layer.modulate.a = 0.3
+		base_layer.scale = Vector2(1.0, 1.0)
+		base_layer.name = "BaseLayer"
+		field_node.add_child(base_layer)
 	
 	# 中层：中等范围中透明度
 	var mid_layer = Sprite2D.new()
