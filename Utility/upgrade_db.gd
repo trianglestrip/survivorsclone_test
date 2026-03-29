@@ -12,7 +12,35 @@ func _load_upgrade_config():
 		print("\n=== 加载升级配置 ===")
 		print("配置文件: %s" % GameConfig.PATH_UPGRADE_CONFIG)
 	
-	# 使用 FileAccess 直接读取文件以避免编码问题
+	if GameConfig.PATH_UPGRADE_CONFIG.ends_with(".json"):
+		_load_json_upgrade_config()
+	else:
+		_load_ini_upgrade_config()
+	
+	var total_time := Time.get_ticks_msec() - start_time
+	if GameConfig.DEBUG_LOGGING:
+		print("✓ 成功解析 %d 个升级配置 (耗时 %d ms)" % [UPGRADES.size(), total_time])
+
+func _load_json_upgrade_config():
+	var json_data = ConfigManager.load_json_config(GameConfig.PATH_UPGRADE_CONFIG)
+	if not json_data or not json_data.has("upgrades"):
+		push_error("❌ JSON 解析失败！")
+		push_error("游戏无法继续，请检查配置文件格式！")
+		get_tree().quit(1)
+		return
+	
+	UPGRADES = json_data["upgrades"]
+	
+	for upgrade_id in UPGRADES:
+		if not UPGRADES[upgrade_id].has("prerequisite"):
+			UPGRADES[upgrade_id]["prerequisite"] = []
+		elif typeof(UPGRADES[upgrade_id]["prerequisite"]) == TYPE_STRING:
+			if UPGRADES[upgrade_id]["prerequisite"] != "":
+				UPGRADES[upgrade_id]["prerequisite"] = UPGRADES[upgrade_id]["prerequisite"].split(",", false)
+			else:
+				UPGRADES[upgrade_id]["prerequisite"] = []
+
+func _load_ini_upgrade_config():
 	var file = FileAccess.open(GameConfig.PATH_UPGRADE_CONFIG, FileAccess.READ)
 	
 	if file == null:
@@ -22,18 +50,15 @@ func _load_upgrade_config():
 		get_tree().quit(1)
 		return
 	
-	# 手动解析 INI
 	var current_section = ""
 	var parsed_sections = 0
 	
 	while not file.eof_reached():
 		var line = file.get_line().strip_edges()
 		
-		# 跳过空行和注释
 		if line == "" or line.begins_with("#") or line.begins_with(";"):
 			continue
 		
-		# 检查是否是节标题
 		if line.begins_with("[") and line.ends_with("]"):
 			current_section = line.substr(1, line.length() - 2)
 			UPGRADES[current_section] = {
@@ -42,20 +67,17 @@ func _load_upgrade_config():
 			parsed_sections += 1
 			continue
 		
-		# 解析键值对
 		if current_section != "" and line.contains("="):
 			var parts = line.split("=", true, 1)
 			if parts.size() == 2:
 				var key = parts[0].strip_edges()
 				var value = parts[1].strip_edges()
 				
-				# 处理 prerequisite 特殊情况
 				if key == "prerequisite":
 					if value != "":
 						UPGRADES[current_section]["prerequisite"] = value.split(",", false)
 					else:
 						UPGRADES[current_section]["prerequisite"] = []
-				# 处理数值类型
 				elif key in ["set_level", "add_baseammo", "set_ammo", "add_armor", "add_additional_attacks", "heal"]:
 					if value.is_valid_int():
 						UPGRADES[current_section][key] = int(value)
@@ -75,11 +97,6 @@ func _load_upgrade_config():
 		push_error("❌ INI 解析失败！未找到任何配置节")
 		push_error("游戏无法继续，请检查配置文件格式！")
 		get_tree().quit(1)
-		return
-	
-	var total_time := Time.get_ticks_msec() - start_time
-	if GameConfig.DEBUG_LOGGING:
-		print("✓ 成功解析 %d 个升级配置 (耗时 %d ms)" % [parsed_sections, total_time])
 
 # 验证升级配置的完整性
 func _validate_upgrades():

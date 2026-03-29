@@ -46,7 +46,7 @@ var enemy_close = []
 signal playerdeath
 
 func _ready():
-	_initialize_components()
+	await _initialize_components()
 	_connect_signals()
 	_initial_setup()
 
@@ -55,6 +55,11 @@ func _initialize_components():
 	var stats_script = load("res://Player/Components/player_stats.gd")
 	stats = stats_script.new()
 	add_child(stats)
+	
+	# 创建输入管理器
+	var input_mgr_script = load("res://Player/Components/input_manager.gd")
+	var input_mgr = input_mgr_script.new()
+	add_child(input_mgr)
 	
 	# 创建技能实例管理器（GPU + 技能状态管理）
 	var skill_inst_mgr_script = load("res://Skills/skill_instance_manager.gd")
@@ -83,7 +88,15 @@ func _initialize_components():
 	attack_mgr = attack_mgr_script.new()
 	attack_mgr.set_player(self)
 	attack_mgr.set_skill_instance_manager(skill_instance_mgr)
+	attack_mgr.set_input_manager(input_mgr)
 	add_child(attack_mgr)
+	
+	# 创建冲刺管理器
+	var dash_mgr_script = load("res://Player/Components/dash_manager.gd")
+	var dash_mgr = dash_mgr_script.new()
+	dash_mgr.set_player(self)
+	dash_mgr.set_input_manager(input_mgr)
+	add_child(dash_mgr)
 
 func _connect_signals():
 	exp_mgr.level_up.connect(_on_level_up)

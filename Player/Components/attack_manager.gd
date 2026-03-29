@@ -55,3 +55,10 @@ func get_current_attack() -> BaseAttack:
 
 func can_attack() -> bool:
 	return current_attack and current_attack.can_attack()
+
+## 向后兼容 - 旧的方法
+func start_attacks():
+	pass
+
+func set_skill_instance_manager(skill_mgr: Node):
+	pass

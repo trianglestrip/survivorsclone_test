@@ -166,8 +166,34 @@ func _load_from_config_async():
 	
 	_finalize_loading()
 
-## 读取 INI 配置文件
+## 读取配置文件（支持 JSON 和 INI）
 func _read_config_file(file_path: String) -> Dictionary:
+	if file_path.ends_with(".json"):
+		return _read_json_config(file_path)
+	else:
+		return _read_ini_config(file_path)
+
+## 读取 JSON 配置文件
+func _read_json_config(file_path: String) -> Dictionary:
+	var json_data = ConfigManager.load_json_config(file_path)
+	if not json_data:
+		return {}
+	
+	var configs := {}
+	var root_key = ""
+	
+	if json_data.has("skills"):
+		root_key = "skills"
+	elif json_data.has("enemies"):
+		root_key = "enemies"
+	
+	if root_key != "" and json_data.has(root_key):
+		configs = json_data[root_key]
+	
+	return configs
+
+## 读取 INI 配置文件（向后兼容）
+func _read_ini_config(file_path: String) -> Dictionary:
 	var file = FileAccess.open(file_path, FileAccess.READ)
 	
 	if file == null:
