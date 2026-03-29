@@ -172,6 +172,8 @@ func _on_hurt_box_hurt(damage, _angle, _knockback):
 	healthBar.value = stats.hp
 	
 	_play_hit_effect(global_position)
+	_trigger_hurt_screen_shake()
+	_trigger_hurt_flash()
 	
 	if not stats.is_alive():
 		death()
@@ -195,16 +197,42 @@ func _play_hit_effect(position: Vector2):
 	
 	_animate_hit_effect(sprite, effect_node)
 
-func _animate_hit_effect(sprite: Sprite2D, effect_node: Node2D):
+func _animate_hit_effect(sprite_node: Sprite2D, effect_node: Node2D):
 	for i in range(_hit_frames.size()):
-		await get_tree().create_timer(0.04).timeout
-		if is_instance_valid(sprite):
+		await get_tree().create_timer(0.035).timeout
+		if is_instance_valid(sprite_node):
 			if i < _hit_frames.size():
-				sprite.texture = _hit_frames[i]
+				sprite_node.texture = _hit_frames[i]
+				sprite_node.scale = Vector2(1.2, 1.2) * (1.0 + i * 0.08)
 	
-	await get_tree().create_timer(0.1).timeout
+	await get_tree().create_timer(0.08).timeout
 	if is_instance_valid(effect_node):
 		effect_node.queue_free()
+
+func _trigger_hurt_screen_shake():
+	if has_node("Camera2D"):
+		var camera = get_node("Camera2D")
+		_shake_camera(camera, 0.6)
+
+func _shake_camera(camera: Camera2D, intensity: float):
+	var original_offset = camera.offset
+	var shake_amount = intensity * 10.0
+	
+	for i in range(8):
+		var shake_x = randf_range(-shake_amount, shake_amount)
+		var shake_y = randf_range(-shake_amount, shake_amount)
+		camera.offset = original_offset + Vector2(shake_x, shake_y)
+		await get_tree().create_timer(0.02).timeout
+		shake_amount *= 0.75
+	
+	camera.offset = original_offset
+
+func _trigger_hurt_flash():
+	var original_modulate = sprite.modulate
+	sprite.modulate = Color(1.5, 0.5, 0.5, 1.0)
+	await get_tree().create_timer(0.1).timeout
+	if is_instance_valid(sprite):
+		sprite.modulate = original_modulate
 
 func get_random_target():
 	if enemy_close.size() > 0:

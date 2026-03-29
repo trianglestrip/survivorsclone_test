@@ -1,12 +1,15 @@
 class_name MeleeAttack
 extends BaseAttack
 
-## 近战攻击实现
+## 近战攻击实现 - 暖雪风格
 ## 继承 BaseAttack，实现具体攻击逻辑
+## 特点：快速响应、强打击感、清晰反馈
 
 var _last_movement: Vector2 = Vector2.RIGHT
 var _slash_frames: Array = []
 var _current_frame: int = 0
+var _hit_pause_duration: float = 0.05
+var _animation_speed: float = 1.5
 
 func _ready():
 	_load_slash_frames()
@@ -57,6 +60,7 @@ func spawn_attack_effect(position: Vector2, direction: Vector2):
 		hit_box.area_entered.connect(_on_attack_hit.bind(damage, knockback, direction))
 		
 		_play_slash_effect(position, direction)
+		_trigger_screen_shake(0.2)
 		
 		await get_tree().create_timer(0.1).timeout
 		if is_instance_valid(hit_box):
@@ -83,16 +87,44 @@ func _play_slash_effect(position: Vector2, direction: Vector2):
 	_animate_slash(sprite, effect_node)
 
 func _animate_slash(sprite: Sprite2D, effect_node: Node2D):
+	var frame_time = 0.04 / _animation_speed
 	for i in range(_slash_frames.size()):
-		await get_tree().create_timer(0.05).timeout
+		await get_tree().create_timer(frame_time).timeout
 		if is_instance_valid(sprite):
 			if i < _slash_frames.size():
 				sprite.texture = _slash_frames[i]
+				sprite.scale = Vector2(0.8, 0.8) * (1.0 + i * 0.05)
 	
-	await get_tree().create_timer(0.1).timeout
+	await get_tree().create_timer(0.05).timeout
 	if is_instance_valid(effect_node):
 		effect_node.queue_free()
 
 func _on_attack_hit(area: Area2D, dmg: int, kb: int, dir: Vector2):
 	if area.has_signal("hurt"):
 		area.emit_signal("hurt", dmg, dir, kb)
+		_trigger_hit_pause()
+		_trigger_screen_shake(0.4)
+
+func _trigger_hit_pause():
+	if _hit_pause_duration > 0:
+		Engine.time_scale = 0.1
+		await get_tree().create_timer(_hit_pause_duration * 0.1).timeout
+		Engine.time_scale = 1.0
+
+func _trigger_screen_shake(intensity: float):
+	if player and player.has_node("Camera2D"):
+		var camera = player.get_node("Camera2D")
+		_shake_camera(camera, intensity)
+
+func _shake_camera(camera: Camera2D, intensity: float):
+	var original_offset = camera.offset
+	var shake_amount = intensity * 8.0
+	
+	for i in range(6):
+		var shake_x = randf_range(-shake_amount, shake_amount)
+		var shake_y = randf_range(-shake_amount, shake_amount)
+		camera.offset = original_offset + Vector2(shake_x, shake_y)
+		await get_tree().create_timer(0.02).timeout
+		shake_amount *= 0.7
+	
+	camera.offset = original_offset

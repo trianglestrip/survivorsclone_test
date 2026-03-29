@@ -12,10 +12,12 @@ signal dash_cooldown_ended()
 signal dash_cooldown_updated(current_cooldown: float, max_cooldown: float)
 
 ## 冲刺属性（从配置加载）
-var cooldown: float = 1.0
-var distance: float = 150.0
-var duration: float = 0.2
+var cooldown: float = 0.8
+var distance: float = 160.0
+var duration: float = 0.12
 var invincible_duration: float = 0.3
+var trail_effect: bool = true
+var screen_shake_intensity: float = 0.3
 
 ## 状态
 var is_dashing: bool = false
@@ -27,6 +29,9 @@ var invincible_timer: float = 0.0
 var dash_direction: Vector2 = Vector2.ZERO
 var dash_start_pos: Vector2 = Vector2.ZERO
 var dash_target_pos: Vector2 = Vector2.ZERO
+
+## 残影效果
+var _trail_nodes: Array = []
 
 ## 引用
 var player: Node = null
@@ -52,10 +57,12 @@ func _load_config():
 	var json_data = ConfigManager.load_json_config("res://config/stage1_controls.json")
 	if json_data and json_data.has("dash"):
 		var dash_config = json_data["dash"]
-		cooldown = dash_config.get("cooldown", 1.0)
-		distance = dash_config.get("distance", 150.0)
-		duration = dash_config.get("duration", 0.2)
+		cooldown = dash_config.get("cooldown", 0.8)
+		distance = dash_config.get("distance", 160.0)
+		duration = dash_config.get("duration", 0.12)
 		invincible_duration = dash_config.get("invincible_frames", 0.3)
+		trail_effect = dash_config.get("trail_effect", true)
+		screen_shake_intensity = dash_config.get("screen_shake_intensity", 0.3)
 
 func set_player(p: Node):
 	player = p
@@ -82,10 +89,13 @@ func _update_dash(delta: float):
 	dash_timer += delta
 	
 	var progress = min(dash_timer / duration, 1.0)
-	var new_pos = dash_start_pos.lerp(dash_target_pos, progress)
+	var eased_progress = ease(progress, -2.0)
+	var new_pos = dash_start_pos.lerp(dash_target_pos, eased_progress)
 	
 	if player:
 		player.global_position = new_pos
+		if trail_effect and int(dash_timer * 100) % 2 == 0:
+			_create_trail_effect(new_pos)
 	
 	if progress >= 1.0:
 		_end_dash()
@@ -133,6 +143,8 @@ func _start_dash(direction: Vector2):
 	dash_target_pos = dash_start_pos + direction * distance
 	
 	_play_dash_effect(dash_start_pos)
+	_trigger_screen_shake()
+	_clear_old_trails()
 	
 	emit_signal("dash_started")
 
@@ -186,3 +198,58 @@ func get_cooldown_progress() -> float:
 	if not is_on_cooldown:
 		return 1.0
 	return 1.0 - (current_cooldown / cooldown)
+
+func _create_trail_effect(position: Vector2):
+	if not player or not player.has_node("Sprite2D"):
+		return
+	
+	var trail = Sprite2D.new()
+	trail.name = "DashTrail"
+	trail.texture = player.get_node("Sprite2D").texture
+	trail.frame = player.get_node("Sprite2D").frame
+	trail.flip_h = player.get_node("Sprite2D").flip_h
+	trail.position = position
+	trail.modulate = Color(0.5, 0.8, 1.0, 0.6)
+	trail.z_index = player.z_index - 1
+	
+	if player.get_parent():
+		player.get_parent().add_child(trail)
+		_trail_nodes.append(trail)
+		_fade_out_trail(trail)
+
+func _fade_out_trail(trail: Sprite2D):
+	var fade_duration = 0.3
+	var elapsed = 0.0
+	while elapsed < fade_duration and is_instance_valid(trail):
+		await get_tree().create_timer(0.02).timeout
+		elapsed += 0.02
+		if is_instance_valid(trail):
+			trail.modulate.a = lerp(0.6, 0.0, elapsed / fade_duration)
+	
+	if is_instance_valid(trail):
+		trail.queue_free()
+		_trail_nodes.erase(trail)
+
+func _clear_old_trails():
+	for trail in _trail_nodes:
+		if is_instance_valid(trail):
+			trail.queue_free()
+	_trail_nodes.clear()
+
+func _trigger_screen_shake():
+	if player and player.has_node("Camera2D"):
+		var camera = player.get_node("Camera2D")
+		_shake_camera(camera, screen_shake_intensity)
+
+func _shake_camera(camera: Camera2D, intensity: float):
+	var original_offset = camera.offset
+	var shake_amount = intensity * 5.0
+	
+	for i in range(4):
+		var shake_x = randf_range(-shake_amount, shake_amount)
+		var shake_y = randf_range(-shake_amount, shake_amount)
+		camera.offset = original_offset + Vector2(shake_x, shake_y)
+		await get_tree().create_timer(0.015).timeout
+		shake_amount *= 0.6
+	
+	camera.offset = original_offset

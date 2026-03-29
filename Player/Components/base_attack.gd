@@ -10,11 +10,13 @@ signal attack_started()
 signal attack_ended()
 
 ## 攻击属性（从配置加载）
-var cooldown: float = 0.5
-var range: float = 80.0
-var damage: int = 10
-var knockback: int = 150
+var cooldown: float = 0.3
+var range: float = 90.0
+var damage: int = 12
+var knockback: int = 180
 var attack_duration: float = 0.2
+var animation_speed: float = 1.5
+var hit_pause_duration: float = 0.05
 
 ## 状态
 var is_on_cooldown: bool = false
@@ -42,10 +44,12 @@ func set_player(p: Node):
 	player = p
 
 func load_config(config: Dictionary):
-	cooldown = config.get("base_cooldown", 0.5)
-	range = config.get("base_range", 80.0)
-	damage = config.get("base_damage", 10)
-	knockback = config.get("base_knockback", 150)
+	cooldown = config.get("base_cooldown", 0.3)
+	range = config.get("base_range", 90.0)
+	damage = config.get("base_damage", 12)
+	knockback = config.get("base_knockback", 180)
+	animation_speed = config.get("animation_speed", 1.5)
+	hit_pause_duration = config.get("hit_pause_duration", 0.05)
 
 func can_attack() -> bool:
 	return not is_on_cooldown and not is_attacking
