@@ -45,10 +45,15 @@ func spawn_attack_effect(attack_position: Vector2, attack_direction: Vector2):
 	if player:
 		var hit_box = Area2D.new()
 		hit_box.name = "MeleeAttackHitbox"
-		hit_box.collision_layer = 4
-		hit_box.collision_mask = 4
-		hit_box.position = attack_position
+		hit_box.collision_layer = 0   # 不在任何层
+		hit_box.collision_mask = 2    # 检测敌人层
+		hit_box.global_position = attack_position  # 使用global_position
 		hit_box.add_to_group("attack")
+		
+		# 设置伤害元数据
+		hit_box.set_meta("damage", damage)
+		hit_box.set_meta("knockback", knockback)
+		hit_box.set_meta("direction", attack_direction)
 		
 		var shape = CollisionShape2D.new()
 		var rect = RectangleShape2D.new()

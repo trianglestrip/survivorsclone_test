@@ -11,7 +11,14 @@ var hit_once_array = []
 
 func _on_area_entered(area):
 	if area.is_in_group("attack"):
-		if not area.get("damage") == null:
+		# 尝试获取伤害值（支持属性和元数据两种方式）
+		var damage_value = null
+		if area.get("damage") != null:
+			damage_value = area.get("damage")
+		elif area.has_meta("damage"):
+			damage_value = area.get_meta("damage")
+		
+		if damage_value != null:
 			match HurtBoxType:
 				0: #Cooldown
 					collision.call_deferred("set","disabled",true)
@@ -27,15 +34,23 @@ func _on_area_entered(area):
 				2: #DisableHitBox
 					if area.has_method("tempdisable"):
 						area.tempdisable()
-			var damage = area.damage
+			
 			var angle = Vector2.ZERO
 			var knockback = 1
-			if not area.get("angle") == null:
-				angle = area.angle
-			if not area.get("knockback_amount") == null:
-				knockback = area.knockback_amount
 			
-			emit_signal("hurt",damage, angle, knockback)
+			# 获取角度（支持属性和元数据）
+			if area.get("angle") != null:
+				angle = area.get("angle")
+			elif area.has_meta("angle"):
+				angle = area.get_meta("angle")
+			
+			# 获取击退（支持属性和元数据）
+			if area.get("knockback_amount") != null:
+				knockback = area.get("knockback_amount")
+			elif area.has_meta("knockback"):
+				knockback = area.get_meta("knockback")
+			
+			emit_signal("hurt", damage_value, angle, knockback)
 			if area.has_method("enemy_hit"):
 				area.enemy_hit(1)
 

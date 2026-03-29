@@ -92,7 +92,8 @@ F:\project\godot\Godot_v4.6.1-stable_win64.exe --path .
 - 阶段2：✅ 宗派系统（Q技能完成，E/R待实现）
 - 阶段3：✅ 武器系统（100%）
 - 敌人系统：✅ SimpleEnemy + SimpleEnemySpawner（基础实现）
-- 测试：✅ 操作模拟9/9，敌人和特效3/3（100%）
+- 伤害系统：✅ 完整伤害循环（玩家↔敌人双向伤害）
+- 测试：✅ 伤害系统4/4，操作模拟9/9，敌人和特效3/3（100%）
 - Q技能特效：✅ 自动清理（auto_projectile.gd, auto_fade_sprite.gd）
 - E/R技能：框架完成，需实现具体脚本
 
@@ -100,3 +101,9 @@ F:\project\godot\Godot_v4.6.1-stable_win64.exe --path .
 - **弹射物自动清理**：使用auto_projectile.gd脚本，在_process中检测距离和命中
 - **特效自动淡出**：使用auto_fade_sprite.gd脚本，在_ready中启动fade_out协程
 - **敌人生成**：SimpleEnemySpawner每2秒生成一个敌人，最多20个
+- **伤害系统**：
+  - 玩家HurtBox（碰撞层1，遮罩2）接收敌人攻击
+  - 敌人HurtBox（碰撞层2，遮罩0）接收玩家攻击
+  - 玩家攻击HitBox（碰撞层0，遮罩2）使用元数据传递伤害
+  - 敌人攻击HitBox（碰撞层2，遮罩1）使用enemy_hit_box.gd脚本
+  - hurt_box.gd支持属性和元数据两种方式获取伤害值
