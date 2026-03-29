@@ -35,57 +35,45 @@ func _spawn_dart(pos: Vector2, dir: Vector2):
 	
 	dart.add_child(sprite)
 	
+	var projectile_script = load("res://Utility/auto_projectile.gd")
+	dart.set_script(projectile_script)
+	dart.set("direction", dir)
+	dart.set("speed", projectile_speed)
+	dart.set("max_range", range)
+	dart.set("skill_instance", self)
+	
 	if player and player.get_parent():
 		player.get_parent().call_deferred("add_child", dart)
-		call_deferred("_animate_dart", dart, dir)
 	else:
 		dart.queue_free()
 
-func _animate_dart(dart: Node2D, direction: Vector2):
-	if not is_instance_valid(dart):
-		return
+func _check_projectile_hit(projectile: Node2D):
+	var enemies = get_enemies_in_range(projectile.position, 15.0)
 	
-	if not dart.is_inside_tree():
-		await dart.tree_entered
-	
-	if not is_instance_valid(dart) or not dart.is_inside_tree():
-		return
-	
-	var distance_traveled = 0.0
-	var lifetime = range / projectile_speed
-	
-	for t in range(int(lifetime * 60)):
-		await dart.get_tree().create_timer(1.0 / 60.0).timeout
+	if enemies.size() > 0:
+		for enemy in enemies:
+			damage_enemy(enemy, damage)
+			_apply_poison(enemy)
 		
-		if not is_instance_valid(dart):
-			return
-		
-		var move_delta = direction * projectile_speed / 60.0
-		dart.position += move_delta
-		distance_traveled += move_delta.length()
-		
-		var enemies = get_enemies_in_range(dart.position, 15.0)
-		if enemies.size() > 0:
-			for enemy in enemies:
-				damage_enemy(enemy, damage)
-				_apply_poison(enemy)
-			
-			_create_hit_effect(dart.position)
-			dart.queue_free()
-			return
-		
-		if distance_traveled >= range:
-			break
-	
-	if is_instance_valid(dart):
-		dart.queue_free()
+		_create_hit_effect(projectile.position)
+		projectile.queue_free()
 
 func _apply_poison(enemy: Node):
 	if enemy and enemy.has_method("apply_poison"):
 		enemy.apply_poison(poison_damage, poison_duration)
 
 func _create_hit_effect(pos: Vector2):
-	var effect = spawn_effect(config.get("effect", ""), pos, 1.5)
+	var effect = Sprite2D.new()
+	effect.position = pos
+	effect.scale = Vector2(1.5, 1.5)
+	effect.texture = VisualEffectsHelper.load_texture_or_placeholder(config.get("effect", ""), Vector2(64, 64))
+	effect.z_index = 10
 	effect.modulate = GameConstants.Colors.SECT_POISON
 	effect.modulate.a = 0.8
-	VisualEffectsHelper.fade_out(effect, GameConstants.Values.EFFECT_FADE_TIME)
+	
+	var fade_script = load("res://Utility/auto_fade_sprite.gd")
+	effect.set_script(fade_script)
+	effect.set("fade_duration", GameConstants.Values.EFFECT_FADE_TIME)
+	
+	if player and player.get_parent():
+		player.get_parent().call_deferred("add_child", effect)

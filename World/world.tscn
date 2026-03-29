@@ -1,7 +1,8 @@
-[gd_scene load_steps=5 format=3 uid="uid://du6qbgqucaqov"]
+[gd_scene load_steps=6 format=3 uid="uid://du6qbgqucaqov"]
 
 [ext_resource type="Texture2D" uid="uid://b6umklllf2jsl" path="res://Textures/dirt_full_new.png" id="1_3v41d"]
 [ext_resource type="PackedScene" uid="uid://dncgepmkc4jf4" path="res://Player/player.tscn" id="2_40uwv"]
+[ext_resource type="Script" path="res://Utility/simple_enemy_spawner.gd" id="3_spawner"]
 [ext_resource type="AudioStream" uid="uid://bbufl4r1ou1rw" path="res://Audio/Music/battleThemeA.mp3" id="10_rk3we"]
 [ext_resource type="Script" path="res://Audio/Music/snd_Music.gd" id="11_ovtx6"]
 [ext_resource type="Script" path="res://tests/fps_display.gd" id="12_fps"]
@@ -18,6 +19,12 @@ region_rect = Rect2(-4000, -4000, 4000, 4000)
 [node name="Player" parent="." instance=ExtResource("2_40uwv")]
 
 [node name="Enemies" type="Node2D" parent="."]
+
+[node name="EnemySpawner" type="Node2D" parent="."]
+script = ExtResource("3_spawner")
+spawn_interval = 2.0
+spawn_distance = 400.0
+max_enemies = 20
 
 [node name="Loot" type="Node2D" parent="." groups=["loot"]]
 

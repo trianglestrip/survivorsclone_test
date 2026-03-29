@@ -87,10 +87,16 @@ F:\project\godot\Godot_v4.6.1-stable_win64.exe --path .
   - .trae/documents/ - 详细技术文档（仅必要时）
 
 ### 当前状态（2026-03-29）
-- 提交：33ad63e
+- 提交：最新
 - 阶段1：✅ 操作控制系统（100%）
 - 阶段2：✅ 宗派系统（Q技能完成，E/R待实现）
 - 阶段3：✅ 武器系统（100%）
-- 测试：✅ 集成测试63/63，操作模拟9/9（100%）
-- Q技能特效：✅ 自动消失（queue_free）
+- 敌人系统：✅ SimpleEnemy + SimpleEnemySpawner（基础实现）
+- 测试：✅ 操作模拟9/9，敌人和特效3/3（100%）
+- Q技能特效：✅ 自动清理（auto_projectile.gd, auto_fade_sprite.gd）
 - E/R技能：框架完成，需实现具体脚本
+
+### 技术要点
+- **弹射物自动清理**：使用auto_projectile.gd脚本，在_process中检测距离和命中
+- **特效自动淡出**：使用auto_fade_sprite.gd脚本，在_ready中启动fade_out协程
+- **敌人生成**：SimpleEnemySpawner每2秒生成一个敌人，最多20个

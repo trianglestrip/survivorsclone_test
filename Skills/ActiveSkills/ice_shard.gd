@@ -44,41 +44,17 @@ func _spawn_projectile(pos: Vector2, dir: Vector2):
 	
 	projectile.add_child(sprite)
 	
+	# 添加自动清理脚本
+	var projectile_script = load("res://Utility/auto_projectile.gd")
+	projectile.set_script(projectile_script)
+	projectile.set("direction", dir)
+	projectile.set("speed", projectile_speed)
+	projectile.set("max_range", range)
+	projectile.set("skill_instance", self)
+	
 	if player and player.get_parent():
 		player.get_parent().call_deferred("add_child", projectile)
-		call_deferred("_animate_projectile", projectile, dir)
 	else:
-		projectile.queue_free()
-
-func _animate_projectile(projectile: Node2D, direction: Vector2):
-	if not is_instance_valid(projectile):
-		return
-	
-	if not projectile.is_inside_tree():
-		await projectile.tree_entered
-	
-	if not is_instance_valid(projectile) or not projectile.is_inside_tree():
-		return
-	
-	var distance_traveled = 0.0
-	var lifetime = range / projectile_speed
-	
-	for t in range(int(lifetime * 60)):
-		await projectile.get_tree().create_timer(1.0 / 60.0).timeout
-		
-		if not is_instance_valid(projectile):
-			return
-		
-		var move_delta = direction * projectile_speed / 60.0
-		projectile.position += move_delta
-		distance_traveled += move_delta.length()
-		
-		_check_projectile_hit(projectile)
-		
-		if distance_traveled >= range:
-			break
-	
-	if is_instance_valid(projectile):
 		projectile.queue_free()
 
 func _check_projectile_hit(projectile: Node2D):
@@ -97,7 +73,17 @@ func _apply_slow(enemy: Node):
 		enemy.apply_slow(slow_percent, slow_duration)
 
 func _create_hit_effect(pos: Vector2):
-	var effect = spawn_effect(config.get("effect", ""), pos, 2.0)
+	var effect = Sprite2D.new()
+	effect.position = pos
+	effect.scale = Vector2(2.0, 2.0)
+	effect.texture = VisualEffectsHelper.load_texture_or_placeholder(config.get("effect", ""), Vector2(64, 64))
+	effect.z_index = 10
 	effect.modulate = GameConstants.Colors.SECT_ICE
 	effect.modulate.a = 0.8
-	VisualEffectsHelper.fade_out(effect, GameConstants.Values.EFFECT_FADE_TIME)
+	
+	var fade_script = load("res://Utility/auto_fade_sprite.gd")
+	effect.set_script(fade_script)
+	effect.set("fade_duration", GameConstants.Values.EFFECT_FADE_TIME)
+	
+	if player and player.get_parent():
+		player.get_parent().call_deferred("add_child", effect)

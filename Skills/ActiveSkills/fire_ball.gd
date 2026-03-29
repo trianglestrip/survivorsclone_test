@@ -38,46 +38,17 @@ func _spawn_fireball(pos: Vector2, dir: Vector2):
 	
 	fireball.add_child(sprite)
 	
+	var fireball_script = load("res://Utility/auto_fireball.gd")
+	fireball.set_script(fireball_script)
+	fireball.set("direction", dir)
+	fireball.set("speed", projectile_speed)
+	fireball.set("max_range", range)
+	fireball.set("skill_instance", self)
+	fireball.set("hit_radius", 20.0)
+	
 	if player and player.get_parent():
 		player.get_parent().call_deferred("add_child", fireball)
-		call_deferred("_animate_fireball", fireball, dir)
 	else:
-		fireball.queue_free()
-
-func _animate_fireball(fireball: Node2D, direction: Vector2):
-	if not is_instance_valid(fireball):
-		return
-	
-	if not fireball.is_inside_tree():
-		await fireball.tree_entered
-	
-	if not is_instance_valid(fireball) or not fireball.is_inside_tree():
-		return
-	
-	var distance_traveled = 0.0
-	var lifetime = range / projectile_speed
-	
-	for t in range(int(lifetime * 60)):
-		await fireball.get_tree().create_timer(1.0 / 60.0).timeout
-		
-		if not is_instance_valid(fireball):
-			return
-		
-		var move_delta = direction * projectile_speed / 60.0
-		fireball.position += move_delta
-		distance_traveled += move_delta.length()
-		
-		var hit = _check_fireball_hit(fireball.position)
-		if hit:
-			_explode(fireball.position)
-			fireball.queue_free()
-			return
-		
-		if distance_traveled >= range:
-			break
-	
-	if is_instance_valid(fireball):
-		_explode(fireball.position)
 		fireball.queue_free()
 
 func _check_fireball_hit(pos: Vector2) -> bool:
@@ -103,11 +74,20 @@ func _create_explosion_effect(pos: Vector2):
 	_animate_explosion(effect)
 
 func _animate_explosion(effect: Sprite2D):
+	if not is_instance_valid(effect):
+		return
+	
+	if not effect.is_inside_tree():
+		await effect.tree_entered
+	
+	if not is_instance_valid(effect) or not effect.is_inside_tree():
+		return
+	
 	var scale_factor = 1.15
 	var steps = 8
 	
 	for i in range(steps):
-		await get_tree().create_timer(0.05).timeout
+		await effect.get_tree().create_timer(0.05).timeout
 		if is_instance_valid(effect):
 			effect.scale *= scale_factor
 			effect.modulate.a -= 1.0 / steps

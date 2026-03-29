@@ -78,6 +78,13 @@ static func fade_out(node: CanvasItem, duration: float = 0.5):
 	if not node:
 		return
 	
+	# 等待节点加入场景树
+	if not node.is_inside_tree():
+		await node.tree_entered
+	
+	if not is_instance_valid(node) or not node.is_inside_tree():
+		return
+	
 	var steps = 10
 	var step_time = duration / steps
 	var alpha_step = 1.0 / steps
