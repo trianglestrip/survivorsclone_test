@@ -257,8 +257,16 @@
 - ✅ 圣物显示UI（RelicDisplayUI）
 - ✅ 测试覆盖（test_stage4_relics.gd - 4/4通过）
 
+✅ **阶段5：敌人系统升级（100%）**
+
+- ✅ 敌人数据结构（enemy_config.json - 7种敌人）
+- ✅ 敌人注册表（EnemyRegistry）
+- ✅ 多种敌人类型（MeleeEnemy, RangedEnemy, EliteEnemy）
+- ✅ 敌人AI行为（追逐、保持距离、特殊能力）
+- ✅ 波次系统（6个波次，难度递增）
+- ✅ 测试覆盖（test_stage5_enemies.gd - 5/5通过）
+
 ⏳ **待开始：**
 
-- 阶段5：敌人系统升级
 - 阶段6：关卡系统
 

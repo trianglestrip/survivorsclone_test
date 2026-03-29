@@ -79,6 +79,25 @@ func has_status(type: GameConstants.StatusEffectType) -> bool:
 	return status_manager and status_manager.has_effect(type)
 
 # ========================================
+# 配置加载
+# ========================================
+
+## 加载配置（从enemy_config.json）
+func load_config(config: Dictionary):
+	movement_speed = config.get("move_speed", movement_speed)
+	hp = config.get("hp", hp)
+	enemy_damage = config.get("damage", enemy_damage)
+	experience = config.get("exp_value", experience)
+	knockback_recovery = config.get("knockback_resistance", knockback_recovery)
+	
+	# 更新颜色
+	var color_str = config.get("color", "")
+	if not color_str.is_empty():
+		var sprite = get_node_or_null("Sprite2D")
+		if sprite:
+			sprite.modulate = Color(color_str)
+
+# ========================================
 # 子类可重写的方法
 # ========================================
 

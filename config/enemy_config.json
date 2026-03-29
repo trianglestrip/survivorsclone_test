@@ -1,39 +1,193 @@
 {
   "enemies": {
-    "enemy_kobold_weak": {
-      "movement_speed": 20.0,
-      "hp": 10,
-      "knockback_recovery": 3.5,
-      "experience": 1,
-      "enemy_damage": 1
+    "melee_basic": {
+      "id": "melee_basic",
+      "name": "近战小兵",
+      "name_en": "Melee Minion",
+      "type": "melee",
+      "hp": 30,
+      "damage": 10,
+      "move_speed": 30.0,
+      "attack_range": 25.0,
+      "attack_cooldown": 1.5,
+      "knockback_resistance": 0.0,
+      "exp_value": 5,
+      "sprite": "res://Textures/Enemy/melee_basic.png",
+      "color": "#8888AA"
     },
-    "enemy_kobold_strong": {
-      "movement_speed": 28.0,
+    "melee_heavy": {
+      "id": "melee_heavy",
+      "name": "重型战士",
+      "name_en": "Heavy Warrior",
+      "type": "melee",
+      "hp": 80,
+      "damage": 20,
+      "move_speed": 20.0,
+      "attack_range": 30.0,
+      "attack_cooldown": 2.0,
+      "knockback_resistance": 0.5,
+      "exp_value": 15,
+      "sprite": "res://Textures/Enemy/melee_heavy.png",
+      "color": "#AA5555"
+    },
+    "ranged_basic": {
+      "id": "ranged_basic",
+      "name": "弓箭手",
+      "name_en": "Archer",
+      "type": "ranged",
       "hp": 20,
-      "knockback_recovery": 3.5,
-      "experience": 2,
-      "enemy_damage": 2
+      "damage": 8,
+      "move_speed": 25.0,
+      "attack_range": 200.0,
+      "attack_cooldown": 2.5,
+      "knockback_resistance": 0.0,
+      "projectile_speed": 150.0,
+      "exp_value": 8,
+      "sprite": "res://Textures/Enemy/ranged_basic.png",
+      "color": "#55AA55"
     },
-    "enemy_cyclops": {
-      "movement_speed": 16.0,
-      "hp": 100,
-      "knockback_recovery": 10.0,
-      "experience": 5,
-      "enemy_damage": 5
+    "fast_assassin": {
+      "id": "fast_assassin",
+      "name": "刺客",
+      "name_en": "Assassin",
+      "type": "melee",
+      "hp": 25,
+      "damage": 15,
+      "move_speed": 60.0,
+      "attack_range": 20.0,
+      "attack_cooldown": 1.0,
+      "knockback_resistance": 0.0,
+      "exp_value": 10,
+      "sprite": "res://Textures/Enemy/fast_assassin.png",
+      "color": "#AA55AA"
     },
-    "enemy_juggernaut": {
-      "movement_speed": 40.0,
-      "hp": 300,
-      "knockback_recovery": 20.0,
-      "experience": 100,
-      "enemy_damage": 8
+    "tank_guardian": {
+      "id": "tank_guardian",
+      "name": "守卫",
+      "name_en": "Guardian",
+      "type": "melee",
+      "hp": 150,
+      "damage": 15,
+      "move_speed": 15.0,
+      "attack_range": 35.0,
+      "attack_cooldown": 2.5,
+      "knockback_resistance": 0.8,
+      "exp_value": 25,
+      "sprite": "res://Textures/Enemy/tank_guardian.png",
+      "color": "#AAAA55"
     },
-    "enemy_super": {
-      "movement_speed": 150.0,
-      "hp": 99999,
-      "knockback_recovery": 99999.0,
-      "experience": 100,
-      "enemy_damage": 20
+    "elite_ice": {
+      "id": "elite_ice",
+      "name": "冰霜精英",
+      "name_en": "Frost Elite",
+      "type": "elite",
+      "hp": 200,
+      "damage": 25,
+      "move_speed": 35.0,
+      "attack_range": 150.0,
+      "attack_cooldown": 3.0,
+      "knockback_resistance": 0.6,
+      "exp_value": 50,
+      "sprite": "res://Textures/Enemy/elite_ice.png",
+      "color": "#5599FF",
+      "special_abilities": [
+        {
+          "type": "ice_aura",
+          "radius": 100.0,
+          "slow_percent": 0.3
+        },
+        {
+          "type": "ice_projectile",
+          "count": 3,
+          "damage_multiplier": 1.5
+        }
+      ]
+    },
+    "elite_fire": {
+      "id": "elite_fire",
+      "name": "烈焰精英",
+      "name_en": "Fire Elite",
+      "type": "elite",
+      "hp": 180,
+      "damage": 30,
+      "move_speed": 40.0,
+      "attack_range": 120.0,
+      "attack_cooldown": 2.5,
+      "knockback_resistance": 0.5,
+      "exp_value": 50,
+      "sprite": "res://Textures/Enemy/elite_fire.png",
+      "color": "#FF5555",
+      "special_abilities": [
+        {
+          "type": "fire_trail",
+          "damage": 5,
+          "duration": 3.0
+        },
+        {
+          "type": "explosion_on_death",
+          "radius": 80.0,
+          "damage": 40
+        }
+      ]
     }
-  }
+  },
+  "spawn_waves": [
+    {
+      "wave": 1,
+      "duration": 30.0,
+      "enemies": [
+        {"id": "melee_basic", "weight": 10}
+      ]
+    },
+    {
+      "wave": 2,
+      "duration": 30.0,
+      "enemies": [
+        {"id": "melee_basic", "weight": 7},
+        {"id": "ranged_basic", "weight": 3}
+      ]
+    },
+    {
+      "wave": 3,
+      "duration": 40.0,
+      "enemies": [
+        {"id": "melee_basic", "weight": 5},
+        {"id": "ranged_basic", "weight": 3},
+        {"id": "fast_assassin", "weight": 2}
+      ]
+    },
+    {
+      "wave": 4,
+      "duration": 40.0,
+      "enemies": [
+        {"id": "melee_basic", "weight": 4},
+        {"id": "melee_heavy", "weight": 2},
+        {"id": "ranged_basic", "weight": 3},
+        {"id": "fast_assassin", "weight": 1}
+      ]
+    },
+    {
+      "wave": 5,
+      "duration": 50.0,
+      "enemies": [
+        {"id": "melee_basic", "weight": 3},
+        {"id": "melee_heavy", "weight": 3},
+        {"id": "ranged_basic", "weight": 2},
+        {"id": "fast_assassin", "weight": 1},
+        {"id": "tank_guardian", "weight": 1}
+      ]
+    },
+    {
+      "wave": 6,
+      "duration": 60.0,
+      "enemies": [
+        {"id": "melee_basic", "weight": 2},
+        {"id": "melee_heavy", "weight": 3},
+        {"id": "ranged_basic", "weight": 2},
+        {"id": "fast_assassin", "weight": 2},
+        {"id": "tank_guardian", "weight": 1},
+        {"id": "elite_ice", "weight": 1}
+      ]
+    }
+  ]
 }
