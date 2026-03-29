@@ -143,7 +143,7 @@ func _start_dash(direction: Vector2):
 	dash_target_pos = dash_start_pos + direction * distance
 	
 	_play_dash_effect(dash_start_pos)
-	_trigger_screen_shake()
+	VisualEffectsHelper.trigger_screen_shake(self, screen_shake_intensity)
 	_clear_old_trails()
 	
 	emit_signal("dash_started")
@@ -215,7 +215,7 @@ func _create_trail_effect(position: Vector2):
 	
 	trail.flip_h = player_sprite.flip_h
 	trail.position = position
-	trail.modulate = Color(0.5, 0.8, 1.0, 0.6)
+	trail.modulate = GameConstants.Colors.EFFECT_DASH_TRAIL
 	trail.z_index = player.z_index - 1
 	
 	if player.get_parent():
@@ -242,20 +242,3 @@ func _clear_old_trails():
 			trail.queue_free()
 	_trail_nodes.clear()
 
-func _trigger_screen_shake():
-	if player and player.has_node("Camera2D"):
-		var camera = player.get_node("Camera2D")
-		_shake_camera(camera, screen_shake_intensity)
-
-func _shake_camera(camera: Camera2D, intensity: float):
-	var original_offset = camera.offset
-	var shake_amount = intensity * 5.0
-	
-	for i in range(4):
-		var shake_x = randf_range(-shake_amount, shake_amount)
-		var shake_y = randf_range(-shake_amount, shake_amount)
-		camera.offset = original_offset + Vector2(shake_x, shake_y)
-		await get_tree().create_timer(0.015).timeout
-		shake_amount *= 0.6
-	
-	camera.offset = original_offset

@@ -27,6 +27,20 @@ class_name BaseEnemy
 @export var animation_speed := 1.0
 
 # ========================================
+# 状态效果管理
+# ========================================
+
+var status_manager: EnemyStatusManager = null
+
+func _ready():
+	_initialize_status_manager()
+
+func _initialize_status_manager():
+	status_manager = EnemyStatusManager.new()
+	status_manager.set_enemy(self)
+	add_child(status_manager)
+
+# ========================================
 # 获取敌人配置（用于 GPU 系统读取）
 # ========================================
 
@@ -42,6 +56,29 @@ func get_enemy_config() -> Dictionary:
 	}
 
 # ========================================
+# 状态效果API
+# ========================================
+
+func apply_slow(percent: float, duration: float):
+	if status_manager:
+		status_manager.apply_slow(percent, duration)
+
+func apply_burn(damage_per_sec: float, duration: float):
+	if status_manager:
+		status_manager.apply_burn(damage_per_sec, duration)
+
+func apply_poison(damage_per_sec: float, duration: float):
+	if status_manager:
+		status_manager.apply_poison(damage_per_sec, duration)
+
+func apply_freeze(duration: float):
+	if status_manager:
+		status_manager.apply_freeze(duration)
+
+func has_status(type: GameConstants.StatusEffectType) -> bool:
+	return status_manager and status_manager.has_effect(type)
+
+# ========================================
 # 子类可重写的方法
 # ========================================
 
@@ -52,3 +89,9 @@ func special_behavior(_delta: float):
 ## 死亡时的特殊效果
 func on_death():
 	pass
+
+## 受到伤害（子类可重写添加特殊逻辑）
+func take_damage(dmg: float, _knockback_dir: Vector2 = Vector2.ZERO):
+	hp -= dmg
+	if hp <= 0:
+		on_death()

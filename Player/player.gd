@@ -9,13 +9,11 @@ var exp_mgr
 var attack_mgr
 var dash_mgr
 var active_skill_mgr
+var sect_mgr
 
 # 基础变量
 var last_movement = Vector2.UP
 var time = 0
-
-# 技能管理器（GPU 实例化）
-var skill_instance_mgr: Node = null
 
 # 敌人检测
 var enemy_close = []
@@ -27,9 +25,6 @@ var enemy_close = []
 
 # 受击特效
 var _hit_frames: Array = []
-
-# 标枪特殊处理（暂时保留）
-@onready var javelinBase = get_node("%JavelinBase")
 
 # GUI
 @onready var expBar = get_node("%ExperienceBar")
@@ -75,21 +70,9 @@ func _initialize_components():
 	var input_mgr = input_mgr_script.new()
 	add_child(input_mgr)
 	
-	# 创建技能实例管理器（GPU + 技能状态管理）
-	var skill_inst_mgr_script = load("res://Skills/skill_instance_manager.gd")
-	skill_instance_mgr = skill_inst_mgr_script.new()
-	skill_instance_mgr.set_player(self)
-	skill_instance_mgr.set_container(get_parent())
-	add_child(skill_instance_mgr)
-	
-	# 等待技能管理器初始化完成
-	if not skill_instance_mgr.is_initialized:
-		await skill_instance_mgr.initialization_complete
-	
 	var upgrade_mgr_script = load("res://Player/Components/upgrade_manager.gd")
 	upgrade_mgr = upgrade_mgr_script.new()
 	upgrade_mgr.set_player_stats(stats)
-	upgrade_mgr.set_skill_manager(skill_instance_mgr)
 	add_child(upgrade_mgr)
 	
 	var exp_mgr_script = load("res://Player/Components/experience_manager.gd")
@@ -101,7 +84,6 @@ func _initialize_components():
 	var attack_mgr_script = load("res://Player/Components/attack_manager.gd")
 	attack_mgr = attack_mgr_script.new()
 	attack_mgr.set_player(self)
-	attack_mgr.set_skill_instance_manager(skill_instance_mgr)
 	attack_mgr.set_input_manager(input_mgr)
 	add_child(attack_mgr)
 	
@@ -118,6 +100,13 @@ func _initialize_components():
 	active_skill_mgr.set_player(self)
 	active_skill_mgr.set_input_manager(input_mgr)
 	add_child(active_skill_mgr)
+	
+	# 创建宗派管理器
+	var sect_mgr_script = load("res://Player/Components/sect_manager.gd")
+	sect_mgr = sect_mgr_script.new()
+	sect_mgr.set_player(self)
+	sect_mgr.set_active_skill_manager(active_skill_mgr)
+	add_child(sect_mgr)
 
 func _connect_signals():
 	exp_mgr.level_up.connect(_on_level_up)
@@ -161,19 +150,62 @@ func _on_skill_cooldown_updated(skill_id: String, current: float, max_cd: float)
 		skill_bar_ui.update_skill_cooldown(skill_id, current, max_cd)
 
 func _cast_q_skill():
-	print("Q技能：冰霜冲击（待实现）")
+	if not sect_mgr or not sect_mgr.has_selected_sect():
+		print("请先选择宗派")
+		return
+	
+	var skill_config = sect_mgr.get_skill_config("q")
+	if skill_config.is_empty():
+		return
+	
+	_spawn_active_skill(skill_config)
 
 func _cast_e_skill():
-	print("E技能：雷霆一击（待实现）")
+	if not sect_mgr or not sect_mgr.has_selected_sect():
+		print("请先选择宗派")
+		return
+	
+	var skill_config = sect_mgr.get_skill_config("e")
+	if skill_config.is_empty():
+		return
+	
+	_spawn_active_skill(skill_config)
 
 func _cast_r_skill():
-	print("R技能：必杀技（待实现）")
+	if not sect_mgr or not sect_mgr.has_selected_sect():
+		print("请先选择宗派")
+		return
+	
+	var skill_config = sect_mgr.get_skill_config("r")
+	if skill_config.is_empty():
+		return
+	
+	_spawn_active_skill(skill_config)
+
+func _spawn_active_skill(skill_config: Dictionary):
+	var skill_id = skill_config.get("id", "")
+	var skill_script_path = "res://Skills/ActiveSkills/%s.gd" % skill_id
+	
+	if not ResourceLoader.exists(skill_script_path):
+		if GameConfig.DEBUG_LOGGING:
+			print("技能脚本不存在: %s" % skill_script_path)
+		return
+	
+	var skill_script = load(skill_script_path)
+	var skill_instance = skill_script.new()
+	skill_instance.initialize(skill_config, self, sect_mgr)
+	
+	if get_parent():
+		get_parent().call_deferred("add_child", skill_instance)
+	
+	skill_instance.cast(global_position, last_movement)
 
 func _initial_setup():
-	upgrade_character("icespear1")
-	attack_mgr.start_attacks()
 	set_expbar(stats.experience, exp_mgr.calculate_experience_cap())
 	_on_hurt_box_hurt(0, 0, 0)
+	
+	if sect_mgr:
+		sect_mgr.select_sect("ice")
 
 func _physics_process(_delta):
 	movement()
@@ -209,8 +241,8 @@ func _on_hurt_box_hurt(damage, _angle, _knockback):
 	healthBar.value = stats.hp
 	
 	_play_hit_effect(global_position)
-	_trigger_hurt_screen_shake()
-	_trigger_hurt_flash()
+	VisualEffectsHelper.trigger_screen_shake(self, GameConstants.Values.SHAKE_HURT)
+	VisualEffectsHelper.trigger_flash(sprite, GameConstants.Colors.EFFECT_HURT_FLASH, GameConstants.Values.HURT_FLASH_DURATION)
 	
 	if not stats.is_alive():
 		death()
@@ -246,30 +278,6 @@ func _animate_hit_effect(sprite_node: Sprite2D, effect_node: Node2D):
 	if is_instance_valid(effect_node):
 		effect_node.queue_free()
 
-func _trigger_hurt_screen_shake():
-	if has_node("Camera2D"):
-		var camera = get_node("Camera2D")
-		_shake_camera(camera, 0.6)
-
-func _shake_camera(camera: Camera2D, intensity: float):
-	var original_offset = camera.offset
-	var shake_amount = intensity * 10.0
-	
-	for i in range(8):
-		var shake_x = randf_range(-shake_amount, shake_amount)
-		var shake_y = randf_range(-shake_amount, shake_amount)
-		camera.offset = original_offset + Vector2(shake_x, shake_y)
-		await get_tree().create_timer(0.02).timeout
-		shake_amount *= 0.75
-	
-	camera.offset = original_offset
-
-func _trigger_hurt_flash():
-	var original_modulate = sprite.modulate
-	sprite.modulate = Color(1.5, 0.5, 0.5, 1.0)
-	await get_tree().create_timer(0.1).timeout
-	if is_instance_valid(sprite):
-		sprite.modulate = original_modulate
 
 func get_random_target():
 	if enemy_close.size() > 0:
@@ -325,7 +333,6 @@ func set_expbar(set_value: int = 1, set_max_value: int = 100):
 func upgrade_character(upgrade_id: String):
 	upgrade_mgr.apply_upgrade(upgrade_id)
 	adjust_gui_collection(upgrade_id)
-	attack_mgr.start_attacks()
 	
 	# 清除升级选项 UI
 	var option_children = upgradeOptions.get_children()
@@ -416,12 +423,6 @@ func _get(property):
 			return stats.spell_cooldown if stats != null else 0.0
 		"additional_attacks":
 			return stats.additional_attacks if stats != null else 0
-		"javelin_level":
-			return skill_instance_mgr.get_skill_level("javelin") if skill_instance_mgr != null else 0
-		"icespear_level":
-			return skill_instance_mgr.get_skill_level("icespear") if skill_instance_mgr != null else 0
-		"tornado_level":
-			return skill_instance_mgr.get_skill_level("tornado") if skill_instance_mgr != null else 0
 	return null
 
 func _set(property, value):

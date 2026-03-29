@@ -1,0 +1,211 @@
+{
+  "sects": {
+    "ice": {
+      "id": "ice",
+      "name": "冰心宗",
+      "name_en": "Ice Heart Sect",
+      "description": "以冰霜之力冻结敌人，控制战场",
+      "color": "#4DD0E1",
+      "icon": "res://Assets/UI/Sects/icon_sect_ice.png",
+      "card": "res://Assets/UI/Sects/card_sect_ice.png",
+      "stats_bonus": {
+        "max_hp": 0,
+        "move_speed": 5,
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "critical_chance": 0.05
+      },
+      "skills": {
+        "q": {
+          "id": "ice_shard",
+          "name": "冰霜碎片",
+          "description": "发射3枚冰霜碎片，造成伤害并减速敌人",
+          "cooldown": 3.0,
+          "damage": 15,
+          "range": 250,
+          "projectile_count": 3,
+          "slow_duration": 2.0,
+          "slow_percent": 0.3,
+          "effect": "res://Assets/Effects/Skills/ice_shard.png"
+        },
+        "e": {
+          "id": "ice_field",
+          "name": "冰封领域",
+          "description": "在周围创造冰霜领域，持续造成伤害并减速",
+          "cooldown": 5.0,
+          "damage": 8,
+          "radius": 150,
+          "duration": 4.0,
+          "slow_percent": 0.5,
+          "effect": "res://Assets/Effects/Skills/ice_field.png"
+        },
+        "r": {
+          "id": "ice_storm",
+          "name": "极寒风暴",
+          "description": "召唤极寒风暴，大范围冻结并造成巨额伤害",
+          "cooldown": 10.0,
+          "damage": 50,
+          "radius": 300,
+          "duration": 5.0,
+          "freeze_duration": 2.0,
+          "effect": "res://Assets/Effects/Skills/ice_storm.png"
+        }
+      }
+    },
+    "thunder": {
+      "id": "thunder",
+      "name": "雷鸣宗",
+      "name_en": "Thunder Roar Sect",
+      "description": "以雷霆之力击穿敌人，爆发伤害",
+      "color": "#FFD54F",
+      "icon": "res://Assets/UI/Sects/icon_sect_thunder.png",
+      "card": "res://Assets/UI/Sects/card_sect_thunder.png",
+      "stats_bonus": {
+        "max_hp": 0,
+        "move_speed": 0,
+        "attack_damage": 3,
+        "attack_speed": 0.1,
+        "critical_chance": 0.1
+      },
+      "skills": {
+        "q": {
+          "id": "thunder_strike",
+          "name": "雷霆一击",
+          "description": "召唤雷电打击目标区域，造成范围伤害",
+          "cooldown": 3.0,
+          "damage": 20,
+          "radius": 100,
+          "chain_count": 3,
+          "chain_range": 80,
+          "effect": "res://Assets/Effects/Skills/thunder_strike.png"
+        },
+        "e": {
+          "id": "thunder_field",
+          "name": "雷阵",
+          "description": "在地面布置雷阵，触碰的敌人受到电击",
+          "cooldown": 5.0,
+          "damage": 12,
+          "radius": 120,
+          "duration": 6.0,
+          "trigger_interval": 0.5,
+          "effect": "res://Assets/Effects/Skills/thunder_field.png"
+        },
+        "r": {
+          "id": "thunder_god",
+          "name": "天罚雷劫",
+          "description": "化身雷神，持续释放雷电链，造成大范围伤害",
+          "cooldown": 10.0,
+          "damage": 30,
+          "radius": 250,
+          "duration": 6.0,
+          "strike_interval": 0.3,
+          "effect": "res://Assets/Effects/Skills/thunder_god.png"
+        }
+      }
+    },
+    "fire": {
+      "id": "fire",
+      "name": "烈焰宗",
+      "name_en": "Blazing Flame Sect",
+      "description": "以烈焰之力焚烧敌人，持续伤害",
+      "color": "#FF6E40",
+      "icon": "res://Assets/UI/Sects/icon_sect_fire.png",
+      "card": "res://Assets/UI/Sects/card_sect_fire.png",
+      "stats_bonus": {
+        "max_hp": 10,
+        "move_speed": 0,
+        "attack_damage": 2,
+        "attack_speed": 0,
+        "critical_chance": 0.05
+      },
+      "skills": {
+        "q": {
+          "id": "fire_ball",
+          "name": "火球术",
+          "description": "发射火球，命中后爆炸造成范围伤害和灼烧",
+          "cooldown": 3.0,
+          "damage": 18,
+          "radius": 80,
+          "burn_damage": 5,
+          "burn_duration": 3.0,
+          "effect": "res://Assets/Effects/Skills/fire_ball.png"
+        },
+        "e": {
+          "id": "fire_wall",
+          "name": "火墙",
+          "description": "在前方召唤火墙，阻挡敌人并造成持续伤害",
+          "cooldown": 5.0,
+          "damage": 10,
+          "width": 200,
+          "height": 80,
+          "duration": 5.0,
+          "burn_damage": 3,
+          "effect": "res://Assets/Effects/Skills/fire_wall.png"
+        },
+        "r": {
+          "id": "fire_meteor",
+          "name": "陨火天降",
+          "description": "召唤陨石雨，大范围轰炸并留下火海",
+          "cooldown": 10.0,
+          "damage": 40,
+          "radius": 280,
+          "meteor_count": 8,
+          "burn_duration": 4.0,
+          "effect": "res://Assets/Effects/Skills/fire_meteor.png"
+        }
+      }
+    },
+    "poison": {
+      "id": "poison",
+      "name": "毒瘴宗",
+      "name_en": "Poison Miasma Sect",
+      "description": "以剧毒之力侵蚀敌人，削弱防御",
+      "color": "#9CCC65",
+      "icon": "res://Assets/UI/Sects/icon_sect_poison.png",
+      "card": "res://Assets/UI/Sects/card_sect_poison.png",
+      "stats_bonus": {
+        "max_hp": 15,
+        "move_speed": 0,
+        "attack_damage": 0,
+        "attack_speed": 0,
+        "critical_chance": 0
+      },
+      "skills": {
+        "q": {
+          "id": "poison_dart",
+          "name": "毒镖",
+          "description": "发射毒镖，造成伤害并施加剧毒效果",
+          "cooldown": 3.0,
+          "damage": 12,
+          "range": 220,
+          "poison_damage": 8,
+          "poison_duration": 4.0,
+          "effect": "res://Assets/Effects/Skills/poison_dart.png"
+        },
+        "e": {
+          "id": "poison_cloud",
+          "name": "毒云",
+          "description": "释放毒云，范围内敌人持续中毒并降低防御",
+          "cooldown": 5.0,
+          "damage": 6,
+          "radius": 140,
+          "duration": 6.0,
+          "defense_reduce": 0.3,
+          "effect": "res://Assets/Effects/Skills/poison_cloud.png"
+        },
+        "r": {
+          "id": "poison_plague",
+          "name": "瘟疫爆发",
+          "description": "引发瘟疫，造成大范围剧毒，并在敌人间传播",
+          "cooldown": 10.0,
+          "damage": 25,
+          "radius": 260,
+          "poison_damage": 15,
+          "poison_duration": 6.0,
+          "spread_radius": 100,
+          "effect": "res://Assets/Effects/Skills/poison_plague.png"
+        }
+      }
+    }
+  }
+}

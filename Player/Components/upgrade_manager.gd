@@ -7,7 +7,6 @@ var collected_upgrades: Array = []
 var upgrade_options: Array = []
 
 var player_stats = null
-var skill_manager = null
 
 # Effect 工厂
 var effect_factory = null
@@ -21,9 +20,6 @@ func _ready():
 
 func set_player_stats(stats):
 	player_stats = stats
-
-func set_skill_manager(manager):
-	skill_manager = manager
 
 # 应用升级
 func apply_upgrade(upgrade_id: String):
@@ -46,7 +42,7 @@ func apply_upgrade(upgrade_id: String):
 
 # 应用升级效果（使用 Effect 系统）
 func _apply_upgrade_effects(_upgrade_id: String, config: Dictionary):
-	if player_stats == null or skill_manager == null or effect_factory == null:
+	if player_stats == null or effect_factory == null:
 		return
 	
 	# 从配置创建 Effect 对象

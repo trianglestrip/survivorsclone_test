@@ -1,433 +1,285 @@
-from PIL import Image, ImageDraw, ImageFont, ImageFilter
-import os
-import math
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+占位资源生成器
+为游戏生成占位图片和特效资源
+"""
 
-def create_placeholder_texture(size, color, text, output_path):
+import os
+import sys
+from pathlib import Path
+from PIL import Image, ImageDraw, ImageFont
+
+# 设置UTF-8输出
+if sys.platform == 'win32':
+    sys.stdout.reconfigure(encoding='utf-8')
+
+# 项目根目录
+PROJECT_ROOT = Path(__file__).parent
+ASSETS_DIR = PROJECT_ROOT / "Assets"
+
+# 颜色定义（与游戏常量对应）
+COLORS = {
+    'ice': (77, 208, 225),        # #4DD0E1
+    'thunder': (255, 213, 79),    # #FFD54F
+    'fire': (255, 110, 64),       # #FF6E40
+    'poison': (156, 204, 101),    # #9CCC65
+    'white': (255, 255, 255),
+    'black': (20, 20, 30),
+    'gold': (230, 217, 153),
+}
+
+def create_directory(path):
+    """创建目录"""
+    path.mkdir(parents=True, exist_ok=True)
+    print(f"✓ 创建目录: {path.relative_to(PROJECT_ROOT)}")
+
+def create_gradient_circle(size, color, name="circle"):
+    """创建渐变圆形"""
     img = Image.new('RGBA', size, (0, 0, 0, 0))
     draw = ImageDraw.Draw(img)
     
-    draw.rectangle([0, 0, size[0]-1, size[1]-1], outline=color, width=2)
-    draw.rectangle([2, 2, size[0]-3, size[1]-3], outline=color, width=1)
+    center = (size[0] // 2, size[1] // 2)
+    radius = min(size) // 2
     
-    font = ImageFont.load_default()
+    # 绘制多层圆形创建渐变效果
+    for i in range(radius, 0, -2):
+        alpha = int(255 * (i / radius) * 0.8)
+        current_color = color + (alpha,)
+        draw.ellipse(
+            [center[0] - i, center[1] - i, center[0] + i, center[1] + i],
+            fill=current_color
+        )
+    
+    return img
+
+def create_projectile(size, color, name="projectile"):
+    """创建抛射物图片"""
+    img = Image.new('RGBA', size, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(img)
+    
+    # 绘制箭头形状
+    points = [
+        (size[0] - 2, size[1] // 2),  # 尖端
+        (2, 2),                        # 左上
+        (size[0] // 3, size[1] // 2),  # 中间
+        (2, size[1] - 2),              # 左下
+    ]
+    
+    draw.polygon(points, fill=color + (255,))
+    
+    # 添加发光边缘
+    draw.line(points + [points[0]], fill=color + (200,), width=1)
+    
+    return img
+
+def create_explosion(size, color, name="explosion"):
+    """创建爆炸效果"""
+    img = Image.new('RGBA', size, (0, 0, 0, 0))
+    draw = ImageDraw.Draw(img)
+    
+    center = (size[0] // 2, size[1] // 2)
+    
+    # 绘制多个星形爆炸
+    for angle in range(0, 360, 45):
+        import math
+        rad = math.radians(angle)
+        x1 = center[0] + math.cos(rad) * (size[0] // 4)
+        y1 = center[1] + math.sin(rad) * (size[1] // 4)
+        x2 = center[0] + math.cos(rad) * (size[0] // 2 - 4)
+        y2 = center[1] + math.sin(rad) * (size[1] // 2 - 4)
+        
+        draw.line([(x1, y1), (x2, y2)], fill=color + (200,), width=3)
+    
+    # 中心圆
+    radius = size[0] // 6
+    draw.ellipse(
+        [center[0] - radius, center[1] - radius, center[0] + radius, center[1] + radius],
+        fill=color + (255,)
+    )
+    
+    return img
+
+def create_icon(size, color, text, name="icon"):
+    """创建图标"""
+    img = Image.new('RGBA', size, COLORS['black'] + (255,))
+    draw = ImageDraw.Draw(img)
+    
+    # 绘制边框
+    draw.rectangle([0, 0, size[0]-1, size[1]-1], outline=color + (255,), width=3)
+    
+    # 绘制中心圆
+    center = (size[0] // 2, size[1] // 2)
+    radius = size[0] // 3
+    draw.ellipse(
+        [center[0] - radius, center[1] - radius, center[0] + radius, center[1] + radius],
+        fill=color + (200,)
+    )
+    
+    # 尝试添加文字
+    try:
+        font = ImageFont.truetype("arial.ttf", size[0] // 4)
+    except:
+        font = ImageFont.load_default()
     
     bbox = draw.textbbox((0, 0), text, font=font)
-    text_w = bbox[2] - bbox[0]
-    text_h = bbox[3] - bbox[1]
-    text_x = (size[0] - text_w) // 2
-    text_y = (size[1] - text_h) // 2
+    text_width = bbox[2] - bbox[0]
+    text_height = bbox[3] - bbox[1]
+    text_pos = (center[0] - text_width // 2, center[1] - text_height // 2)
     
-    draw.text((text_x, text_y), text, fill=color, font=font)
+    draw.text(text_pos, text, fill=COLORS['white'] + (255,), font=font)
     
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    img.save(output_path)
-    print(f"Created: {output_path}")
+    return img
 
-def create_animation_frames(base_name, num_frames, size, color, output_dir):
-    for i in range(num_frames):
-        angle = (i / num_frames) * math.pi * 2
-        offset_x = int(math.sin(angle) * 5)
-        offset_y = int(math.cos(angle) * 5)
-        
-        img = Image.new('RGBA', size, (0, 0, 0, 0))
-        draw = ImageDraw.Draw(img)
-        
-        center_x = size[0] // 2 + offset_x
-        center_y = size[1] // 2 + offset_y
-        
-        draw.ellipse([
-            center_x - 20, center_y - 20, 
-            center_x + 20, center_y + 20], 
-            fill=color, outline=(255, 255, 255), width=2)
-        
-        output_path = os.path.join(output_dir, f"{base_name}_{i}.png")
-        os.makedirs(os.path.dirname(output_path), exist_ok=True)
-        img.save(output_path)
-        print(f"Created: {output_path}")
-
-def create_slash_attack_frames(num_frames, size, output_dir):
-    for i in range(num_frames):
-        img = Image.new('RGBA', size, (0, 0, 0, 0))
-        draw = ImageDraw.Draw(img)
-        
-        center_x = size[0] // 2
-        center_y = size[1] // 2
-        
-        progress = i / (num_frames - 1)
-        start_angle = -120 + progress * 240
-        end_angle = start_angle + 60
-        
-        radius = 40 + progress * 10
-        color_intensity = int(255 * (1 - progress * 0.5))
-        color = (255, 200, 100, int(255 * (1 - progress * 0.7)))
-        
-        draw.arc([
-            center_x - radius, center_y - radius,
-            center_x + radius, center_y + radius
-        ], start_angle, end_angle, fill=color, width=8)
-        
-        output_path = os.path.join(output_dir, f"slash_{i}.png")
-        os.makedirs(os.path.dirname(output_path), exist_ok=True)
-        img.save(output_path)
-        print(f"Created: {output_path}")
-
-def create_dash_effect_frames(num_frames, size, output_dir):
-    for i in range(num_frames):
-        img = Image.new('RGBA', size, (0, 0, 0, 0))
-        draw = ImageDraw.Draw(img)
-        
-        center_x = size[0] // 2
-        center_y = size[1] // 2
-        
-        progress = i / (num_frames - 1)
-        alpha = int(255 * (1 - progress))
-        scale = 1.0 + progress * 0.5
-        
-        radius = int(20 * scale)
-        color = (100, 150, 255, alpha)
-        
-        draw.ellipse([
-            center_x - radius, center_y - radius,
-            center_x + radius, center_y + radius
-        ], fill=color)
-        
-        for j in range(3):
-            offset_angle = (j * 120) * math.pi / 180
-            trail_dist = progress * 30
-            trail_x = center_x + math.cos(offset_angle) * trail_dist
-            trail_y = center_y + math.sin(offset_angle) * trail_dist
-            trail_alpha = int(alpha * 0.6)
-            trail_radius = int(8 * (1 - progress))
-            draw.ellipse([
-                trail_x - trail_radius, trail_y - trail_radius,
-                trail_x + trail_radius, trail_y + trail_radius
-            ], fill=(150, 200, 255, trail_alpha))
-        
-        output_path = os.path.join(output_dir, f"dash_{i}.png")
-        os.makedirs(os.path.dirname(output_path), exist_ok=True)
-        img.save(output_path)
-        print(f"Created: {output_path}")
-
-def create_hit_effect_frames(num_frames, size, output_dir):
-    for i in range(num_frames):
-        img = Image.new('RGBA', size, (0, 0, 0, 0))
-        draw = ImageDraw.Draw(img)
-        
-        center_x = size[0] // 2
-        center_y = size[1] // 2
-        
-        progress = i / (num_frames - 1)
-        alpha = int(255 * (1 - progress))
-        
-        for j in range(8):
-            angle = (j * 45) * math.pi / 180
-            dist = progress * 30
-            px = center_x + math.cos(angle) * dist
-            py = center_y + math.sin(angle) * dist
-            particle_radius = int(5 * (1 - progress))
-            draw.ellipse([
-                px - particle_radius, py - particle_radius,
-                px + particle_radius, py + particle_radius
-            ], fill=(255, 100, 100, alpha))
-        
-        flash_radius = int(20 * (1 - progress * 0.5))
-        draw.ellipse([
-            center_x - flash_radius, center_y - flash_radius,
-            center_x + flash_radius, center_y + flash_radius
-        ], fill=(255, 255, 200, int(alpha * 0.5)))
-        
-        output_path = os.path.join(output_dir, f"hit_{i}.png")
-        os.makedirs(os.path.dirname(output_path), exist_ok=True)
-        img.save(output_path)
-        print(f"Created: {output_path}")
-
-def create_sword_swing_frames(num_frames, size, output_dir):
-    for i in range(num_frames):
-        img = Image.new('RGBA', size, (0, 0, 0, 0))
-        draw = ImageDraw.Draw(img)
-        
-        center_x = size[0] // 2
-        center_y = size[1] // 2
-        
-        progress = i / (num_frames - 1)
-        start_angle = -60 + progress * 120
-        
-        sword_length = 50
-        sword_width = 6
-        
-        angle_rad = start_angle * math.pi / 180
-        end_x = center_x + math.cos(angle_rad) * sword_length
-        end_y = center_y + math.sin(angle_rad) * sword_length
-        
-        alpha = int(255 * (1 - progress * 0.5))
-        color = (200, 200, 200, alpha)
-        
-        draw.line([(center_x, center_y), (end_x, end_y)], 
-                  fill=color, width=sword_width)
-        
-        output_path = os.path.join(output_dir, f"sword_swing_{i}.png")
-        os.makedirs(os.path.dirname(output_path), exist_ok=True)
-        img.save(output_path)
-        print(f"Created: {output_path}")
-
-def draw_warm_snow_border(draw, x1, y1, x2, y2, border_color, highlight_color):
-    draw.rectangle([x1, y1, x2, y2], outline=border_color, width=3)
-    draw.rectangle([x1+2, y1+2, x2-2, y2-2], outline=highlight_color, width=1)
-    
-    corner_size = 8
-    draw.line([(x1, y1+corner_size), (x1, y1), (x1+corner_size, y1)], fill=highlight_color, width=2)
-    draw.line([(x2-corner_size, y1), (x2, y1), (x2, y1+corner_size)], fill=highlight_color, width=2)
-    draw.line([(x1, y2-corner_size), (x1, y2), (x1+corner_size, y2)], fill=highlight_color, width=2)
-    draw.line([(x2-corner_size, y2), (x2, y2), (x2, y2-corner_size)], fill=highlight_color, width=2)
-
-def create_warm_snow_skill_slot(size, key_text, skill_color, output_path):
-    img = Image.new('RGBA', size, (20, 20, 35, 230))
+def create_card(size, color, title, name="card"):
+    """创建宗派卡片"""
+    img = Image.new('RGBA', size, COLORS['black'] + (255,))
     draw = ImageDraw.Draw(img)
     
-    center_x = size[0] // 2
-    center_y = size[1] // 2
+    # 绘制边框
+    draw.rectangle([0, 0, size[0]-1, size[1]-1], outline=color + (255,), width=4)
     
-    border_color = (80, 80, 100)
-    highlight_color = skill_color
+    # 绘制顶部图标区域
+    icon_size = 80
+    icon_y = 20
+    icon_x = (size[0] - icon_size) // 2
+    draw.ellipse(
+        [icon_x, icon_y, icon_x + icon_size, icon_y + icon_size],
+        fill=color + (150,)
+    )
     
-    draw_warm_snow_border(draw, 2, 2, size[0]-3, size[1]-3, border_color, highlight_color)
+    # 绘制标题
+    try:
+        font_title = ImageFont.truetype("arial.ttf", 24)
+        font_desc = ImageFont.truetype("arial.ttf", 14)
+    except:
+        font_title = ImageFont.load_default()
+        font_desc = ImageFont.load_default()
     
-    inner_size = size[0] - 16
-    inner_x1 = 8
-    inner_y1 = 8
-    inner_x2 = inner_x1 + inner_size
-    inner_y2 = inner_y1 + inner_size
+    title_bbox = draw.textbbox((0, 0), title, font=font_title)
+    title_width = title_bbox[2] - title_bbox[0]
+    title_pos = ((size[0] - title_width) // 2, 120)
     
-    gradient_steps = 10
-    for i in range(gradient_steps):
-        step_alpha = int(100 * (1 - i / gradient_steps))
-        step_color = (*skill_color[:3], step_alpha)
-        step_size = inner_size - i * 2
-        if step_size > 0:
-            offset = i
-            draw.rectangle([
-                inner_x1 + offset, inner_y1 + offset,
-                inner_x2 - offset, inner_y2 - offset
-            ], outline=step_color, width=1)
+    draw.text(title_pos, title, fill=color + (255,), font=font_title)
     
-    font = ImageFont.load_default()
-    
-    bbox = draw.textbbox((0, 0), key_text, font=font)
-    text_w = bbox[2] - bbox[0]
-    text_h = bbox[3] - bbox[1]
-    
-    key_x = size[0] - text_w - 8
-    key_y = size[1] - text_h - 4
-    
-    bg_pad = 4
-    draw.rectangle([
-        key_x - bg_pad, key_y - bg_pad,
-        key_x + text_w + bg_pad, key_y + text_h + bg_pad
-    ], fill=(10, 10, 20, 200))
-    
-    draw.text((key_x, key_y), key_text, fill=(255, 255, 255), font=font)
-    
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    img.save(output_path)
-    print(f"Created: {output_path}")
+    return img
 
-def create_warm_snow_health_bar(width, height, fill_percent, output_path):
-    img = Image.new('RGBA', (width, height), (10, 10, 20, 220))
-    draw = ImageDraw.Draw(img)
+def generate_sect_assets():
+    """生成宗派相关资源"""
+    print("\n=== 生成宗派资源 ===")
     
-    border_color = (100, 80, 60)
-    highlight_color = (200, 180, 150)
+    sects_dir = ASSETS_DIR / "UI" / "Sects"
+    create_directory(sects_dir)
     
-    draw_warm_snow_border(draw, 1, 1, width-2, height-2, border_color, highlight_color)
+    sects = [
+        ('ice', COLORS['ice'], '冰', '冰心宗'),
+        ('thunder', COLORS['thunder'], '雷', '雷鸣宗'),
+        ('fire', COLORS['fire'], '火', '烈焰宗'),
+        ('poison', COLORS['poison'], '毒', '毒瘴宗'),
+    ]
     
-    bar_x1 = 4
-    bar_y1 = 4
-    bar_x2 = width - 5
-    bar_y2 = height - 5
-    
-    draw.rectangle([bar_x1, bar_y1, bar_x2, bar_y2], fill=(30, 20, 15, 255))
-    
-    fill_width = int((bar_x2 - bar_x1) * fill_percent)
-    if fill_width > 0:
-        if fill_percent > 0.5:
-            fill_color = (180, 50, 50)
-            glow_color = (255, 100, 100)
-        elif fill_percent > 0.25:
-            fill_color = (180, 150, 50)
-            glow_color = (255, 220, 100)
-        else:
-            fill_color = (150, 50, 30)
-            glow_color = (255, 80, 60)
+    for sect_id, color, symbol, name in sects:
+        # 图标 96x96
+        icon = create_icon((96, 96), color, symbol, f"icon_sect_{sect_id}")
+        icon_path = sects_dir / f"icon_sect_{sect_id}.png"
+        icon.save(icon_path)
+        print(f"  ✓ 生成图标: {icon_path.name}")
         
-        draw.rectangle([bar_x1, bar_y1, bar_x1 + fill_width, bar_y2], fill=fill_color)
+        # 卡片 160x240
+        card = create_card((160, 240), color, name, f"card_sect_{sect_id}")
+        card_path = sects_dir / f"card_sect_{sect_id}.png"
+        card.save(card_path)
+        print(f"  ✓ 生成卡片: {card_path.name}")
+
+def generate_skill_effects():
+    """生成技能特效资源"""
+    print("\n=== 生成技能特效 ===")
+    
+    effects_dir = ASSETS_DIR / "Effects" / "Skills"
+    create_directory(effects_dir)
+    
+    skills = [
+        # 冰系
+        ('ice_shard', COLORS['ice'], (16, 8), 'projectile'),
+        ('ice_field', COLORS['ice'], (128, 128), 'circle'),
+        ('ice_storm', COLORS['ice'], (256, 256), 'explosion'),
         
-        glow_height = (bar_y2 - bar_y1) // 3
-        draw.rectangle([bar_x1, bar_y1, bar_x1 + fill_width, bar_y1 + glow_height], fill=(*glow_color[:3], 100))
+        # 雷系
+        ('thunder_strike', COLORS['thunder'], (64, 64), 'explosion'),
+        ('thunder_field', COLORS['thunder'], (120, 120), 'circle'),
+        ('thunder_god', COLORS['thunder'], (200, 200), 'explosion'),
+        
+        # 火系
+        ('fire_ball', COLORS['fire'], (24, 24), 'projectile'),
+        ('fire_wall', COLORS['fire'], (200, 80), 'circle'),
+        ('fire_meteor', COLORS['fire'], (240, 240), 'explosion'),
+        
+        # 毒系
+        ('poison_dart', COLORS['poison'], (12, 6), 'projectile'),
+        ('poison_cloud', COLORS['poison'], (140, 140), 'circle'),
+        ('poison_plague', COLORS['poison'], (220, 220), 'explosion'),
+    ]
     
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    img.save(output_path)
-    print(f"Created: {output_path}")
+    for skill_id, color, size, effect_type in skills:
+        if effect_type == 'projectile':
+            img = create_projectile(size, color, skill_id)
+        elif effect_type == 'circle':
+            img = create_gradient_circle(size, color, skill_id)
+        else:  # explosion
+            img = create_explosion(size, color, skill_id)
+        
+        img_path = effects_dir / f"{skill_id}.png"
+        img.save(img_path)
+        print(f"  ✓ 生成特效: {img_path.name} ({size[0]}x{size[1]})")
 
-def create_warm_snow_panel(size, bg_color, border_color, highlight_color, text, output_path):
-    img = Image.new('RGBA', size, bg_color)
-    draw = ImageDraw.Draw(img)
+def generate_ui_assets():
+    """生成UI资源"""
+    print("\n=== 生成UI资源 ===")
     
-    draw_warm_snow_border(draw, 2, 2, size[0]-3, size[1]-3, border_color, highlight_color)
+    ui_dir = ASSETS_DIR / "UI"
+    create_directory(ui_dir)
     
-    font = ImageFont.load_default()
+    # 技能栏背景
+    skill_bar_bg = Image.new('RGBA', (400, 80), COLORS['black'] + (200,))
+    draw = ImageDraw.Draw(skill_bar_bg)
+    draw.rectangle([0, 0, 399, 79], outline=COLORS['gold'] + (255,), width=2)
     
-    bbox = draw.textbbox((0, 0), text, font=font)
-    text_w = bbox[2] - bbox[0]
-    text_h = bbox[3] - bbox[1]
-    text_x = (size[0] - text_w) // 2
-    text_y = (size[1] - text_h) // 2
+    bg_path = ui_dir / "skill_bar_bg.png"
+    skill_bar_bg.save(bg_path)
+    print(f"  ✓ 生成UI: {bg_path.name}")
     
-    draw.text((text_x, text_y), text, fill=(255, 255, 255), font=font)
+    # 宗派选择背景
+    sect_bg = Image.new('RGBA', (640, 360), COLORS['black'] + (240,))
+    draw = ImageDraw.Draw(sect_bg)
+    draw.rectangle([0, 0, 639, 359], outline=COLORS['gold'] + (255,), width=3)
     
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    img.save(output_path)
-    print(f"Created: {output_path}")
-
-def create_warm_snow_button(size, text, output_path):
-    img = Image.new('RGBA', size, (40, 30, 25, 240))
-    draw = ImageDraw.Draw(img)
-    
-    border_color = (120, 100, 80)
-    highlight_color = (200, 180, 140)
-    
-    draw_warm_snow_border(draw, 1, 1, size[0]-2, size[1]-2, border_color, highlight_color)
-    
-    font = ImageFont.load_default()
-    
-    bbox = draw.textbbox((0, 0), text, font=font)
-    text_w = bbox[2] - bbox[0]
-    text_h = bbox[3] - bbox[1]
-    text_x = (size[0] - text_w) // 2
-    text_y = (size[1] - text_h) // 2
-    
-    draw.text((text_x, text_y), text, fill=(240, 220, 180), font=font)
-    
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    img.save(output_path)
-    print(f"Created: {output_path}")
+    sect_bg_path = ui_dir / "sect_selection_bg.png"
+    sect_bg.save(sect_bg_path)
+    print(f"  ✓ 生成UI: {sect_bg_path.name}")
 
 def main():
-    base_dir = r"f:\project\SurvivorsClone_Test"
+    print("=" * 70)
+    print("占位资源生成器")
+    print("=" * 70)
     
-    textures_dir = os.path.join(base_dir, "Textures", "Placeholder")
-    effects_dir = os.path.join(textures_dir, "Effects")
-    ui_dir = os.path.join(base_dir, "Textures", "UI")
+    # 创建主资源目录
+    create_directory(ASSETS_DIR)
+    create_directory(ASSETS_DIR / "UI")
+    create_directory(ASSETS_DIR / "Effects")
     
-    print("=== Creating Placeholder Textures ===")
+    # 生成各类资源
+    generate_sect_assets()
+    generate_skill_effects()
+    generate_ui_assets()
     
-    create_placeholder_texture(
-        (128, 128), (100, 200, 255), "Sword",
-        os.path.join(textures_dir, "placeholder_sword.png")
-    )
-    
-    create_placeholder_texture(
-        (128, 128), (255, 100, 100), "Dash",
-        os.path.join(textures_dir, "placeholder_dash.png")
-    )
-    
-    create_placeholder_texture(
-        (128, 128), (255, 200, 100), "Attack",
-        os.path.join(textures_dir, "placeholder_attack.png")
-    )
-    
-    create_animation_frames(
-        "player_walk", 4, (64, 64), (100, 200, 100),
-        os.path.join(textures_dir, "Animations")
-    )
-    
-    print("\n=== Creating Attack Effects ===")
-    
-    create_slash_attack_frames(
-        8, (128, 128),
-        os.path.join(effects_dir, "Slash")
-    )
-    
-    create_sword_swing_frames(
-        10, (128, 128),
-        os.path.join(effects_dir, "SwordSwing")
-    )
-    
-    print("\n=== Creating Dash Effects ===")
-    
-    create_dash_effect_frames(
-        8, (96, 96),
-        os.path.join(effects_dir, "Dash")
-    )
-    
-    print("\n=== Creating Hit Effects ===")
-    
-    create_hit_effect_frames(
-        8, (96, 96),
-        os.path.join(effects_dir, "Hit")
-    )
-    
-    print("\n=== Creating Warm Snow Style UI Elements ===")
-    
-    create_warm_snow_panel(
-        (300, 100), (30, 25, 40, 220), (100, 90, 120), (180, 160, 200),
-        "Warm Snow",
-        os.path.join(ui_dir, "placeholder_panel.png")
-    )
-    
-    create_warm_snow_button(
-        (200, 60), "Start Game",
-        os.path.join(ui_dir, "placeholder_button.png")
-    )
-    
-    create_warm_snow_health_bar(
-        280, 36, 0.75,
-        os.path.join(ui_dir, "placeholder_healthbar.png")
-    )
-    
-    create_warm_snow_health_bar(
-        280, 36, 0.5,
-        os.path.join(ui_dir, "placeholder_healthbar_half.png")
-    )
-    
-    create_warm_snow_health_bar(
-        280, 36, 0.25,
-        os.path.join(ui_dir, "placeholder_healthbar_low.png")
-    )
-    
-    print("\n=== Creating Warm Snow Style Skill Bar UI ===")
-    
-    skill_slot_size = (72, 72)
-    
-    create_warm_snow_skill_slot(
-        skill_slot_size, "Q", (100, 150, 255),
-        os.path.join(ui_dir, "skill_slot_q.png")
-    )
-    
-    create_warm_snow_skill_slot(
-        skill_slot_size, "E", (150, 100, 255),
-        os.path.join(ui_dir, "skill_slot_e.png")
-    )
-    
-    create_warm_snow_skill_slot(
-        skill_slot_size, "R", (255, 100, 150),
-        os.path.join(ui_dir, "skill_slot_r.png")
-    )
-    
-    create_warm_snow_skill_slot(
-        skill_slot_size, "Shift", (100, 255, 150),
-        os.path.join(ui_dir, "skill_slot_shift.png")
-    )
-    
-    print("\n=== All placeholder resources created successfully! ===")
-    print("\nNote: Created effects:")
-    print("  - Slash attack (8 frames)")
-    print("  - Sword swing (10 frames)")
-    print("  - Dash effect (8 frames)")
-    print("  - Hit effect (8 frames)")
-    print("\nNote: Created Warm Snow style UI:")
-    print("  - Skill slots (Q, E, R, Shift) with corner decorations")
-    print("  - Health bars with gradient glow")
-    print("  - Panel and button with warm snow aesthetic")
+    print("\n" + "=" * 70)
+    print("✓ 所有占位资源生成完成！")
+    print("=" * 70)
+    print("\n资源位置:")
+    print(f"  - 宗派资源: {ASSETS_DIR / 'UI' / 'Sects'}")
+    print(f"  - 技能特效: {ASSETS_DIR / 'Effects' / 'Skills'}")
+    print(f"  - UI资源: {ASSETS_DIR / 'UI'}")
+    print("\n提示: 这些是占位资源，后续可以用AI工具生成更精美的版本")
 
 if __name__ == "__main__":
     main()

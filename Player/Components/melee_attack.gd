@@ -60,7 +60,7 @@ func spawn_attack_effect(position: Vector2, direction: Vector2):
 		hit_box.area_entered.connect(_on_attack_hit.bind(damage, knockback, direction))
 		
 		_play_slash_effect(position, direction)
-		_trigger_screen_shake(0.2)
+		VisualEffectsHelper.trigger_screen_shake(self, GameConstants.Values.SHAKE_ATTACK)
 		
 		await get_tree().create_timer(0.1).timeout
 		if is_instance_valid(hit_box):
@@ -82,7 +82,7 @@ func _play_slash_effect(position: Vector2, direction: Vector2):
 	effect_node.add_child(sprite)
 	
 	if player and player.get_parent():
-		player.get_parent().add_child(effect_node)
+		player.get_parent().call_deferred("add_child", effect_node)
 	
 	_animate_slash(sprite, effect_node)
 
@@ -102,29 +102,5 @@ func _animate_slash(sprite: Sprite2D, effect_node: Node2D):
 func _on_attack_hit(area: Area2D, dmg: int, kb: int, dir: Vector2):
 	if area.has_signal("hurt"):
 		area.emit_signal("hurt", dmg, dir, kb)
-		_trigger_hit_pause()
-		_trigger_screen_shake(0.4)
-
-func _trigger_hit_pause():
-	if _hit_pause_duration > 0:
-		Engine.time_scale = 0.1
-		await get_tree().create_timer(_hit_pause_duration * 0.1).timeout
-		Engine.time_scale = 1.0
-
-func _trigger_screen_shake(intensity: float):
-	if player and player.has_node("Camera2D"):
-		var camera = player.get_node("Camera2D")
-		_shake_camera(camera, intensity)
-
-func _shake_camera(camera: Camera2D, intensity: float):
-	var original_offset = camera.offset
-	var shake_amount = intensity * 8.0
-	
-	for i in range(6):
-		var shake_x = randf_range(-shake_amount, shake_amount)
-		var shake_y = randf_range(-shake_amount, shake_amount)
-		camera.offset = original_offset + Vector2(shake_x, shake_y)
-		await get_tree().create_timer(0.02).timeout
-		shake_amount *= 0.7
-	
-	camera.offset = original_offset
+		VisualEffectsHelper.trigger_hit_pause(self, _hit_pause_duration)
+		VisualEffectsHelper.trigger_screen_shake(self, GameConstants.Values.SHAKE_HIT)
