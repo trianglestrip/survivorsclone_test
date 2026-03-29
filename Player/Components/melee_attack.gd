@@ -5,6 +5,9 @@ extends BaseAttack
 ## 继承 BaseAttack，实现具体攻击逻辑
 ## 特点：快速响应、强打击感、清晰反馈
 
+const GameConstants = preload("res://Utility/game_constants.gd")
+const VisualEffectsHelper = preload("res://Utility/visual_effects_helper.gd")
+
 var _last_movement: Vector2 = Vector2.RIGHT
 var _slash_frames: Array = []
 var _current_frame: int = 0

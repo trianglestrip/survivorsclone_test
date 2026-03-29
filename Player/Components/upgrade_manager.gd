@@ -1,27 +1,19 @@
 extends Node
 class_name UpgradeManager
 
-# 升级管理器 - 管理玩家的升级和道具收集
+## 升级管理器 - 管理玩家的升级和道具收集
+## 暖雪风格：简化的直接属性应用
 
 var collected_upgrades: Array = []
 var upgrade_options: Array = []
 
 var player_stats = null
 
-# Effect 工厂
-var effect_factory = null
-
 signal upgrade_applied(upgrade_id: String)
-
-func _ready():
-	# 初始化 Effect 工厂
-	var EffectFactory = preload("res://Utility/Effects/effect_factory.gd")
-	effect_factory = EffectFactory.new()
 
 func set_player_stats(stats):
 	player_stats = stats
 
-# 应用升级
 func apply_upgrade(upgrade_id: String):
 	var upgrade_db = get_node_or_null("/root/UpgradeDb")
 	if upgrade_db == null:
@@ -33,23 +25,40 @@ func apply_upgrade(upgrade_id: String):
 		push_warning("升级不存在: %s" % upgrade_id)
 		return
 	
-	_apply_upgrade_effects(upgrade_id, config)
+	_apply_upgrade_effects(config)
 	
 	collected_upgrades.append(upgrade_id)
 	emit_signal("upgrade_applied", upgrade_id)
 	if has_node("/root/EventBus"):
 		get_node("/root/EventBus").emit_upgrade_collected(upgrade_id)
 
-# 应用升级效果（使用 Effect 系统）
-func _apply_upgrade_effects(_upgrade_id: String, config: Dictionary):
-	if player_stats == null or effect_factory == null:
+func _apply_upgrade_effects(config: Dictionary):
+	if player_stats == null:
 		return
 	
-	# 从配置创建 Effect 对象
-	var effects = effect_factory.create_effects_from_config(config)
+	if not config.has("effects"):
+		return
 	
-	# 应用所有效果
-	effect_factory.apply_effects(effects, player_stats, skill_manager)
+	var effects = config["effects"]
+	
+	if effects.has("max_hp"):
+		player_stats.max_hp += effects["max_hp"]
+		player_stats.hp = player_stats.max_hp
+	
+	if effects.has("move_speed"):
+		player_stats.movement_speed += effects["move_speed"]
+	
+	if effects.has("attack_damage"):
+		player_stats.attack_damage += effects["attack_damage"]
+	
+	if effects.has("armor"):
+		player_stats.armor += effects["armor"]
+	
+	if effects.has("critical_chance"):
+		player_stats.critical_chance += effects["critical_chance"]
+	
+	if effects.has("critical_damage"):
+		player_stats.critical_damage += effects["critical_damage"]
 
 # 获取随机升级选项
 func get_random_upgrade() -> String:

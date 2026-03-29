@@ -4,6 +4,9 @@ extends Node
 ## 冲刺管理器 - 处理玩家冲刺/闪避机制
 ## 完全解耦，数值从配置加载
 
+const GameConstants = preload("res://Utility/game_constants.gd")
+const VisualEffectsHelper = preload("res://Utility/visual_effects_helper.gd")
+
 ## 信号
 signal dash_started()
 signal dash_ended()
