@@ -6,6 +6,7 @@ extends CharacterBody2D
 var stats
 var upgrade_mgr
 var exp_mgr
+var attack_mgr
 
 # 基础变量
 var last_movement = Vector2.UP
@@ -21,11 +22,7 @@ var enemy_close = []
 @onready var sprite = $Sprite2D
 @onready var walkTimer = get_node("%walkTimer")
 
-# 技能计时器
-@onready var iceSpearTimer = get_node("%IceSpearTimer")
-@onready var iceSpearAttackTimer = get_node("%IceSpearAttackTimer")
-@onready var tornadoTimer = get_node("%TornadoTimer")
-@onready var tornadoAttackTimer = get_node("%TornadoAttackTimer")
+# 标枪特殊处理（暂时保留）
 @onready var javelinBase = get_node("%JavelinBase")
 
 # GUI
@@ -73,13 +70,20 @@ func _initialize_components():
 	var upgrade_mgr_script = load("res://Player/Components/upgrade_manager.gd")
 	upgrade_mgr = upgrade_mgr_script.new()
 	upgrade_mgr.set_player_stats(stats)
-	upgrade_mgr.set_skill_manager(skill_instance_mgr)  # 使用 skill_instance_mgr
+	upgrade_mgr.set_skill_manager(skill_instance_mgr)
 	add_child(upgrade_mgr)
 	
 	var exp_mgr_script = load("res://Player/Components/experience_manager.gd")
 	exp_mgr = exp_mgr_script.new()
 	exp_mgr.set_player_stats(stats)
 	add_child(exp_mgr)
+	
+	# 创建攻击管理器
+	var attack_mgr_script = load("res://Player/Components/attack_manager.gd")
+	attack_mgr = attack_mgr_script.new()
+	attack_mgr.set_player(self)
+	attack_mgr.set_skill_instance_manager(skill_instance_mgr)
+	add_child(attack_mgr)
 
 func _connect_signals():
 	exp_mgr.level_up.connect(_on_level_up)
@@ -87,7 +91,7 @@ func _connect_signals():
 
 func _initial_setup():
 	upgrade_character("icespear1")
-	attack()
+	attack_mgr.start_attacks()
 	set_expbar(stats.experience, exp_mgr.calculate_experience_cap())
 	_on_hurt_box_hurt(0, 0, 0)
 
@@ -116,31 +120,6 @@ func movement():
 	velocity = mov.normalized() * stats.get_movement_speed()
 	move_and_slide()
 
-func attack():
-	var icespear_level = skill_instance_mgr.get_skill_level("icespear")
-	if GameConfig.DEBUG_LOGGING:
-		print("[DEBUG] attack() - icespear_level: ", icespear_level)
-	if icespear_level > 0:
-		var attack_speed = skill_instance_mgr.get_skill_attack_speed("icespear")
-		iceSpearTimer.wait_time = attack_speed * (1 - stats.spell_cooldown)
-		if GameConfig.DEBUG_LOGGING:
-			print("[DEBUG] 启动 IceSpearTimer, wait_time: ", iceSpearTimer.wait_time)
-		if iceSpearTimer.is_stopped():
-			iceSpearTimer.start()
-			if GameConfig.DEBUG_LOGGING:
-				print("[DEBUG] IceSpearTimer 已启动")
-	
-	var tornado_level = skill_instance_mgr.get_skill_level("tornado")
-	if tornado_level > 0:
-		var attack_speed = skill_instance_mgr.get_skill_attack_speed("tornado")
-		tornadoTimer.wait_time = attack_speed * (1 - stats.spell_cooldown)
-		if tornadoTimer.is_stopped():
-			tornadoTimer.start()
-	
-	var javelin_level = skill_instance_mgr.get_skill_level("javelin")
-	if javelin_level > 0:
-		spawn_javelin()
-
 func _on_hurt_box_hurt(damage, _angle, _knockback):
 	var _actual_damage = stats.take_damage(damage)
 	healthBar.max_value = stats.maxhp
@@ -148,73 +127,6 @@ func _on_hurt_box_hurt(damage, _angle, _knockback):
 	
 	if not stats.is_alive():
 		death()
-
-func _on_ice_spear_timer_timeout():
-	if GameConfig.DEBUG_LOGGING:
-		print("[DEBUG] IceSpearTimer 超时触发")
-	var base_ammo = skill_instance_mgr.get_skill_base_ammo("icespear")
-	var total_ammo = base_ammo + stats.additional_attacks
-	if GameConfig.DEBUG_LOGGING:
-		print("[DEBUG] base_ammo: ", base_ammo, " additional_attacks: ", stats.additional_attacks, " total: ", total_ammo)
-	skill_instance_mgr.set_skill_ammo("icespear", total_ammo)
-	iceSpearAttackTimer.start()
-	if GameConfig.DEBUG_LOGGING:
-		print("[DEBUG] IceSpearAttackTimer 已启动")
-
-func _on_ice_spear_attack_timer_timeout():
-	if GameConfig.DEBUG_LOGGING:
-		print("[DEBUG] IceSpearAttackTimer 超时触发")
-	var ammo = skill_instance_mgr.get_skill_ammo("icespear")
-	if GameConfig.DEBUG_LOGGING:
-		print("[DEBUG] 当前弹药: ", ammo)
-	if ammo > 0:
-		if GameConfig.DEBUG_LOGGING:
-			print("[DEBUG] 发射冰矛！")
-		var icespear_attack = iceSpear.instantiate()
-		icespear_attack.position = position
-		icespear_attack.target = get_random_target()
-		icespear_attack.level = skill_instance_mgr.get_skill_level("icespear")
-		add_child(icespear_attack)
-		skill_instance_mgr.set_skill_ammo("icespear", ammo - 1)
-		
-		if skill_instance_mgr.get_skill_ammo("icespear") > 0:
-			iceSpearAttackTimer.start()
-		else:
-			iceSpearAttackTimer.stop()
-
-func _on_tornado_timer_timeout():
-	var base_ammo = skill_instance_mgr.get_skill_base_ammo("tornado")
-	skill_instance_mgr.set_skill_ammo("tornado", base_ammo + stats.additional_attacks)
-	tornadoAttackTimer.start()
-
-func _on_tornado_attack_timer_timeout():
-	var ammo = skill_instance_mgr.get_skill_ammo("tornado")
-	if ammo > 0 and skill_instance_mgr:
-		# 技能子类定义行为，Manager 负责生成
-		skill_instance_mgr.spawn_skill_with_behavior("tornado")
-		
-		skill_instance_mgr.set_skill_ammo("tornado", ammo - 1)
-		
-		if skill_instance_mgr.get_skill_ammo("tornado") > 0:
-			tornadoAttackTimer.start()
-		else:
-			tornadoAttackTimer.stop()
-
-func spawn_javelin():
-	var javelin_ammo = skill_instance_mgr.get_skill_ammo("javelin")
-	var get_javelin_total = javelinBase.get_child_count()
-	var calc_spawns = (javelin_ammo + stats.additional_attacks) - get_javelin_total
-	
-	while calc_spawns > 0:
-		var javelin_spawn = javelin.instantiate()
-		javelin_spawn.global_position = global_position
-		javelinBase.add_child(javelin_spawn)
-		calc_spawns -= 1
-	
-	var get_javelins = javelinBase.get_children()
-	for i in get_javelins:
-		if i.has_method("update_javelin"):
-			i.update_javelin()
 
 func get_random_target():
 	if enemy_close.size() > 0:
@@ -270,7 +182,7 @@ func set_expbar(set_value: int = 1, set_max_value: int = 100):
 func upgrade_character(upgrade_id: String):
 	upgrade_mgr.apply_upgrade(upgrade_id)
 	adjust_gui_collection(upgrade_id)
-	attack()
+	attack_mgr.start_attacks()
 	
 	# 清除升级选项 UI
 	var option_children = upgradeOptions.get_children()

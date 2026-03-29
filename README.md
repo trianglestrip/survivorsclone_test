@@ -77,9 +77,29 @@ F:\project\godot\Godot_v4.6.1-stable_win64.exe --path .
 
 玩家系统采用组件模式：
 - **PlayerStats** - 属性管理（HP、护甲、移动速度、法术属性）
-- **SkillManager** - 技能管理（等级、弹药、攻击速度）
 - **ExperienceManager** - 经验系统（经验值、等级）
 - **UpgradeManager** - 升级管理（选项生成、效果应用）
+- **AttackManager** - 攻击逻辑管理（技能计时器、攻击触发）
+
+### 继承架构
+
+**技能系统**:
+- **BaseSkill** - 基类，定义接口（`get_spawn_params()`, `update_skill_instance()`）
+- **IceSpear** - 冰矛独立实现
+- **Tornado** - 龙卷风独立实现
+- **Javelin** - 标枪独立实现
+
+**敌人系统**:
+- **BaseEnemy** - 基类，定义接口
+- **Enemy** - 通用敌人实现
+
+### 架构改进 (2026-03-29)
+
+- ✅ 创建了 **AttackManager** 组件，统一管理技能攻击逻辑
+- ✅ 重构了 **Player.gd**，从 371 行减少到约 280 行
+- ✅ 冰矛和龙卷风现在都使用 **GPU 实例化**
+- ✅ 完善了继承架构，基类简单，子类独立实现
+- ✅ 清理并重新整理了文档目录
 
 ### 核心系统（Autoload）
 
@@ -123,31 +143,45 @@ F:\project\godot\Godot_v4.6.1-stable_win64.exe --path .
 ```
 SurvivorsClone_Test/
 ├── README.md                    # 项目说明（本文件）
-├── docs/                        # 📚 所有文档
+├── docs/                        # 📚 文档
 │   ├── ARCHITECTURE.md         # 架构设计
-│   ├── CONFIG_SYSTEM.md        # 配置系统详解
-│   ├── AUDIO_SYSTEM.md         # 音频系统说明
-│   ├── QUICK_REFERENCE.md      # 快速参考
-│   ├── WARNING_FIXES.md        # 警告修复记录
-│   ├── BUGFIX_SUMMARY.md       # Bug 修复总结
-│   ├── TESTING_GUIDE.md        # 测试指南
-│   ├── REFACTORING_PLAN.md     # 重构计划
-│   └── ...                     # 其他历史文档
+│   └── CONFIG_SYSTEM.md        # 配置系统详解
 ├── Player/                      # 玩家系统
 │   ├── player.gd               # 玩家主脚本
-│   ├── Components/             # 玩家组件
-│   └── Attack/                 # 技能脚本
+│   └── Components/             # 玩家组件
+│       ├── player_stats.gd     # 属性管理
+│       ├── experience_manager.gd
+│       ├── upgrade_manager.gd
+│       └── attack_manager.gd   # 攻击逻辑（新增）
+├── Skills/                      # 技能系统
+│   ├── base_skill.gd           # 技能基类
+│   ├── ice_spear.gd            # 冰矛（独立实现）
+│   ├── tornado.gd              # 龙卷风（独立实现）
+│   ├── javelin.gd              # 标枪（独立实现）
+│   ├── skill_registry.gd       # 技能注册
+│   └── skill_instance_manager.gd  # GPU 实例管理
 ├── Enemy/                       # 敌人系统
+│   ├── base_enemy.gd           # 敌人基类
+│   ├── enemy.gd                # 通用敌人
+│   ├── enemy_registry.gd       # 敌人注册
+│   └── enemy_instance_manager.gd  # GPU 实例管理
 ├── Utility/                     # 工具类和系统
+│   ├── base_registry.gd        # 注册系统基类
 │   ├── event_bus.gd            # 事件总线
+│   ├── config_manager.gd       # 配置管理
+│   ├── object_pool.gd          # 对象池
 │   ├── upgrade_db.gd           # 升级数据库
 │   ├── audio_manager.gd        # 音频管理器
-│   ├── base_skill.gd           # 技能基类
 │   └── Effects/                # 效果系统
 ├── config/                      # 🎮 游戏配置
+│   ├── skill_registry.ini
+│   ├── skill_config.ini
+│   ├── enemy_registry.ini
+│   ├── enemy_config.ini
 │   ├── upgrade_config.ini      # 升级配置（31 个）
 │   └── spawn_waves.ini         # 波次配置
 └── tests/                       # 自动化测试
+    └── test_architecture_refactor.gd
 ```
 
 ---
@@ -277,20 +311,12 @@ F:\project\godot\Godot_v4.6.1-stable_win64_console.exe --headless --script tests
 ### 核心文档
 - [架构设计](docs/ARCHITECTURE.md) - 系统架构和设计模式
 - [配置系统](docs/CONFIG_SYSTEM.md) - 配置驱动设计详解
-- [注册系统](docs/REGISTRY_SYSTEM.md) - 技能和敌人动态注册
-- [音频系统](docs/AUDIO_SYSTEM.md) - 声音控制系统
-- [快速参考](docs/QUICK_REFERENCE.md) - 常用命令和 API
 
-### 开发文档
-- [测试指南](docs/TESTING_GUIDE.md) - 测试方法和故障排除
-- [性能测试](docs/PERFORMANCE_TEST.md) - 性能测试和对象池优化
-- [警告修复](docs/WARNING_FIXES.md) - 代码质量改进记录
-- [Bug 修复](docs/BUGFIX_SUMMARY.md) - 已修复问题记录
-
-### 历史文档
-- [重构计划](docs/REFACTORING_PLAN.md) - 架构重构详细计划
-- [重构总结](docs/REFACTORING_SUMMARY.md) - 重构完成总结
-- [任务清单](docs/TASKS.md) - 重构任务列表
+### 测试
+- 运行架构验证测试：
+  ```powershell
+  F:\project\godot\Godot_v4.6.1-stable_win64_console.exe --headless --path . --script tests/test_architecture_refactor.gd
+  ```
 
 ---
 
@@ -305,7 +331,7 @@ F:\project\godot\Godot_v4.6.1-stable_win64_console.exe --headless --script tests
 
 ## 项目状态
 
-- **版本**: v2.1
+- **版本**: v2.2
 - **状态**: ✅ 完全可运行
 - **代码质量**: ⭐⭐⭐⭐⭐（无警告）
 - **架构**: A+ 级别
@@ -319,6 +345,6 @@ F:\project\godot\Godot_v4.6.1-stable_win64_console.exe --headless --script tests
 
 ---
 
-**最后更新**: 2026-03-28  
+**最后更新**: 2026-03-29  
 **Godot 版本**: 4.6.1  
 **项目路径**: `f:\project\SurvivorsClone_Test`

@@ -27,9 +27,22 @@ F:\project\godot\Godot_v4.6.1-stable_win64.exe --path .
 - 启动时必须验证配置完整性，如果配置加载失败，游戏应该退出并报错
 
 ### 组件化架构
-- Player 使用组件系统：`PlayerStats`, `SkillManager`, `ExperienceManager`, `UpgradeManager`
+- Player 使用组件系统：
+  - `PlayerStats` - 属性管理
+  - `ExperienceManager` - 经验系统
+  - `UpgradeManager` - 升级管理
+  - `AttackManager` - 攻击逻辑管理（新增）
 - 所有技能继承自 `BaseSkill`
+  - 技能逻辑在各自独立文件中实现
+  - BaseSkill 定义接口和通用方法
+- 所有敌人继承自 `BaseEnemy`
 - 所有升级效果继承自 `BaseEffect`
+
+### 技能系统架构
+- **基类 `BaseSkill`** - 定义接口（`get_spawn_params()`, `update_skill_instance()`）
+- **子类** - 独立实现技能行为（`IceSpear`, `Tornado`, `Javelin`）
+- **SkillInstanceManager** - 统一管理技能实例，使用 GPU 实例化优化
+- **AttackManager** - 管理技能计时器和攻击触发
 
 ### 事件驱动
 - 使用 `EventBus` 进行系统间通信
@@ -37,6 +50,7 @@ F:\project\godot\Godot_v4.6.1-stable_win64.exe --path .
 
 ### 性能优化
 - 使用 `ObjectPool` 管理频繁创建/销毁的对象
+- 使用 `SkillInstanceManager` 和 `EnemyInstanceManager` 进行 GPU 实例化
 - 避免在 `_process()` 中进行昂贵的操作
 
 ## 编码规范
