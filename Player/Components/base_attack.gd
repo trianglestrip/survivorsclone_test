@@ -44,6 +44,9 @@ func set_player(p: Node):
 	player = p
 
 func load_config(config: Dictionary):
+	if config.is_empty():
+		return
+	
 	cooldown = config.get("base_cooldown", 0.3)
 	range = config.get("base_range", 90.0)
 	damage = config.get("base_damage", 12)

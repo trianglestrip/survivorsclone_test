@@ -5,18 +5,39 @@
       "move_down": "down",
       "move_left": "left",
       "move_right": "right",
-      "attack": "click",
-      "dash": "shift"
+      "primary_attack": "click",
+      "secondary_attack": "right_click",
+      "dash": "shift",
+      "skill_q": "skill_q",
+      "skill_e": "skill_e",
+      "skill_r": "skill_r"
     },
-    "deadzone": 0.5
+    "deadzone": 0.5,
+    "description": {
+      "primary_attack": "近战攻击（左键/空格）",
+      "secondary_attack": "远程攻击/副武器（右键）",
+      "dash": "冲刺闪避（Shift）",
+      "skill_q": "宗派技能1（Q）",
+      "skill_e": "宗派技能2（E）",
+      "skill_r": "必杀技（R）"
+    }
   },
-  "attack": {
+  "primary_attack": {
+    "type": "melee",
     "base_cooldown": 0.3,
     "base_range": 90,
     "base_damage": 12,
     "base_knockback": 180,
     "animation_speed": 1.5,
     "hit_pause_duration": 0.05
+  },
+  "secondary_attack": {
+    "type": "ranged",
+    "base_cooldown": 0.5,
+    "base_range": 300,
+    "base_damage": 8,
+    "base_knockback": 50,
+    "projectile_speed": 400
   },
   "dash": {
     "cooldown": 0.8,

@@ -5,14 +5,20 @@ extends Node
 
 ## 输入信号
 signal move_input(direction: Vector2)  # 移动输入
-signal attack_pressed()               # 攻击按下
-signal attack_released()              # 攻击释放
+signal attack_pressed()               # 近战攻击按下（左键/空格）
+signal attack_released()              # 近战攻击释放
+signal secondary_attack_pressed()     # 副攻击按下（右键）
+signal secondary_attack_released()    # 副攻击释放
 signal dash_pressed()                 # 冲刺按下
 signal dash_released()                # 冲刺释放
+signal skill_q_pressed()              # Q技能按下
+signal skill_e_pressed()              # E技能按下
+signal skill_r_pressed()              # R技能按下
 
 ## 输入状态
 var move_direction: Vector2 = Vector2.ZERO
 var is_attack_pressed: bool = false
+var is_secondary_attack_pressed: bool = false
 var is_dash_pressed: bool = false
 
 ## 配置
@@ -29,7 +35,9 @@ func _load_config():
 func _process(_delta: float):
 	_update_movement()
 	_update_attack()
+	_update_secondary_attack()
 	_update_dash()
+	_update_skills()
 
 func _update_movement():
 	var x = Input.get_action_strength("right") - Input.get_action_strength("left")
@@ -50,6 +58,15 @@ func _update_attack():
 	elif not is_attack_pressed and was_pressed:
 		emit_signal("attack_released")
 
+func _update_secondary_attack():
+	var was_pressed = is_secondary_attack_pressed
+	is_secondary_attack_pressed = Input.is_action_just_pressed("right_click")
+	
+	if is_secondary_attack_pressed and not was_pressed:
+		emit_signal("secondary_attack_pressed")
+	elif not is_secondary_attack_pressed and was_pressed:
+		emit_signal("secondary_attack_released")
+
 func _update_dash():
 	var was_pressed = is_dash_pressed
 	is_dash_pressed = Input.is_action_just_pressed("shift")
@@ -59,12 +76,25 @@ func _update_dash():
 	elif not is_dash_pressed and was_pressed:
 		emit_signal("dash_released")
 
+func _update_skills():
+	if Input.is_action_just_pressed("skill_q"):
+		emit_signal("skill_q_pressed")
+	
+	if Input.is_action_just_pressed("skill_e"):
+		emit_signal("skill_e_pressed")
+	
+	if Input.is_action_just_pressed("skill_r"):
+		emit_signal("skill_r_pressed")
+
 ## 公共 API - 查询输入状态
 func get_move_direction() -> Vector2:
 	return move_direction
 
 func is_attacking() -> bool:
 	return is_attack_pressed
+
+func is_secondary_attacking() -> bool:
+	return is_secondary_attack_pressed
 
 func is_dashing() -> bool:
 	return is_dash_pressed

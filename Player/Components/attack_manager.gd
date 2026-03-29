@@ -20,8 +20,11 @@ func _ready():
 
 func _load_config():
 	var json_data = ConfigManager.load_json_config("res://config/stage1_controls.json")
-	if json_data and json_data.has("attack"):
-		_config = json_data["attack"]
+	if json_data:
+		if json_data.has("primary_attack"):
+			_config = json_data["primary_attack"]
+		elif json_data.has("attack"):
+			_config = json_data["attack"]
 
 func set_player(p: Node):
 	player = p

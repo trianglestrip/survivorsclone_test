@@ -8,6 +8,7 @@ var upgrade_mgr
 var exp_mgr
 var attack_mgr
 var dash_mgr
+var active_skill_mgr
 
 # 基础变量
 var last_movement = Vector2.UP
@@ -110,6 +111,13 @@ func _initialize_components():
 	dash_mgr.set_player(self)
 	dash_mgr.set_input_manager(input_mgr)
 	add_child(dash_mgr)
+	
+	# 创建主动技能管理器
+	var active_skill_mgr_script = load("res://Player/Components/active_skill_manager.gd")
+	active_skill_mgr = active_skill_mgr_script.new()
+	active_skill_mgr.set_player(self)
+	active_skill_mgr.set_input_manager(input_mgr)
+	add_child(active_skill_mgr)
 
 func _connect_signals():
 	exp_mgr.level_up.connect(_on_level_up)
@@ -118,6 +126,9 @@ func _connect_signals():
 		dash_mgr.dash_started.connect(_on_dash_started)
 		dash_mgr.dash_ended.connect(_on_dash_ended)
 		dash_mgr.dash_cooldown_updated.connect(_on_dash_cooldown_updated)
+	if active_skill_mgr:
+		active_skill_mgr.skill_cast.connect(_on_skill_cast)
+		active_skill_mgr.skill_cooldown_updated.connect(_on_skill_cooldown_updated)
 
 func _on_dash_started():
 	if hurt_box and hurt_box.has_node("CollisionShape2D"):
@@ -131,6 +142,32 @@ func _on_dash_cooldown_updated(current_cooldown: float, max_cooldown: float):
 	var skill_bar_ui = get_node_or_null("%SkillBarUI")
 	if skill_bar_ui and skill_bar_ui.has_method("update_skill_cooldown"):
 		skill_bar_ui.update_skill_cooldown("shift", current_cooldown, max_cooldown)
+
+func _on_skill_cast(skill_id: String):
+	if GameConfig.DEBUG_LOGGING:
+		print("玩家释放技能: %s" % skill_id.to_upper())
+	
+	match skill_id:
+		"q":
+			_cast_q_skill()
+		"e":
+			_cast_e_skill()
+		"r":
+			_cast_r_skill()
+
+func _on_skill_cooldown_updated(skill_id: String, current: float, max_cd: float):
+	var skill_bar_ui = get_node_or_null("%SkillBarUI")
+	if skill_bar_ui and skill_bar_ui.has_method("update_skill_cooldown"):
+		skill_bar_ui.update_skill_cooldown(skill_id, current, max_cd)
+
+func _cast_q_skill():
+	print("Q技能：冰霜冲击（待实现）")
+
+func _cast_e_skill():
+	print("E技能：雷霆一击（待实现）")
+
+func _cast_r_skill():
+	print("R技能：必杀技（待实现）")
 
 func _initial_setup():
 	upgrade_character("icespear1")
