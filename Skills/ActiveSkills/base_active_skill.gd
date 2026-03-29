@@ -93,7 +93,8 @@ func get_mouse_direction() -> Vector2:
 
 ## 工具函数：触发屏幕震动
 func trigger_screen_shake(intensity: float = 0.3):
-	VisualEffectsHelper.trigger_screen_shake(self, intensity)
+	if player and player.is_inside_tree():
+		VisualEffectsHelper.trigger_screen_shake(player, intensity)
 
 ## 工具函数：创建特效
 func create_effect(texture_path: String, pos: Vector2, scale_val: float = 1.0) -> Sprite2D:

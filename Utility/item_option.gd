@@ -17,12 +17,13 @@ func _ready():
 		item = "food"
 	
 	# 安全检查：确保升级存在
-	if not UpgradeDb.UPGRADES.has(item):
+	var upgrade_db = get_node_or_null("/root/UpgradeDb")
+	if not upgrade_db or not upgrade_db.UPGRADES.has(item):
 		push_error("升级不存在: %s" % item)
 		queue_free()
 		return
 	
-	var upgrade_data = UpgradeDb.UPGRADES[item]
+	var upgrade_data = upgrade_db.UPGRADES[item]
 	lblName.text = upgrade_data["displayname"]
 	lblDescription.text = upgrade_data["details"]
 	lblLevel.text = upgrade_data["level"]

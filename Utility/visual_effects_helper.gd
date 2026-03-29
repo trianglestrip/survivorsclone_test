@@ -11,10 +11,14 @@ const GameConstants = preload("res://Utility/game_constants.gd")
 # ========================================
 
 static func trigger_screen_shake(source_node: Node, intensity: float = 0.3):
-	if not source_node:
+	if not source_node or not source_node.is_inside_tree():
 		return
 	
-	var camera = source_node.get_viewport().get_camera_2d()
+	var viewport = source_node.get_viewport()
+	if not viewport:
+		return
+	
+	var camera = viewport.get_camera_2d()
 	if camera:
 		shake_camera(camera, intensity)
 
