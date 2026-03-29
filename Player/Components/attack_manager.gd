@@ -10,12 +10,14 @@ signal attack_launched(attack_type: String)
 ## 引用
 var player: Node = null
 var input_manager: Node = null
+var weapon_registry: Node = null
 
 ## 攻击系统
 var primary_attack: BaseAttack = null
 var secondary_attack: BaseAttack = null
 var _primary_config: Dictionary = {}
 var _secondary_config: Dictionary = {}
+var current_weapon: Dictionary = {}
 
 func _ready():
 	_load_config()
@@ -33,7 +35,6 @@ func _load_config():
 
 func set_player(p: Node):
 	player = p
-	_initialize_attack()
 
 func set_input_manager(im: Node):
 	input_manager = im
@@ -41,14 +42,49 @@ func set_input_manager(im: Node):
 		input_manager.attack_pressed.connect(_on_primary_attack_pressed)
 		input_manager.secondary_attack_pressed.connect(_on_secondary_attack_pressed)
 
+func set_weapon_registry(wr: Node):
+	weapon_registry = wr
+	_initialize_attack()
+
 func _initialize_attack():
-	var melee_attack = MeleeAttack.new()
-	melee_attack.set_player(player)
-	melee_attack.load_config(_primary_config)
-	melee_attack.attack_executed.connect(_on_attack_executed)
-	add_child(melee_attack)
-	primary_attack = melee_attack
+	if not player or not weapon_registry:
+		return
 	
+	# 获取当前武器配置
+	current_weapon = weapon_registry.get_current_weapon()
+	if current_weapon.is_empty():
+		push_warning("[AttackManager] 当前武器配置为空")
+		return
+	
+	# 根据武器类型创建攻击
+	var attack_mode_id = current_weapon.get("attack_mode", "melee_fast")
+	var attack_mode = weapon_registry.get_attack_mode(attack_mode_id)
+	var weapon_stats = current_weapon.get("stats", {})
+	
+	# 合并武器配置到攻击配置
+	var merged_config = _primary_config.duplicate()
+	merged_config["base_damage"] = weapon_stats.get("base_damage", 12)
+	merged_config["cooldown"] = weapon_stats.get("attack_speed", 0.3)
+	merged_config["base_range"] = weapon_stats.get("range", 90)
+	merged_config["knockback"] = weapon_stats.get("knockback", 100)
+	
+	# 根据攻击模式创建攻击实例
+	if attack_mode.get("type", "melee") == "melee":
+		var melee_attack = MeleeAttack.new()
+		melee_attack.set_player(player)
+		melee_attack.load_config(merged_config)
+		melee_attack.attack_executed.connect(_on_attack_executed)
+		add_child(melee_attack)
+		primary_attack = melee_attack
+	else:
+		var ranged_attack = RangedAttack.new()
+		ranged_attack.set_player(player)
+		ranged_attack.load_config(merged_config)
+		ranged_attack.attack_executed.connect(_on_attack_executed)
+		add_child(ranged_attack)
+		primary_attack = ranged_attack
+	
+	# 副攻击（如果有配置）
 	if not _secondary_config.is_empty():
 		var ranged_attack = RangedAttack.new()
 		ranged_attack.set_player(player)
@@ -56,6 +92,8 @@ func _initialize_attack():
 		ranged_attack.attack_executed.connect(_on_attack_executed)
 		add_child(ranged_attack)
 		secondary_attack = ranged_attack
+	
+	print("[AttackManager] 装备武器: ", current_weapon.get("name", "未知"))
 
 func _on_primary_attack_pressed():
 	if primary_attack and primary_attack.try_attack():

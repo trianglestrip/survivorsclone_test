@@ -1,0 +1,169 @@
+{
+  "weapons": {
+    "sword_basic": {
+      "id": "sword_basic",
+      "name": "无名",
+      "name_en": "Nameless",
+      "description": "基础剑类武器，攻击速度快",
+      "rarity": "common",
+      "weapon_type": "sword",
+      "icon": "res://Assets/UI/Weapons/icon_sword_basic.png",
+      "attack_mode": "melee_fast",
+      "stats": {
+        "base_damage": 12,
+        "attack_speed": 0.3,
+        "range": 90,
+        "knockback": 100
+      }
+    },
+    "sword_frost": {
+      "id": "sword_frost",
+      "name": "寒川",
+      "name_en": "Frost River",
+      "description": "冰心宗专属武器，攻击附带减速",
+      "rarity": "epic",
+      "weapon_type": "sword",
+      "sect": "ice",
+      "icon": "res://Assets/UI/Weapons/icon_sword_frost.png",
+      "attack_mode": "melee_fast",
+      "stats": {
+        "base_damage": 15,
+        "attack_speed": 0.28,
+        "range": 95,
+        "knockback": 120
+      },
+      "special_effects": [
+        {
+          "type": "slow",
+          "chance": 0.3,
+          "slow_percent": 0.4,
+          "duration": 2.0
+        }
+      ]
+    },
+    "hammer_thunder": {
+      "id": "hammer_thunder",
+      "name": "雷息",
+      "name_en": "Thunder Breath",
+      "description": "雷鸣宗专属武器，攻击触发雷电链",
+      "rarity": "epic",
+      "weapon_type": "hammer",
+      "sect": "thunder",
+      "icon": "res://Assets/UI/Weapons/icon_hammer_thunder.png",
+      "attack_mode": "melee_heavy",
+      "stats": {
+        "base_damage": 25,
+        "attack_speed": 0.5,
+        "range": 85,
+        "knockback": 200
+      },
+      "special_effects": [
+        {
+          "type": "chain_lightning",
+          "chance": 0.25,
+          "chain_count": 2,
+          "chain_damage": 10
+        }
+      ]
+    },
+    "staff_fire": {
+      "id": "staff_fire",
+      "name": "炽焰",
+      "name_en": "Blazing",
+      "description": "烈焰宗专属武器，攻击附带灼烧",
+      "rarity": "epic",
+      "weapon_type": "staff",
+      "sect": "fire",
+      "icon": "res://Assets/UI/Weapons/icon_staff_fire.png",
+      "attack_mode": "ranged",
+      "stats": {
+        "base_damage": 18,
+        "attack_speed": 0.35,
+        "range": 200,
+        "knockback": 80
+      },
+      "special_effects": [
+        {
+          "type": "burn",
+          "chance": 0.4,
+          "burn_damage": 5,
+          "duration": 3.0
+        }
+      ]
+    },
+    "dagger_poison": {
+      "id": "dagger_poison",
+      "name": "百足",
+      "name_en": "Centipede",
+      "description": "毒瘴宗专属武器，攻击施加剧毒",
+      "rarity": "epic",
+      "weapon_type": "dagger",
+      "sect": "poison",
+      "icon": "res://Assets/UI/Weapons/icon_dagger_poison.png",
+      "attack_mode": "melee_fast",
+      "stats": {
+        "base_damage": 10,
+        "attack_speed": 0.25,
+        "range": 80,
+        "knockback": 60
+      },
+      "special_effects": [
+        {
+          "type": "poison",
+          "chance": 0.5,
+          "poison_damage": 8,
+          "duration": 4.0
+        }
+      ]
+    },
+    "spear_legendary": {
+      "id": "spear_legendary",
+      "name": "养战",
+      "name_en": "War Nourisher",
+      "description": "传说武器，击杀敌人恢复生命",
+      "rarity": "legendary",
+      "weapon_type": "spear",
+      "icon": "res://Assets/UI/Weapons/icon_spear_legendary.png",
+      "attack_mode": "melee_medium",
+      "stats": {
+        "base_damage": 20,
+        "attack_speed": 0.4,
+        "range": 120,
+        "knockback": 150
+      },
+      "special_effects": [
+        {
+          "type": "lifesteal",
+          "chance": 1.0,
+          "heal_percent": 0.15
+        }
+      ]
+    }
+  },
+  "attack_modes": {
+    "melee_fast": {
+      "type": "melee",
+      "attack_pattern": "single",
+      "animation_frames": 6,
+      "hit_timing": 0.15
+    },
+    "melee_medium": {
+      "type": "melee",
+      "attack_pattern": "single",
+      "animation_frames": 8,
+      "hit_timing": 0.2
+    },
+    "melee_heavy": {
+      "type": "melee",
+      "attack_pattern": "single",
+      "animation_frames": 10,
+      "hit_timing": 0.3
+    },
+    "ranged": {
+      "type": "ranged",
+      "attack_pattern": "projectile",
+      "projectile_speed": 300,
+      "projectile_lifetime": 2.0
+    }
+  }
+}

@@ -10,6 +10,7 @@ var attack_mgr
 var dash_mgr
 var active_skill_mgr
 var sect_mgr
+var weapon_registry
 
 # 基础变量
 var last_movement = Vector2.UP
@@ -43,6 +44,7 @@ var _hit_frames: Array = []
 @onready var lblResult = get_node("%lbl_Result")
 @onready var sndVictory = get_node("%snd_victory")
 @onready var sndLose = get_node("%snd_lose")
+@onready var weapon_bar_ui = get_node_or_null("%WeaponBarUI")
 
 signal playerdeath
 
@@ -81,10 +83,16 @@ func _initialize_components():
 	add_child(exp_mgr)
 	
 	# 创建攻击管理器
+	# 创建武器注册表（需要在attack_mgr之前）
+	var weapon_registry_script = load("res://Utility/weapon_registry.gd")
+	weapon_registry = weapon_registry_script.new()
+	add_child(weapon_registry)
+	
 	var attack_mgr_script = load("res://Player/Components/attack_manager.gd")
 	attack_mgr = attack_mgr_script.new()
 	attack_mgr.set_player(self)
 	attack_mgr.set_input_manager(input_mgr)
+	attack_mgr.set_weapon_registry(weapon_registry)
 	add_child(attack_mgr)
 	
 	# 创建冲刺管理器
@@ -206,6 +214,10 @@ func _initial_setup():
 	
 	if sect_mgr:
 		sect_mgr.select_sect("ice")
+	
+	# 初始化武器栏UI
+	if weapon_bar_ui and weapon_registry:
+		weapon_bar_ui.set_weapon_registry(weapon_registry)
 
 func _physics_process(_delta):
 	movement()

@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3 uid="uid://weapon_bar_ui"]
+
+[ext_resource type="Script" path="res://Player/GUI/weapon_bar_ui.gd" id="1"]
+
+[node name="WeaponBarUI" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 100.0
+offset_bottom = 120.0
+script = ExtResource("1")

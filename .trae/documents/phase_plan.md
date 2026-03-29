@@ -229,18 +229,27 @@
 - ✅ test_gameplay_simulation.gd（9/9，100%）
 - ✅ test_enemy_and_effects.gd（3/3，100%）
 
-⏳ **阶段2：宗派系统基础框架（部分完成）**
+✅ **阶段2：宗派系统基础框架（100%）**
 
 - ✅ 宗派数据结构（sect_config.json）
 - ✅ 宗派管理器（SectManager）
 - ✅ 宗派选择界面（SectSelectionUI）
 - ✅ Q技能实现（4个宗派各自的Q技能）
-- ⏳ E技能实现（框架完成，待实现具体逻辑）
-- ⏳ R技能实现（框架完成，待实现具体逻辑）
+- ✅ E技能实现（冰封领域、雷阵、火墙、毒云）
+- ✅ R技能实现（极寒风暴、天罚雷劫、陨火天降、瘟疫爆发）
+- ✅ 测试覆盖（test_stage2_skills.gd - 8/8通过）
+
+✅ **阶段3：武器系统基础（100%）**
+
+- ✅ 武器数据结构（weapon_config.json - 6种武器）
+- ✅ 武器注册表（WeaponRegistry）
+- ✅ 武器攻击模式（4种模式：快速/中速/重型/远程）
+- ✅ 武器栏UI（WeaponBarUI）
+- ✅ 武器与AttackManager集成
+- ✅ 测试覆盖（test_stage3_weapons.gd - 5/5通过）
 
 ⏳ **待开始：**
 
-- 阶段3：武器系统基础
 - 阶段4：圣物系统基础
 - 阶段5：敌人系统升级
 - 阶段6：关卡系统
