@@ -30,17 +30,42 @@ func _create_ice_field(pos: Vector2):
 	field_node.global_position = pos
 	field_node.z_index = 1
 	
-	# 创建视觉效果
-	var sprite = Sprite2D.new()
-	sprite.texture = VisualEffectsHelper.create_glow_background(
+	# 创建多层视觉效果（更明显）
+	# 底层：大范围低透明度
+	var base_layer = Sprite2D.new()
+	base_layer.texture = VisualEffectsHelper.create_glow_background(
 		Vector2(radius * 2, radius * 2),
 		GameConstants.Colors.SECT_ICE
 	)
-	sprite.modulate = GameConstants.Colors.SECT_ICE
-	sprite.modulate.a = 0.4
-	sprite.scale = Vector2(0.1, 0.1)
+	base_layer.modulate = GameConstants.Colors.SECT_ICE
+	base_layer.modulate.a = 0.3
+	base_layer.scale = Vector2(1.0, 1.0)
+	base_layer.name = "BaseLayer"
+	field_node.add_child(base_layer)
 	
-	field_node.add_child(sprite)
+	# 中层：中等范围中透明度
+	var mid_layer = Sprite2D.new()
+	mid_layer.texture = VisualEffectsHelper.create_glow_background(
+		Vector2(radius * 1.5, radius * 1.5),
+		GameConstants.Colors.SECT_ICE
+	)
+	mid_layer.modulate = GameConstants.Colors.SECT_ICE
+	mid_layer.modulate.a = 0.5
+	mid_layer.scale = Vector2(1.0, 1.0)
+	mid_layer.name = "MidLayer"
+	field_node.add_child(mid_layer)
+	
+	# 顶层：小范围高透明度（核心光晕）
+	var top_layer = Sprite2D.new()
+	top_layer.texture = VisualEffectsHelper.create_glow_background(
+		Vector2(radius * 1.0, radius * 1.0),
+		GameConstants.Colors.SECT_ICE
+	)
+	top_layer.modulate = GameConstants.Colors.SECT_ICE
+	top_layer.modulate.a = 0.7
+	top_layer.scale = Vector2(1.0, 1.0)
+	top_layer.name = "TopLayer"
+	field_node.add_child(top_layer)
 	
 	# 添加伤害区域
 	var damage_area = Area2D.new()
@@ -59,15 +84,31 @@ func _create_ice_field(pos: Vector2):
 	if player and player.get_parent():
 		player.get_parent().add_child(field_node)
 		await get_tree().process_frame
-		_animate_field(sprite)
+		_animate_field()
 	else:
 		field_node.queue_free()
 
-func _animate_field(sprite: Sprite2D):
-	# 展开动画
-	var tween = create_tween()
-	tween.tween_property(sprite, "scale", Vector2(1.0, 1.0), 0.3)
-	tween.tween_property(sprite, "modulate:a", 0.6, 0.3)
+func _animate_field():
+	# 多层动画效果
+	var base = field_node.get_node_or_null("BaseLayer")
+	var mid = field_node.get_node_or_null("MidLayer")
+	var top = field_node.get_node_or_null("TopLayer")
+	
+	if base:
+		var tween = create_tween()
+		tween.tween_property(base, "scale", Vector2(1.1, 1.1), 0.4)
+		tween.tween_property(base, "modulate:a", 0.4, 0.4)
+	
+	if mid:
+		var tween = create_tween()
+		tween.set_loops()
+		tween.tween_property(mid, "rotation", TAU, 3.0)
+	
+	if top:
+		var tween = create_tween()
+		tween.set_loops()
+		tween.tween_property(top, "scale", Vector2(1.1, 1.1), 0.6)
+		tween.tween_property(top, "scale", Vector2(0.9, 0.9), 0.6)
 	
 	is_active = true
 	elapsed_time = 0.0

@@ -32,14 +32,18 @@ func _create_fire_wall(pos: Vector2, dir: Vector2):
 	wall_node.rotation = dir.angle() + PI / 2  # 垂直于方向
 	wall_node.z_index = 2
 	
-	# 创建视觉效果
-	var sprite = Sprite2D.new()
-	sprite.texture = VisualEffectsHelper.create_placeholder_texture(Vector2(wall_width / 4, wall_height / 4))
-	sprite.modulate = GameConstants.Colors.SECT_FIRE
-	sprite.modulate.a = 0.7
-	sprite.scale = Vector2(4.0, 4.0)
-	
-	wall_node.add_child(sprite)
+	# 创建多层火焰效果
+	for i in range(3):
+		var sprite = Sprite2D.new()
+		sprite.texture = VisualEffectsHelper.create_glow_background(
+			Vector2(wall_width * (1.0 + i * 0.2), wall_height * (1.0 + i * 0.2)),
+			GameConstants.Colors.SECT_FIRE
+		)
+		sprite.modulate = GameConstants.Colors.SECT_FIRE
+		sprite.modulate.a = 0.7 - i * 0.2
+		sprite.scale = Vector2(1.0, 1.0)
+		sprite.name = "FireLayer" + str(i)
+		wall_node.add_child(sprite)
 	
 	# 添加伤害区域
 	var damage_area = Area2D.new()
@@ -67,14 +71,24 @@ func _start_wall_effect():
 	elapsed_time = 0.0
 	tick_timer = 0.0
 	
-	# 火焰闪烁效果
+	# 多层火焰闪烁效果
 	if wall_node:
-		var sprite = wall_node.get_node_or_null("Sprite2D")
-		if sprite:
-			var tween = create_tween()
-			tween.set_loops()
-			tween.tween_property(sprite, "modulate:a", 0.8, 0.3)
-			tween.tween_property(sprite, "modulate:a", 0.5, 0.3)
+		for i in range(3):
+			var sprite = wall_node.get_node_or_null("FireLayer" + str(i))
+			if sprite:
+				var tween = create_tween()
+				tween.set_loops()
+				var delay = i * 0.1
+				tween.tween_interval(delay)
+				tween.tween_property(sprite, "modulate:a", 0.9 - i * 0.2, 0.25)
+				tween.tween_property(sprite, "modulate:a", 0.4 - i * 0.1, 0.25)
+				
+				# 添加缩放脉冲
+				var scale_tween = create_tween()
+				scale_tween.set_loops()
+				scale_tween.tween_interval(delay)
+				scale_tween.tween_property(sprite, "scale", Vector2(1.1, 1.05), 0.3)
+				scale_tween.tween_property(sprite, "scale", Vector2(0.95, 1.0), 0.3)
 
 func _process(delta: float):
 	if not is_active or not is_instance_valid(wall_node):

@@ -28,17 +28,18 @@ func _create_ice_storm(pos: Vector2):
 	storm_node.global_position = pos
 	storm_node.z_index = 3
 	
-	# 创建视觉效果（多层）
-	for i in range(3):
+	# 创建视觉效果（5层，更强烈）
+	for i in range(5):
 		var sprite = Sprite2D.new()
+		var layer_size = radius * 2.0 * (1.0 - i * 0.15)
 		sprite.texture = VisualEffectsHelper.create_glow_background(
-			Vector2(radius * 2, radius * 2),
+			Vector2(layer_size, layer_size),
 			GameConstants.Colors.SECT_ICE
 		)
 		sprite.modulate = GameConstants.Colors.SECT_ICE
-		sprite.modulate.a = 0.3 - i * 0.08
-		sprite.scale = Vector2(0.1, 0.1)
-		sprite.rotation = i * PI / 3
+		sprite.modulate.a = 0.6 - i * 0.1
+		sprite.scale = Vector2(1.0, 1.0)
+		sprite.rotation = i * PI / 5
 		sprite.name = "Layer" + str(i)
 		storm_node.add_child(sprite)
 	
@@ -64,18 +65,24 @@ func _create_ice_storm(pos: Vector2):
 		storm_node.queue_free()
 
 func _animate_storm():
-	# 展开动画
-	for i in range(3):
+	# 多层旋转动画（更快更明显）
+	for i in range(5):
 		var sprite = storm_node.get_node_or_null("Layer" + str(i))
 		if sprite:
-			var tween = create_tween()
-			tween.tween_property(sprite, "scale", Vector2(1.0, 1.0), 0.5 + i * 0.1)
+			# 脉冲缩放
+			var scale_tween = create_tween()
+			scale_tween.set_loops()
+			var scale_min = 0.9 + i * 0.02
+			var scale_max = 1.1 - i * 0.02
+			scale_tween.tween_property(sprite, "scale", Vector2(scale_max, scale_max), 0.4)
+			scale_tween.tween_property(sprite, "scale", Vector2(scale_min, scale_min), 0.4)
 			
-			# 旋转动画
+			# 快速旋转
 			var rotate_tween = create_tween()
 			rotate_tween.set_loops()
-			var rotation_speed = 1.0 + i * 0.3
-			rotate_tween.tween_property(sprite, "rotation", sprite.rotation + TAU, rotation_speed)
+			var rotation_speed = 0.8 - i * 0.1
+			var direction = 1 if i % 2 == 0 else -1
+			rotate_tween.tween_property(sprite, "rotation", sprite.rotation + TAU * direction, rotation_speed)
 	
 	is_active = true
 	elapsed_time = 0.0

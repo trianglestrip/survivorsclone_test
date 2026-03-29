@@ -74,17 +74,58 @@ func _apply_slow(enemy: Node):
 		enemy.apply_slow(slow_percent, slow_duration)
 
 func _create_hit_effect(pos: Vector2):
-	var effect = Sprite2D.new()
-	effect.position = pos
-	effect.scale = Vector2(2.0, 2.0)
-	effect.texture = VisualEffectsHelper.load_texture_or_placeholder(config.get("effect", ""), Vector2(64, 64))
-	effect.z_index = 10
-	effect.modulate = GameConstants.Colors.SECT_ICE
-	effect.modulate.a = 0.8
+	# 创建爆炸效果容器
+	var effect_container = Node2D.new()
+	effect_container.global_position = pos
+	effect_container.z_index = 10
 	
-	var fade_script = load("res://Utility/auto_fade_sprite.gd")
-	effect.set_script(fade_script)
-	effect.set("fade_duration", GameConstants.Values.EFFECT_FADE_TIME)
+	# 中心爆炸光晕
+	var center_glow = Sprite2D.new()
+	center_glow.texture = VisualEffectsHelper.create_glow_background(
+		Vector2(80, 80),
+		GameConstants.Colors.SECT_ICE
+	)
+	center_glow.modulate = GameConstants.Colors.SECT_ICE
+	center_glow.modulate.a = 0.9
+	center_glow.scale = Vector2(0.5, 0.5)
+	effect_container.add_child(center_glow)
+	
+	# 外围冰晶碎片（4个方向）
+	for i in range(4):
+		var shard = Sprite2D.new()
+		shard.texture = VisualEffectsHelper.create_placeholder_texture(Vector2(12, 12))
+		shard.modulate = GameConstants.Colors.SECT_ICE
+		shard.modulate.a = 0.8
+		var angle = i * PI / 2
+		shard.position = Vector2(cos(angle), sin(angle)) * 20
+		shard.rotation = angle
+		effect_container.add_child(shard)
 	
 	if player and player.get_parent():
-		player.get_parent().add_child(effect)
+		player.get_parent().add_child(effect_container)
+		_animate_hit_effect(effect_container, center_glow)
+
+func _animate_hit_effect(container: Node2D, glow: Sprite2D):
+	if not is_instance_valid(container):
+		return
+	
+	# 爆炸扩散动画
+	var tween = create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(glow, "scale", Vector2(2.0, 2.0), 0.3)
+	tween.tween_property(glow, "modulate:a", 0.0, 0.3)
+	
+	# 碎片飞散
+	for i in range(4):
+		var shard = container.get_child(i + 1) if i + 1 < container.get_child_count() else null
+		if shard:
+			var angle = i * PI / 2
+			var target_pos = Vector2(cos(angle), sin(angle)) * 40
+			var shard_tween = create_tween()
+			shard_tween.set_parallel(true)
+			shard_tween.tween_property(shard, "position", target_pos, 0.3)
+			shard_tween.tween_property(shard, "modulate:a", 0.0, 0.3)
+	
+	await tween.finished
+	if is_instance_valid(container):
+		container.queue_free()
