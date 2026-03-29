@@ -40,15 +40,25 @@ func _spawn_fireball(pos: Vector2, dir: Vector2):
 	
 	if player and player.get_parent():
 		player.get_parent().call_deferred("add_child", fireball)
-	
-	_animate_fireball(fireball, dir)
+		call_deferred("_animate_fireball", fireball, dir)
+	else:
+		fireball.queue_free()
 
 func _animate_fireball(fireball: Node2D, direction: Vector2):
+	if not is_instance_valid(fireball):
+		return
+	
+	if not fireball.is_inside_tree():
+		await fireball.tree_entered
+	
+	if not is_instance_valid(fireball) or not fireball.is_inside_tree():
+		return
+	
 	var distance_traveled = 0.0
 	var lifetime = range / projectile_speed
 	
 	for t in range(int(lifetime * 60)):
-		await get_tree().create_timer(1.0 / 60.0).timeout
+		await fireball.get_tree().create_timer(1.0 / 60.0).timeout
 		
 		if not is_instance_valid(fireball):
 			return

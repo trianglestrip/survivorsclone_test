@@ -37,15 +37,25 @@ func _spawn_dart(pos: Vector2, dir: Vector2):
 	
 	if player and player.get_parent():
 		player.get_parent().call_deferred("add_child", dart)
-	
-	_animate_dart(dart, dir)
+		call_deferred("_animate_dart", dart, dir)
+	else:
+		dart.queue_free()
 
 func _animate_dart(dart: Node2D, direction: Vector2):
+	if not is_instance_valid(dart):
+		return
+	
+	if not dart.is_inside_tree():
+		await dart.tree_entered
+	
+	if not is_instance_valid(dart) or not dart.is_inside_tree():
+		return
+	
 	var distance_traveled = 0.0
 	var lifetime = range / projectile_speed
 	
 	for t in range(int(lifetime * 60)):
-		await get_tree().create_timer(1.0 / 60.0).timeout
+		await dart.get_tree().create_timer(1.0 / 60.0).timeout
 		
 		if not is_instance_valid(dart):
 			return

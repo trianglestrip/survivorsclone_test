@@ -74,12 +74,22 @@ func _create_strike_effect(pos: Vector2):
 	
 	if player and player.get_parent():
 		player.get_parent().call_deferred("add_child", effect)
-	
-	_animate_strike_effect(effect, flash, circle)
+		call_deferred("_animate_strike_effect", effect, flash, circle)
+	else:
+		effect.queue_free()
 
 func _animate_strike_effect(effect: Node2D, flash: Sprite2D, circle: Sprite2D):
+	if not is_instance_valid(effect):
+		return
+	
+	if not effect.is_inside_tree():
+		await effect.tree_entered
+	
+	if not is_instance_valid(effect) or not effect.is_inside_tree():
+		return
+	
 	for i in range(5):
-		await get_tree().create_timer(0.05).timeout
+		await effect.get_tree().create_timer(0.05).timeout
 		if is_instance_valid(flash):
 			flash.modulate.a -= 0.2
 		if is_instance_valid(circle):
