@@ -1,0 +1,144 @@
+{
+  "levels": {
+    "level_1": {
+      "id": "level_1",
+      "name": "寒川村",
+      "name_en": "Frost Village",
+      "description": "被冰雪覆盖的村庄",
+      "difficulty": 1,
+      "rooms": [
+        {
+          "id": "room_1_1",
+          "name": "村口",
+          "type": "combat",
+          "duration": 60.0,
+          "enemy_waves": [1, 2],
+          "rewards": {
+            "exp_multiplier": 1.0,
+            "relic_chance": 0.1
+          }
+        },
+        {
+          "id": "room_1_2",
+          "name": "村中心",
+          "type": "combat",
+          "duration": 90.0,
+          "enemy_waves": [3, 4],
+          "rewards": {
+            "exp_multiplier": 1.2,
+            "relic_chance": 0.15
+          }
+        },
+        {
+          "id": "room_1_3",
+          "name": "村长宅",
+          "type": "boss",
+          "duration": 180.0,
+          "boss": "frost_lord",
+          "rewards": {
+            "exp_multiplier": 2.0,
+            "relic_chance": 0.5,
+            "guaranteed_relic": "ice_heart"
+          }
+        }
+      ]
+    },
+    "level_2": {
+      "id": "level_2",
+      "name": "雷鸣峡谷",
+      "name_en": "Thunder Canyon",
+      "description": "雷电交加的峡谷",
+      "difficulty": 2,
+      "rooms": [
+        {
+          "id": "room_2_1",
+          "name": "峡谷入口",
+          "type": "combat",
+          "duration": 60.0,
+          "enemy_waves": [3, 4],
+          "rewards": {
+            "exp_multiplier": 1.3,
+            "relic_chance": 0.12
+          }
+        },
+        {
+          "id": "room_2_2",
+          "name": "雷电区",
+          "type": "combat",
+          "duration": 90.0,
+          "enemy_waves": [5, 6],
+          "rewards": {
+            "exp_multiplier": 1.5,
+            "relic_chance": 0.2
+          }
+        },
+        {
+          "id": "room_2_3",
+          "name": "雷神殿",
+          "type": "boss",
+          "duration": 180.0,
+          "boss": "thunder_god",
+          "rewards": {
+            "exp_multiplier": 2.5,
+            "relic_chance": 0.6,
+            "guaranteed_relic": "thunder_mark"
+          }
+        }
+      ]
+    }
+  },
+  "bosses": {
+    "frost_lord": {
+      "id": "frost_lord",
+      "name": "冰霜领主",
+      "name_en": "Frost Lord",
+      "hp": 500,
+      "damage": 30,
+      "move_speed": 40.0,
+      "attack_range": 100.0,
+      "attack_cooldown": 2.0,
+      "knockback_resistance": 0.9,
+      "exp_value": 200,
+      "sprite": "res://Textures/Enemy/boss_frost_lord.png",
+      "color": "#5599FF",
+      "phases": [
+        {
+          "hp_threshold": 1.0,
+          "abilities": ["ice_wave", "ice_spike"]
+        },
+        {
+          "hp_threshold": 0.5,
+          "abilities": ["ice_wave", "ice_spike", "ice_storm"]
+        }
+      ]
+    },
+    "thunder_god": {
+      "id": "thunder_god",
+      "name": "雷神",
+      "name_en": "Thunder God",
+      "hp": 800,
+      "damage": 40,
+      "move_speed": 50.0,
+      "attack_range": 150.0,
+      "attack_cooldown": 1.5,
+      "knockback_resistance": 0.95,
+      "exp_value": 300,
+      "sprite": "res://Textures/Enemy/boss_thunder_god.png",
+      "color": "#FFFF55",
+      "phases": [
+        {
+          "hp_threshold": 1.0,
+          "abilities": ["lightning_strike", "chain_lightning"]
+        },
+        {
+          "hp_threshold": 0.6,
+          "abilities": ["lightning_strike", "chain_lightning", "thunder_field"]
+        },
+        {
+          "hp_threshold": 0.3,
+          "abilities": ["lightning_strike", "chain_lightning", "thunder_field", "thunder_rage"]
+        }
+      ]
+    }
+  }
+}
