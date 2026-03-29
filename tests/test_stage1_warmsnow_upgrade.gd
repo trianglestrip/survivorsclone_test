@@ -33,11 +33,14 @@ func _test_attack_config():
 	test_results["total"] += 1
 	
 	var config = _load_json_file("res://config/stage1_controls.json")
-	if not config or not config.has("attack"):
+	if not config:
 		_fail("配置文件加载失败")
 		return
 	
-	var attack_config = config["attack"]
+	var attack_config = config.get("primary_attack", config.get("attack", {}))
+	if attack_config.is_empty():
+		_fail("攻击配置不存在")
+		return
 	
 	var checks = [
 		["base_cooldown", 0.3, "攻击冷却"],

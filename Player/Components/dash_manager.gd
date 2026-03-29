@@ -205,9 +205,15 @@ func _create_trail_effect(position: Vector2):
 	
 	var trail = Sprite2D.new()
 	trail.name = "DashTrail"
-	trail.texture = player.get_node("Sprite2D").texture
-	trail.frame = player.get_node("Sprite2D").frame
-	trail.flip_h = player.get_node("Sprite2D").flip_h
+	var player_sprite = player.get_node("Sprite2D")
+	trail.texture = player_sprite.texture
+	
+	if player_sprite.hframes * player_sprite.vframes > 1:
+		trail.hframes = player_sprite.hframes
+		trail.vframes = player_sprite.vframes
+		trail.frame = player_sprite.frame
+	
+	trail.flip_h = player_sprite.flip_h
 	trail.position = position
 	trail.modulate = Color(0.5, 0.8, 1.0, 0.6)
 	trail.z_index = player.z_index - 1

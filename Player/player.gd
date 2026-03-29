@@ -230,7 +230,7 @@ func _play_hit_effect(position: Vector2):
 	effect_node.add_child(sprite)
 	
 	if get_parent():
-		get_parent().add_child(effect_node)
+		get_parent().call_deferred("add_child", effect_node)
 	
 	_animate_hit_effect(sprite, effect_node)
 

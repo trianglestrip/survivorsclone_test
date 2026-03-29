@@ -49,7 +49,7 @@ func _on_attack_pressed():
 			current_attack.set_last_movement(player.last_movement)
 		emit_signal("attack_launched", "melee")
 
-func _on_attack_executed(pos: Vector2, dir: Vector2, dmg: int, kb: int):
+func _on_attack_executed(pos: Vector2, dir: Vector2, _dmg: int, _kb: int):
 	if GameConfig.DEBUG_LOGGING:
 		print("Attack executed at: ", pos, " direction: ", dir)
 
