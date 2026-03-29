@@ -244,4 +244,3 @@ func _clear_old_trails():
 		if is_instance_valid(trail):
 			trail.queue_free()
 	_trail_nodes.clear()
-
