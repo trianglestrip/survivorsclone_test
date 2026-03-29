@@ -67,10 +67,12 @@ const ENEMY_ANIM_OFFSET_RANGE := 0.6
 # 路径配置
 # ========================================
 
-const PATH_ENEMY_CONFIG := "res://config/enemy_config.ini"
-const PATH_ENEMY_REGISTRY := "res://config/enemy_registry.ini"
-const PATH_SKILL_REGISTRY := "res://config/skill_registry.ini"
-const PATH_UPGRADE_CONFIG := "res://config/upgrade_config.ini"
+const PATH_ENEMY_CONFIG := "res://config/enemy_config.json"
+const PATH_ENEMY_REGISTRY := "res://config/enemy_registry.json"
+const PATH_SKILL_REGISTRY := "res://config/skill_registry.json"
+const PATH_SKILL_CONFIG := "res://config/skill_config.json"
+const PATH_UPGRADE_CONFIG := "res://config/upgrade_config.json"
+const PATH_SPAWN_WAVES := "res://config/spawn_waves.json"
 
 # ========================================
 # 辅助函数

@@ -206,37 +206,38 @@ func _initialize_skill_types():
 	emit_signal("initialization_complete")
 
 func _load_skill_config(skill_id: String) -> Dictionary:
-	var cfg = ConfigFile.new()
-	if cfg.load("res://config/skill_config.ini") != OK:
+	var json_data = ConfigManager.load_json_config("res://config/skill_config.json")
+	if not json_data or not json_data.has("skills"):
 		return {}
 	
-	var section = skill_id.capitalize().replace(" ", "")
-	if not cfg.has_section(section):
+	var skills = json_data["skills"]
+	if not skills.has(skill_id):
 		return {}
 	
+	var skill_config = skills[skill_id]
 	var config = {
-		"behavior_type": cfg.get_value(section, "behavior_type", "linear"),
-		"damage": cfg.get_value(section, "base_damage", 5),
-		"speed": cfg.get_value(section, "base_speed", 100.0),
-		"knockback": cfg.get_value(section, "base_knockback_amount", 100),
-		"lifetime": cfg.get_value(section, "base_lifetime", 5.0),
-		"pierce": cfg.get_value(section, "base_pierce", 1),
-		"attack_size": cfg.get_value(section, "base_attack_size", 1.0),
+		"behavior_type": skill_config.get("behavior_type", "linear"),
+		"damage": skill_config.get("base_damage", 5),
+		"speed": skill_config.get("base_speed", 100.0),
+		"knockback": skill_config.get("base_knockback_amount", 100),
+		"lifetime": skill_config.get("base_lifetime", 5.0),
+		"pierce": skill_config.get("base_pierce", 1),
+		"attack_size": skill_config.get("base_attack_size", 1.0),
 	}
 	
 	# 根据行为类型加载额外参数
 	match config.behavior_type:
 		"tracking":
-			config["rotation_offset"] = cfg.get_value(section, "rotation_offset", 0)
-			config["tracking_enabled"] = cfg.get_value(section, "tracking_enabled", true)
+			config["rotation_offset"] = skill_config.get("rotation_offset", 0)
+			config["tracking_enabled"] = skill_config.get("tracking_enabled", true)
 		"zigzag":
-			config["zigzag_range"] = cfg.get_value(section, "zigzag_range", 500)
-			config["direction_change_interval"] = cfg.get_value(section, "direction_change_interval", 2.0)
-			config["speed_acceleration"] = cfg.get_value(section, "speed_acceleration", 50)
+			config["zigzag_range"] = skill_config.get("zigzag_range", 500)
+			config["direction_change_interval"] = skill_config.get("direction_change_interval", 2.0)
+			config["speed_acceleration"] = skill_config.get("speed_acceleration", 50)
 		"orbital":
-			config["orbit_radius"] = cfg.get_value(section, "orbit_radius", 50)
-			config["return_speed"] = cfg.get_value(section, "return_speed", 20)
-			config["attack_speed"] = cfg.get_value(section, "base_attack_speed", 5.0)
+			config["orbit_radius"] = skill_config.get("orbit_radius", 50)
+			config["return_speed"] = skill_config.get("return_speed", 20)
+			config["attack_speed"] = skill_config.get("base_attack_speed", 5.0)
 	
 	return config
 

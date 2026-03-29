@@ -100,6 +100,9 @@ F:\project\godot\Godot_v4.6.1-stable_win64.exe --path .
 - ✅ 冰矛和龙卷风现在都使用 **GPU 实例化**
 - ✅ 完善了继承架构，基类简单，子类独立实现
 - ✅ 清理并重新整理了文档目录
+- ✅ **配置格式升级**：从 INI 迁移到 JSON，更好的层级结构支持
+- ✅ 完善了 **Effect 系统**，UpgradeManager 现在使用 Effect 类
+- ✅ 创建了完整的自动化测试套件
 
 ### 核心系统（Autoload）
 
@@ -116,12 +119,12 @@ F:\project\godot\Godot_v4.6.1-stable_win64.exe --path .
 ### 配置驱动
 
 **完全数据分离** - 所有游戏数据从配置文件加载：
-- `config/skill_registry.ini` - 技能注册（3 个技能）
-- `config/skill_config.ini` - 技能属性配置
-- `config/enemy_registry.ini` - 敌人注册（5 个敌人）
-- `config/enemy_config.ini` - 敌人属性配置
-- `config/upgrade_config.ini` - 升级配置（31 个升级）
-- `config/spawn_waves.ini` - 敌人波次配置
+- `config/skill_registry.json` - 技能注册（3 个技能）
+- `config/skill_config.json` - 技能属性配置
+- `config/enemy_registry.json` - 敌人注册（5 个敌人）
+- `config/enemy_config.json` - 敌人属性配置
+- `config/upgrade_config.json` - 升级配置（31 个升级）
+- `config/spawn_waves.json` - 敌人波次配置
 
 **无硬编码** - 代码中不包含任何游戏数据  
 **启动验证** - 配置加载失败时游戏退出并报错  
@@ -173,15 +176,17 @@ SurvivorsClone_Test/
 │   ├── upgrade_db.gd           # 升级数据库
 │   ├── audio_manager.gd        # 音频管理器
 │   └── Effects/                # 效果系统
-├── config/                      # 🎮 游戏配置
-│   ├── skill_registry.ini
-│   ├── skill_config.ini
-│   ├── enemy_registry.ini
-│   ├── enemy_config.ini
-│   ├── upgrade_config.ini      # 升级配置（31 个）
-│   └── spawn_waves.ini         # 波次配置
+├── config/                      # 🎮 游戏配置（JSON 格式）
+│   ├── skill_registry.json
+│   ├── skill_config.json
+│   ├── enemy_registry.json
+│   ├── enemy_config.json
+│   ├── upgrade_config.json     # 升级配置（31 个）
+│   └── spawn_waves.json        # 波次配置
 └── tests/                       # 自动化测试
-    └── test_architecture_refactor.gd
+    ├── test_architecture_refactor.gd
+    ├── test_effect_system.gd
+    └── test_config_upgrade.gd
 ```
 
 ---

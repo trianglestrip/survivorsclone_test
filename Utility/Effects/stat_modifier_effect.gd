@@ -23,11 +23,13 @@ func apply(target) -> void:
 	if stat_name == "" or target == null:
 		return
 	
-	if not target.has(stat_name):
+	# 简单直接的方式获取和设置属性
+	var current_value = target.get(stat_name) if target.has_method("get") else target.get_indexed(stat_name)
+	
+	if current_value == null:
 		push_warning("Target does not have stat: %s" % stat_name)
 		return
 	
-	var current_value = target.get(stat_name)
 	var new_value = current_value
 	
 	match operation:
@@ -38,7 +40,11 @@ func apply(target) -> void:
 		ModifierOperation.SET:
 			new_value = modifier_value
 	
-	target.set(stat_name, new_value)
+	# 设置属性值
+	if target.has_method("set"):
+		target.set(stat_name, new_value)
+	else:
+		target.set_indexed(stat_name, new_value)
 
 func get_description() -> String:
 	if description != "":

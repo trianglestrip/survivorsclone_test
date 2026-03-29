@@ -1,0 +1,39 @@
+{
+  "enemies": {
+    "enemy_kobold_weak": {
+      "movement_speed": 20.0,
+      "hp": 10,
+      "knockback_recovery": 3.5,
+      "experience": 1,
+      "enemy_damage": 1
+    },
+    "enemy_kobold_strong": {
+      "movement_speed": 28.0,
+      "hp": 20,
+      "knockback_recovery": 3.5,
+      "experience": 2,
+      "enemy_damage": 2
+    },
+    "enemy_cyclops": {
+      "movement_speed": 16.0,
+      "hp": 100,
+      "knockback_recovery": 10.0,
+      "experience": 5,
+      "enemy_damage": 5
+    },
+    "enemy_juggernaut": {
+      "movement_speed": 40.0,
+      "hp": 300,
+      "knockback_recovery": 20.0,
+      "experience": 100,
+      "enemy_damage": 8
+    },
+    "enemy_super": {
+      "movement_speed": 150.0,
+      "hp": 99999,
+      "knockback_recovery": 99999.0,
+      "experience": 100,
+      "enemy_damage": 20
+    }
+  }
+}

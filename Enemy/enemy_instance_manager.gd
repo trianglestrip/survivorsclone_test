@@ -261,37 +261,12 @@ func _initialize_enemy_types():
 	is_initialized = true
 	call_deferred("emit_signal", "initialization_complete")
 
-func _parse_enemy_config_line(section: String, key: String, value: String, into: Dictionary) -> void:
-	if key in ["hp", "enemy_damage", "experience"]:
-		into[section][key] = int(value) if value.is_valid_int() else 0
-	elif key in ["movement_speed", "knockback_recovery"]:
-		into[section][key] = float(value) if value.is_valid_float() else 0.0
-	else:
-		into[section][key] = value
-
-## 只读一次 enemy_config.ini，避免每种敌人整文件扫一遍。
+## 从 JSON 配置加载敌人配置
 func _load_all_enemy_configs_from_ini() -> Dictionary:
-	var result: Dictionary = {}
-	var file = FileAccess.open(GameConfig.PATH_ENEMY_CONFIG, FileAccess.READ)
-	if file == null:
-		return result
-	var current_section: String = ""
-	while not file.eof_reached():
-		var line: String = file.get_line().strip_edges()
-		if line == "" or line.begins_with("#"):
-			continue
-		if line.begins_with("[") and line.ends_with("]"):
-			current_section = line.substr(1, line.length() - 2)
-			result[current_section] = {}
-			continue
-		if current_section != "" and line.contains("="):
-			var parts: PackedStringArray = line.split("=", true, 1)
-			if parts.size() == 2:
-				var key: String = parts[0].strip_edges()
-				var value: String = parts[1].strip_edges()
-				_parse_enemy_config_line(current_section, key, value, result)
-	file.close()
-	return result
+	var json_data = ConfigManager.load_json_config(GameConfig.PATH_ENEMY_CONFIG)
+	if json_data and json_data.has("enemies"):
+		return json_data["enemies"]
+	return {}
 
 # 生成敌人
 func spawn_enemy(enemy_type: String, pos: Vector2) -> int:

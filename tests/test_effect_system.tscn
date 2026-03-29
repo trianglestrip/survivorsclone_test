@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://test_effect_system"]
+
+[ext_resource type="Script" path="res://tests/test_effect_system.gd" id="1_test_effect"]
+
+[node name="Main" type="SceneTree"]
+script = ExtResource("1_test_effect")

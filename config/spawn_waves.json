@@ -1,0 +1,60 @@
+{
+  "description": "敌人生成波次配置",
+  "waves": {
+    "wave_1": {
+      "name": "第一波：狗头人入侵",
+      "start_time": 0,
+      "end_time": 60,
+      "enemy_type": "enemy_kobold_weak",
+      "spawn_count": 3,
+      "spawn_delay": 2,
+      "description": "弱小的狗头人开始进攻"
+    },
+    "wave_2": {
+      "name": "第二波：增援到来",
+      "start_time": 60,
+      "end_time": 120,
+      "enemy_type": "enemy_kobold_weak",
+      "spawn_count": 5,
+      "spawn_delay": 2,
+      "description": "更多狗头人加入战斗"
+    },
+    "wave_3": {
+      "name": "第三波：精英出现",
+      "start_time": 120,
+      "end_time": 180,
+      "enemy_type": "enemy_kobold_strong",
+      "spawn_count": 2,
+      "spawn_delay": 3,
+      "description": "强壮的狗头人出现了"
+    },
+    "wave_4": {
+      "name": "第四波：混合进攻",
+      "start_time": 180,
+      "end_time": 240,
+      "enemy_type": "enemy_kobold_weak,enemy_kobold_strong",
+      "spawn_count": 4,
+      "spawn_delay": 2,
+      "description": "弱小和强壮的狗头人混合进攻"
+    },
+    "wave_5": {
+      "name": "第五波：巨人来袭",
+      "start_time": 240,
+      "end_time": 300,
+      "enemy_type": "enemy_cyclops",
+      "spawn_count": 1,
+      "spawn_delay": 5,
+      "description": "独眼巨人加入战场"
+    }
+  },
+  "boss_events": {
+    "boss_event_1": {
+      "name": "Boss事件：主宰者降临",
+      "trigger_time": 300,
+      "enemy_type": "enemy_juggernaut",
+      "spawn_count": 1,
+      "is_boss": true,
+      "description": "最终Boss出现！"
+    }
+  }
+}

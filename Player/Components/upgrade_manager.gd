@@ -9,7 +9,15 @@ var upgrade_options: Array = []
 var player_stats = null
 var skill_manager = null
 
+# Effect 工厂
+var effect_factory = null
+
 signal upgrade_applied(upgrade_id: String)
+
+func _ready():
+	# 初始化 Effect 工厂
+	var EffectFactory = preload("res://Utility/Effects/effect_factory.gd")
+	effect_factory = EffectFactory.new()
 
 func set_player_stats(stats):
 	player_stats = stats
@@ -36,52 +44,16 @@ func apply_upgrade(upgrade_id: String):
 	if has_node("/root/EventBus"):
 		get_node("/root/EventBus").emit_upgrade_collected(upgrade_id)
 
-# 应用升级效果
+# 应用升级效果（使用 Effect 系统）
 func _apply_upgrade_effects(_upgrade_id: String, config: Dictionary):
-	if player_stats == null or skill_manager == null:
+	if player_stats == null or skill_manager == null or effect_factory == null:
 		return
 	
-	# 处理技能相关升级
-	if config.has("spell"):
-		var spell_id = config["spell"]
-		
-		# 设置技能等级
-		if config.has("set_level"):
-			skill_manager.set_skill_level(spell_id.to_lower(), config["set_level"])
-		
-		# 添加基础弹药
-		if config.has("add_baseammo"):
-			skill_manager.add_skill_ammo(spell_id.to_lower(), config["add_baseammo"])
-		
-		# 设置弹药（Javelin 特殊）
-		if config.has("set_ammo"):
-			skill_manager.set_skill_ammo(spell_id.to_lower(), config["set_ammo"])
-		
-		# 设置技能攻击速度（Tornado 特殊）
-		if config.has("set_tornado_attackspeed"):
-			skill_manager.set_skill_attack_speed("tornado", config["set_tornado_attackspeed"])
+	# 从配置创建 Effect 对象
+	var effects = effect_factory.create_effects_from_config(config)
 	
-	# 处理属性升级
-	if config.has("add_armor"):
-		player_stats.armor += config["add_armor"]
-	
-	if config.has("add_movement_speed"):
-		player_stats.speed_bonus += config["add_movement_speed"]
-	
-	if config.has("add_spell_size"):
-		player_stats.spell_size += config["add_spell_size"]
-	
-	if config.has("add_spell_cooldown"):
-		player_stats.spell_cooldown += config["add_spell_cooldown"]
-	
-	if config.has("add_additional_attacks"):
-		player_stats.additional_attacks += config["add_additional_attacks"]
-	
-	# 处理治疗
-	if config.has("heal"):
-		var healed = player_stats.heal(config["heal"])
-		if healed > 0 and has_node("/root/EventBus"):
-			get_node("/root/EventBus").emit_signal("player_healed", healed, player_stats.hp)
+	# 应用所有效果
+	effect_factory.apply_effects(effects, player_stats, skill_manager)
 
 # 获取随机升级选项
 func get_random_upgrade() -> String:
