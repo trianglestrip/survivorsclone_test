@@ -1,102 +1,57 @@
-extends Node
 class_name AttackManager
+extends Node
 
-# 攻击管理器 - 统一管理所有技能的攻击逻辑
-# 职责：
-# - 管理技能计时器
-# - 触发技能攻击
-# - 处理技能弹药逻辑
+## 新的攻击管理器 - 支持主动攻击
+## 管理所有攻击类型，处理攻击输入和冷却
 
+## 信号
+signal attack_launched(attack_type: String)
+
+## 引用
 var player: Node = null
-var skill_instance_mgr: Node = null
+var input_manager: Node = null
 
-# 技能计时器
-var skill_timers: Dictionary = {}
+## 攻击系统
+var current_attack: BaseAttack = null
+var _config: Dictionary = {}
+
+func _ready():
+	_load_config()
+
+func _load_config():
+	var json_data = ConfigManager.load_json_config("res://config/stage1_controls.json")
+	if json_data and json_data.has("attack"):
+		_config = json_data["attack"]
 
 func set_player(p: Node):
 	player = p
+	_initialize_attack()
 
-func set_skill_instance_manager(mgr: Node):
-	skill_instance_mgr = mgr
+func set_input_manager(im: Node):
+	input_manager = im
+	if input_manager:
+		input_manager.attack_pressed.connect(_on_attack_pressed)
 
-func _ready():
-	_initialize_skill_timers()
+func _initialize_attack():
+	var melee_attack = MeleeAttack.new()
+	melee_attack.set_player(player)
+	melee_attack.load_config(_config)
+	melee_attack.attack_executed.connect(_on_attack_executed)
+	add_child(melee_attack)
+	current_attack = melee_attack
 
-func _initialize_skill_timers():
-	# 初始化所有技能计时器
-	_register_skill_timer("icespear", 1.5, _on_icespear_timer_timeout)
-	_register_skill_timer("tornado", 3.0, _on_tornado_timer_timeout)
+func _on_attack_pressed():
+	if current_attack and current_attack.try_attack():
+		if current_attack is MeleeAttack and player and player.has("last_movement"):
+			current_attack.set_last_movement(player.last_movement)
+		emit_signal("attack_launched", "melee")
 
-func _register_skill_timer(skill_id: String, base_wait_time: float, callback: Callable):
-	var timer = Timer.new()
-	timer.name = skill_id + "_timer"
-	timer.wait_time = base_wait_time
-	timer.timeout.connect(callback)
-	add_child(timer)
-	skill_timers[skill_id] = timer
+func _on_attack_executed(pos: Vector2, dir: Vector2, dmg: int, kb: int):
+	if GameConfig.DEBUG_LOGGING:
+		print("Attack executed at: ", pos, " direction: ", dir)
 
-func start_attacks():
-	# 启动所有已解锁技能的攻击
-	if skill_instance_mgr.get_skill_level("icespear") > 0:
-		start_skill_attack("icespear")
-	
-	if skill_instance_mgr.get_skill_level("tornado") > 0:
-		start_skill_attack("tornado")
-	
-	if skill_instance_mgr.get_skill_level("javelin") > 0:
-		spawn_javelin()
+func get_current_attack() -> BaseAttack:
+	return current_attack
 
-func start_skill_attack(skill_id: String):
-	if not skill_timers.has(skill_id):
-		return
-	
-	var timer = skill_timers[skill_id]
-	if timer.is_stopped():
-		timer.start()
-
-func update_skill_cooldown(skill_id: String, cooldown_multiplier: float):
-	if not skill_timers.has(skill_id):
-		return
-	
-	var base_speed = skill_instance_mgr.get_skill_attack_speed(skill_id)
-	skill_timers[skill_id].wait_time = base_speed * (1 - cooldown_multiplier)
-
-func _on_icespear_timer_timeout():
-	if not skill_instance_mgr or not player:
-		return
-	
-	var base_ammo = skill_instance_mgr.get_skill_base_ammo("icespear")
-	var additional_attacks = player.stats.additional_attacks if player and player.has("stats") else 0
-	var total_ammo = base_ammo + additional_attacks
-	
-	skill_instance_mgr.set_skill_ammo("icespear", total_ammo)
-	
-	# 发射所有弹药
-	for i in range(total_ammo):
-		skill_instance_mgr.spawn_skill_with_behavior("icespear")
-
-func _on_tornado_timer_timeout():
-	if not skill_instance_mgr or not player:
-		return
-	
-	var base_ammo = skill_instance_mgr.get_skill_base_ammo("tornado")
-	var additional_attacks = player.stats.additional_attacks if player and player.has("stats") else 0
-	var total_ammo = base_ammo + additional_attacks
-	
-	skill_instance_mgr.set_skill_ammo("tornado", total_ammo)
-	
-	# 发射所有弹药
-	for i in range(total_ammo):
-		skill_instance_mgr.spawn_skill_with_behavior("tornado")
-
-func spawn_javelin():
-	if not skill_instance_mgr or not player:
-		return
-	
-	var javelin_ammo = skill_instance_mgr.get_skill_base_ammo("javelin")
-	var additional_attacks = player.stats.additional_attacks if player and player.has("stats") else 0
-	var total_ammo = javelin_ammo + additional_attacks
-	
-	# 标枪特殊实现 - 暂时保持现有逻辑
-	# 注意：标枪未来也应该迁移到 GPU 实例化
-	pass
+func can_attack() -> bool:
+	return current_attack and current_attack.can_attack()

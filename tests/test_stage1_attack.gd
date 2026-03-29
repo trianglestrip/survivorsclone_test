@@ -20,7 +20,7 @@ func _init():
 	var test_files = [
 		"res://Player/Components/base_attack.gd",
 		"res://Player/Components/melee_attack.gd",
-		"res://Player/Components/attack_manager_new.gd"
+		"res://Player/Components/attack_manager.gd"
 	]
 	
 	for file_path in test_files:
@@ -97,7 +97,7 @@ func _init():
 	# ========================================
 	print("\n【测试 4: AttackManager】")
 	
-	var attack_mgr_script = load("res://Player/Components/attack_manager_new.gd")
+	var attack_mgr_script = load("res://Player/Components/attack_manager.gd")
 	if attack_mgr_script:
 		print("  ✓ AttackManager 加载成功")
 		
