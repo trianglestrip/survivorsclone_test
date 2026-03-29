@@ -5,7 +5,7 @@ extends Node
 ## 完全解耦，数值从配置加载
 
 const GameConstants = preload("res://Utility/game_constants.gd")
-const VisualEffectsHelper = preload("res://Utility/visual_effects_helper.gd")
+const VFXHelper = preload("res://Utility/visual_effects_helper.gd")
 
 ## 信号
 signal dash_started()
@@ -146,7 +146,7 @@ func _start_dash(direction: Vector2):
 	dash_target_pos = dash_start_pos + direction * distance
 	
 	_play_dash_effect(dash_start_pos)
-	VisualEffectsHelper.trigger_screen_shake(self, screen_shake_intensity)
+	VFXHelper.trigger_screen_shake(self, screen_shake_intensity)
 	_clear_old_trails()
 	
 	emit_signal("dash_started")
