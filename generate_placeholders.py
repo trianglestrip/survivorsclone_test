@@ -210,6 +210,27 @@ def create_health_bar(width, height, fill_percent, output_path):
     img.save(output_path)
     print(f"Created: {output_path}")
 
+def create_skill_slot(size, key_text, color, output_path):
+    img = Image.new('RGBA', size, (30, 30, 50, 200))
+    draw = ImageDraw.Draw(img)
+    
+    draw.rectangle([0, 0, size[0]-1, size[1]-1], outline=color, width=3)
+    draw.rectangle([4, 4, size[0]-5, size[1]-5], outline=(100, 100, 100), width=1)
+    
+    font = ImageFont.load_default()
+    
+    bbox = draw.textbbox((0, 0), key_text, font=font)
+    text_w = bbox[2] - bbox[0]
+    text_h = bbox[3] - bbox[1]
+    text_x = size[0] - text_w - 8
+    text_y = size[1] - text_h - 4
+    
+    draw.text((text_x, text_y), key_text, fill=(255, 255, 255), font=font)
+    
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    img.save(output_path)
+    print(f"Created: {output_path}")
+
 def main():
     base_dir = r"f:\project\SurvivorsClone_Test"
     
@@ -294,12 +315,38 @@ def main():
         os.path.join(ui_dir, "placeholder_healthbar_low.png")
     )
     
+    print("\n=== Creating Skill Bar UI ===")
+    
+    skill_slot_size = (64, 64)
+    
+    create_skill_slot(
+        skill_slot_size, "Q", (100, 150, 255),
+        os.path.join(ui_dir, "skill_slot_q.png")
+    )
+    
+    create_skill_slot(
+        skill_slot_size, "E", (150, 100, 255),
+        os.path.join(ui_dir, "skill_slot_e.png")
+    )
+    
+    create_skill_slot(
+        skill_slot_size, "R", (255, 100, 150),
+        os.path.join(ui_dir, "skill_slot_r.png")
+    )
+    
+    create_skill_slot(
+        skill_slot_size, "Shift", (100, 255, 150),
+        os.path.join(ui_dir, "skill_slot_shift.png")
+    )
+    
     print("\n=== All placeholder resources created successfully! ===")
     print("\nNote: Created effects:")
     print("  - Slash attack (8 frames)")
     print("  - Sword swing (10 frames)")
     print("  - Dash effect (8 frames)")
     print("  - Hit effect (8 frames)")
+    print("\nNote: Created UI:")
+    print("  - Skill slots (Q, E, R, Shift)")
 
 if __name__ == "__main__":
     main()

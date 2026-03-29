@@ -24,6 +24,9 @@ var enemy_close = []
 @onready var walkTimer = get_node("%walkTimer")
 @onready var hurt_box = $HurtBox
 
+# 受击特效
+var _hit_frames: Array = []
+
 # 标枪特殊处理（暂时保留）
 @onready var javelinBase = get_node("%JavelinBase")
 
@@ -48,9 +51,17 @@ var enemy_close = []
 signal playerdeath
 
 func _ready():
+	_load_hit_frames()
 	await _initialize_components()
 	_connect_signals()
 	_initial_setup()
+
+func _load_hit_frames():
+	for i in range(8):
+		var texture_path = "res://Textures/Placeholder/Effects/Hit/hit_%d.png" % i
+		if ResourceLoader.exists(texture_path):
+			var texture = load(texture_path)
+			_hit_frames.append(texture)
 
 func _initialize_components():
 	# 创建组件
@@ -154,8 +165,39 @@ func _on_hurt_box_hurt(damage, _angle, _knockback):
 	healthBar.max_value = stats.maxhp
 	healthBar.value = stats.hp
 	
+	_play_hit_effect(global_position)
+	
 	if not stats.is_alive():
 		death()
+
+func _play_hit_effect(position: Vector2):
+	if _hit_frames.is_empty():
+		return
+	
+	var effect_node = Node2D.new()
+	effect_node.name = "HitEffect"
+	effect_node.position = position
+	
+	var sprite = Sprite2D.new()
+	sprite.texture = _hit_frames[0]
+	sprite.scale = Vector2(1.5, 1.5)
+	effect_node.add_child(sprite)
+	
+	if get_parent():
+		get_parent().add_child(effect_node)
+	
+	_animate_hit_effect(sprite, effect_node)
+
+func _animate_hit_effect(sprite: Sprite2D, effect_node: Node2D):
+	for i in range(_hit_frames.size()):
+		await get_tree().create_timer(0.04).timeout
+		if is_instance_valid(sprite):
+			if i < _hit_frames.size():
+				sprite.texture = _hit_frames[i]
+	
+	await get_tree().create_timer(0.1).timeout
+	if is_instance_valid(effect_node):
+		effect_node.queue_free()
 
 func get_random_target():
 	if enemy_close.size() > 0:
