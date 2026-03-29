@@ -73,10 +73,11 @@ func _update_info_display():
 	if not info_label or not player:
 		return
 	
-	var current_sect = sect_manager.current_sect if sect_manager else "未选择"
+	var current_sect = sect_manager.current_sect_id if sect_manager else "未选择"
 	var sect_display = sect_names.get(current_sect, current_sect)
 	
-	var current_weapon = weapon_registry.current_weapon if weapon_registry else {}
+	var current_weapon_id = weapon_registry.current_weapon_id if weapon_registry else ""
+	var current_weapon = weapon_registry.get_weapon(current_weapon_id) if weapon_registry and current_weapon_id else {}
 	var weapon_display = current_weapon.get("name", "无武器")
 	
 	var player_stats = player.get_node_or_null("PlayerStats")
@@ -161,6 +162,11 @@ func _switch_weapon(index: int):
 		return
 	
 	var weapon_id = weapon_ids[index]
+	
+	# 先解锁武器（如果未解锁）
+	if weapon_registry.has_method("unlock_weapon"):
+		weapon_registry.unlock_weapon(weapon_id)
+	
 	if weapon_registry.has_method("equip_weapon"):
 		weapon_registry.equip_weapon(weapon_id)
 		var weapon = weapon_registry.get_weapon(weapon_id)
@@ -225,7 +231,7 @@ func _print_current_skills():
 	if not sect_manager:
 		return
 	
-	var current_sect = sect_manager.current_sect
+	var current_sect = sect_manager.current_sect_id
 	var sect_config = sect_manager.get_sect_config(current_sect)
 	
 	if sect_config:
