@@ -22,9 +22,9 @@ func _process(delta: float):
 	# 检查命中
 	var hit = false
 	if skill_instance and skill_instance.has_method("_check_fireball_hit"):
-		hit = skill_instance._check_fireball_hit(position)
+		hit = skill_instance._check_fireball_hit(global_position)
 	
 	if hit or distance_traveled >= max_range:
 		if skill_instance and skill_instance.has_method("_explode"):
-			skill_instance._explode(position)
+			skill_instance._explode(global_position)
 		queue_free()

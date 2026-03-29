@@ -57,15 +57,33 @@ func _spawn_meteor():
 func _create_meteor(pos: Vector2):
 	var meteor = Node2D.new()
 	meteor.name = "Meteor"
-	meteor.global_position = pos + Vector2(0, -200)  # 从上方落下
+	meteor.global_position = pos + Vector2(0, -200)
 	meteor.z_index = 10
 	
-	var sprite = Sprite2D.new()
-	sprite.texture = VisualEffectsHelper.create_placeholder_texture(Vector2(24, 24))
-	sprite.modulate = GameConstants.Colors.SECT_FIRE
-	sprite.scale = Vector2(2.0, 2.0)
+	# 使用动画精灵
+	var animated_sprite = preload("res://Utility/animated_skill_sprite.gd").new()
+	animated_sprite.fps = 15.0
+	animated_sprite.loop = true
+	var meteor_s := VisualEffectsHelper.r_skill_scale_vector(radius)
+	animated_sprite.scale = meteor_s
+	animated_sprite.modulate = Color(1.0, 1.0, 1.0, 0.9)
 	
-	meteor.add_child(sprite)
+	# 尝试加载动画帧
+	if animated_sprite.load_from_skill("fire_meteor"):
+		apply_standard_to_skill_visual(animated_sprite, "projectile")
+		meteor.add_child(animated_sprite)
+	else:
+		# 回退到渐变纹理
+		var sprite = Sprite2D.new()
+		sprite.scale = VisualEffectsHelper.r_skill_scale_vector(radius)
+		var fire_color = GameConstants.Colors.SECT_FIRE
+		sprite.texture = VisualEffectsHelper.create_gradient_texture(
+			Vector2(24, 24),
+			Color(fire_color.r * 1.2, fire_color.g * 0.9, fire_color.b * 0.5, 0.9),
+			Color(fire_color.r, fire_color.g * 0.7, fire_color.b * 0.3, 0.0)
+		)
+		apply_standard_to_skill_visual(sprite, "projectile")
+		meteor.add_child(sprite)
 	
 	if player and player.get_parent():
 		player.get_parent().add_child(meteor)
@@ -101,13 +119,20 @@ func _apply_burn(enemy: Node):
 		enemy.apply_burn(damage * 0.3, burn_duration)
 
 func _create_explosion_effect(pos: Vector2):
+	const EXPLOSION_IMPACT_RADIUS := 60.0
 	var effect = Sprite2D.new()
 	effect.global_position = pos
-	effect.scale = Vector2(3.0, 3.0)
-	effect.texture = VisualEffectsHelper.create_glow_background(Vector2(60, 60), GameConstants.Colors.SECT_FIRE)
+	var boom := clampf(EXPLOSION_IMPACT_RADIUS / 45.0, 1.35, 2.4)
+	effect.scale = Vector2(boom, boom)
 	effect.z_index = 11
-	effect.modulate = GameConstants.Colors.SECT_FIRE
-	effect.modulate.a = 0.9
+	
+	var fire_color = GameConstants.Colors.SECT_FIRE
+	effect.texture = VisualEffectsHelper.create_gradient_texture(
+		Vector2(60, 60),
+		Color(fire_color.r * 1.2, fire_color.g * 0.8, fire_color.b * 0.3, 0.7),
+		Color(fire_color.r, fire_color.g * 0.5, fire_color.b * 0.2, 0.0)
+	)
+	effect.modulate = Color(1.0, 1.0, 1.0, 0.7)
 	
 	var fade_script = load("res://Utility/auto_fade_sprite.gd")
 	effect.set_script(fade_script)

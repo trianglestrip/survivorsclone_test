@@ -10,9 +10,7 @@ var radius: float = 0.0
 var poison_damage: float = 0.0
 var poison_duration: float = 0.0
 var spread_radius: float = 0.0
-var tick_interval: float = 0.5
 var plague_node: Node2D = null
-var tick_timer: float = 0.0
 var infected_enemies: Array = []
 
 func _load_skill_config(cfg: Dictionary):
@@ -21,69 +19,35 @@ func _load_skill_config(cfg: Dictionary):
 	poison_damage = cfg.get("poison_damage", 15.0)
 	poison_duration = cfg.get("poison_duration", 6.0)
 	spread_radius = cfg.get("spread_radius", 100.0)
-	tick_interval = cfg.get("tick_interval", 0.5)
+	tick_interval = cfg.get("tick_interval", 0.5)  # 使用基类的tick_interval
 
 func _on_skill_cast(cast_position: Vector2, _cast_direction: Vector2):
 	trigger_screen_shake(GameConstants.Values.SHAKE_ATTACK * 1.5)
-	_create_plague(cast_position)
-
-func _create_plague(pos: Vector2):
-	plague_node = Node2D.new()
-	plague_node.name = "PoisonPlague"
-	plague_node.global_position = pos
-	plague_node.z_index = 3
 	
-	# 创建瘟疫视觉效果（多层毒雾）
-	for i in range(4):
-		var sprite = Sprite2D.new()
-		sprite.texture = VisualEffectsHelper.create_glow_background(
-			Vector2(radius * 2, radius * 2),
-			GameConstants.Colors.SECT_POISON
-		)
-		sprite.modulate = GameConstants.Colors.SECT_POISON
-		sprite.modulate.a = 0.25 - i * 0.04
-		sprite.scale = Vector2(0.1, 0.1)
-		sprite.rotation = i * PI / 4
-		sprite.name = "Layer" + str(i)
-		plague_node.add_child(sprite)
+	# 使用基类方法创建技能节点
+	var node_config = SkillNodeConfig.new()
+	node_config.node_name = "PoisonPlague"
+	node_config.visual_category = "ultimate"
+	node_config.node_type = SkillNodeType.AREA_CIRCLE
+	node_config.position = cast_position
+	node_config.z_index = 3
+	node_config.skill_animation_name = "poison_plague"
+	node_config.animation_scale = VisualEffectsHelper.r_skill_scale_vector(radius)
+	node_config.animation_modulate = Color(1.0, 1.0, 1.0, 0.5)
+	node_config.animation_fps = 10.0
+	node_config.animation_loop = true
+	node_config.collision_radius = radius
+	node_config.lifetime = duration
+	node_config.fade_duration = 0.8
+	node_config.fallback_color = GameConstants.Colors.SECT_POISON
 	
-	# 添加伤害区域
-	var damage_area = Area2D.new()
-	damage_area.name = "DamageArea"
-	damage_area.collision_layer = 0
-	damage_area.collision_mask = 2  # 检测敌人
+	plague_node = await create_skill_node(node_config)
 	
-	var shape = CollisionShape2D.new()
-	var circle = CircleShape2D.new()
-	circle.radius = radius
-	shape.shape = circle
-	damage_area.add_child(shape)
-	
-	plague_node.add_child(damage_area)
-	
-	if player and player.get_parent():
-		player.get_parent().add_child(plague_node)
-		await get_tree().process_frame
-		_animate_plague()
-	else:
-		plague_node.queue_free()
-
-func _animate_plague():
-	# 展开动画
-	for i in range(4):
-		var sprite = plague_node.get_node_or_null("Layer" + str(i))
-		if sprite:
-			var tween = create_tween()
-			tween.tween_property(sprite, "scale", Vector2(1.0, 1.0), 0.6 + i * 0.1)
-			
-			# 缓慢旋转
-			var rotate_tween = create_tween()
-			rotate_tween.set_loops()
-			rotate_tween.tween_property(sprite, "rotation", sprite.rotation + TAU, 3.0 + i * 0.5)
+	# 启用周期性伤害
+	enable_tick_damage(tick_interval, _deal_damage)
 	
 	is_active = true
 	elapsed_time = 0.0
-	tick_timer = 0.0
 	infected_enemies.clear()
 
 func _process(delta: float):
@@ -91,20 +55,13 @@ func _process(delta: float):
 		return
 	
 	elapsed_time += delta
-	tick_timer += delta
-	
-	# 定期造成伤害和传播
-	if tick_timer >= tick_interval:
-		tick_timer = 0.0
-		_deal_plague_damage()
-		_spread_plague()
 	
 	# 持续时间结束
 	if elapsed_time >= duration:
-		_end_plague()
+		is_active = false
 
-func _deal_plague_damage():
-	if not plague_node:
+func _deal_damage():
+	if not is_instance_valid(plague_node):
 		return
 	
 	var enemies = get_enemies_in_range(plague_node.global_position, radius)
@@ -114,6 +71,9 @@ func _deal_plague_damage():
 		
 		if not infected_enemies.has(enemy):
 			infected_enemies.append(enemy)
+	
+	# 传播瘟疫
+	_spread_plague()
 
 func _spread_plague():
 	# 从已感染敌人传播到附近敌人
@@ -141,7 +101,7 @@ func _create_spread_effect(from: Vector2, to: Vector2):
 	var line = Line2D.new()
 	line.add_point(Vector2.ZERO)
 	line.add_point(to - from)
-	line.width = 2.0
+	line.width = clampf(2.5 * VisualEffectsHelper.r_skill_scale_from_radius(radius) / (260.0 / 150.0), 2.5, 5.0)
 	line.default_color = GameConstants.Colors.SECT_POISON
 	line.default_color.a = 0.6
 	line.global_position = from
@@ -156,20 +116,3 @@ func _animate_spread_line(line: Line2D):
 	await get_tree().create_timer(0.2).timeout
 	if is_instance_valid(line):
 		line.queue_free()
-
-func _end_plague():
-	is_active = false
-	
-	if not is_instance_valid(plague_node):
-		return
-	
-	# 淡出动画
-	for i in range(4):
-		var sprite = plague_node.get_node_or_null("Layer" + str(i))
-		if sprite:
-			var tween = create_tween()
-			tween.tween_property(sprite, "modulate:a", 0.0, 0.8)
-	
-	await get_tree().create_timer(0.8).timeout
-	if is_instance_valid(plague_node):
-		plague_node.queue_free()

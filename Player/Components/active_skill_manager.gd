@@ -55,7 +55,7 @@ func set_input_manager(im: Node):
 	if input_manager:
 		input_manager.skill_q_pressed.connect(_on_skill_q_pressed)
 		input_manager.skill_e_pressed.connect(_on_skill_e_pressed)
-		input_manager.skill_r_pressed.connect(_on_skill_r_pressed)
+		input_manager.skill_t_pressed.connect(_on_skill_t_pressed)
 
 func _process(delta: float):
 	for skill_data in skills.values():
@@ -75,7 +75,7 @@ func _on_skill_q_pressed():
 func _on_skill_e_pressed():
 	try_cast_skill("e")
 
-func _on_skill_r_pressed():
+func _on_skill_t_pressed():
 	try_cast_skill("r")
 
 func try_cast_skill(skill_id: String) -> bool:

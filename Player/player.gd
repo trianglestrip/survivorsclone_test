@@ -45,6 +45,7 @@ var _hit_frames: Array = []
 @onready var sndVictory = get_node("%snd_victory")
 @onready var sndLose = get_node("%snd_lose")
 @onready var weapon_bar_ui = get_node_or_null("%WeaponBarUI")
+@onready var texture_preload_label = get_node_or_null("%TexturePreloadLabel")
 
 signal playerdeath
 
@@ -147,6 +148,38 @@ func _connect_signals():
 	if active_skill_mgr:
 		active_skill_mgr.skill_cast.connect(_on_skill_cast)
 		active_skill_mgr.skill_cooldown_updated.connect(_on_skill_cooldown_updated)
+	if sect_mgr:
+		sect_mgr.sect_selected.connect(_on_sect_selected_preload_skill_textures)
+
+func _on_sect_selected_preload_skill_textures(sect_id: String):
+	_set_texture_preload_indicator(true, sect_id, 0.0)
+	var loader = get_node_or_null("/root/SkillTextureLoader")
+	if loader and loader.has_method("preload_sect_animations"):
+		var cb = Callable(self, "_on_skill_texture_preload_progress")
+		var stats: Dictionary = loader.preload_sect_animations(sect_id, cb, false)
+		_log_skill_texture_preload_stats(stats)
+	_set_texture_preload_indicator(false, sect_id, 1.0)
+
+func _on_skill_texture_preload_progress(sect_id: String, _loaded_steps: int, _total_steps: int, progress: float):
+	_set_texture_preload_indicator(true, sect_id, progress)
+
+func _set_texture_preload_indicator(show_label: bool, sect_id: String = "", progress: float = 0.0):
+	var lbl = texture_preload_label
+	if lbl == null:
+		lbl = get_node_or_null("%TexturePreloadLabel")
+	if lbl:
+		lbl.visible = show_label
+		if show_label:
+			lbl.text = "加载技能纹理 %s %d%%" % [sect_id, clampi(int(progress * 100.0), 0, 100)]
+
+func _log_skill_texture_preload_stats(stats: Dictionary):
+	var msg = "[Player:perf] 技能纹理预加载完成 sect=%s duration_ms=%.2f cache_tex=%d est_mem_mb=%.2f" % [
+		stats.get("sect_id", ""),
+		stats.get("duration_ms", 0.0),
+		stats.get("texture_cache_size", 0),
+		stats.get("estimated_cache_memory_mb", 0.0),
+	]
+	print(msg)
 
 func _on_dash_started():
 	if hurt_box and hurt_box.has_node("CollisionShape2D"):

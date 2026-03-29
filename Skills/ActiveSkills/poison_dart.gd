@@ -12,7 +12,7 @@ var poison_duration: float = 0.0
 var projectile_speed: float = 450.0
 
 func _load_skill_config(cfg: Dictionary):
-	range = cfg.get("range", 220.0)
+	skill_range = cfg.get("range", 220.0)  # 使用skill_range而不是range（range是内置关键字）
 	poison_damage = cfg.get("poison_damage", 8.0)
 	poison_duration = cfg.get("poison_duration", 4.0)
 	projectile_speed = cfg.get("projectile_speed", 450.0)
@@ -27,13 +27,31 @@ func _spawn_dart(pos: Vector2, dir: Vector2):
 	dart.position = pos
 	dart.z_index = 5
 	
-	var sprite = Sprite2D.new()
-	sprite.rotation = dir.angle()
-	sprite.scale = Vector2(1.2, 1.2)
-	sprite.modulate = GameConstants.Colors.SECT_POISON
-	sprite.texture = VisualEffectsHelper.create_placeholder_texture(Vector2(12, 6))
+	# 使用动画精灵
+	var animated_sprite = preload("res://Utility/animated_skill_sprite.gd").new()
+	animated_sprite.fps = 15.0
+	animated_sprite.loop = true
+	animated_sprite.rotation = dir.angle()
+	animated_sprite.scale = VisualEffectsHelper.q_skill_scale_vector()
+	animated_sprite.modulate = Color(1.0, 1.0, 1.0, 1.0)
 	
-	dart.add_child(sprite)
+	# 尝试加载动画帧
+	if animated_sprite.load_from_skill("poison_dart"):
+		apply_standard_to_skill_visual(animated_sprite, "projectile")
+		dart.add_child(animated_sprite)
+	else:
+		# 回退到渐变纹理
+		var sprite = Sprite2D.new()
+		sprite.rotation = dir.angle()
+		sprite.scale = VisualEffectsHelper.q_skill_scale_vector()
+		var poison_color = GameConstants.Colors.SECT_POISON
+		sprite.texture = VisualEffectsHelper.create_gradient_texture(
+			Vector2(12, 6),
+			Color(poison_color.r, poison_color.g, poison_color.b, 0.9),
+			Color(poison_color.r * 0.8, poison_color.g, poison_color.b * 0.8, 0.0)
+		)
+		apply_standard_to_skill_visual(sprite, "projectile")
+		dart.add_child(sprite)
 	
 	var projectile_script = load("res://Utility/auto_projectile.gd")
 	dart.set_script(projectile_script)
@@ -66,11 +84,15 @@ func _apply_poison(enemy: Node):
 func _create_hit_effect(pos: Vector2):
 	var effect = Sprite2D.new()
 	effect.position = pos
-	effect.scale = Vector2(1.5, 1.5)
-	effect.texture = VisualEffectsHelper.load_texture_or_placeholder(config.get("effect", ""), Vector2(64, 64))
+	effect.scale = VisualEffectsHelper.q_skill_scale_vector(1.25)
 	effect.z_index = 10
-	effect.modulate = GameConstants.Colors.SECT_POISON
-	effect.modulate.a = 0.8
+	
+	var poison_color = GameConstants.Colors.SECT_POISON
+	effect.texture = VisualEffectsHelper.create_gradient_texture(
+		Vector2(64, 64),
+		Color(poison_color.r, poison_color.g, poison_color.b, 0.7),
+		Color(poison_color.r * 0.7, poison_color.g, poison_color.r * 0.7, 0.0)
+	)
 	
 	var fade_script = load("res://Utility/auto_fade_sprite.gd")
 	effect.set_script(fade_script)

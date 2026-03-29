@@ -26,6 +26,7 @@
           "projectile_count": 3,
           "slow_duration": 2.0,
           "slow_percent": 0.3,
+          "visual_scale": 1.35,
           "effect": "res://Assets/Effects/Skills/ice_shard.png"
         },
         "e": {
@@ -37,6 +38,7 @@
           "radius": 150,
           "duration": 4.0,
           "slow_percent": 0.5,
+          "visual_scale": 1.5,
           "effect": "res://Assets/Effects/Skills/ice_field.png"
         },
         "r": {
@@ -48,6 +50,7 @@
           "radius": 300,
           "duration": 5.0,
           "freeze_duration": 2.0,
+          "visual_scale": 2.0,
           "effect": "res://Assets/Effects/Skills/ice_storm.png"
         }
       }
@@ -128,6 +131,7 @@
           "radius": 80,
           "burn_damage": 5,
           "burn_duration": 3.0,
+          "visual_scale": 1.35,
           "effect": "res://Assets/Effects/Skills/fire_ball.png"
         },
         "e": {
@@ -140,6 +144,7 @@
           "height": 80,
           "duration": 5.0,
           "burn_damage": 3,
+          "visual_scale": 1.0,
           "effect": "res://Assets/Effects/Skills/fire_wall.png"
         },
         "r": {
@@ -151,6 +156,7 @@
           "radius": 280,
           "meteor_count": 8,
           "burn_duration": 4.0,
+          "visual_scale": 1.87,
           "effect": "res://Assets/Effects/Skills/fire_meteor.png"
         }
       }
@@ -180,6 +186,7 @@
           "range": 220,
           "poison_damage": 8,
           "poison_duration": 4.0,
+          "visual_scale": 1.35,
           "effect": "res://Assets/Effects/Skills/poison_dart.png"
         },
         "e": {
@@ -191,6 +198,7 @@
           "radius": 140,
           "duration": 6.0,
           "defense_reduce": 0.3,
+          "visual_scale": 1.4,
           "effect": "res://Assets/Effects/Skills/poison_cloud.png"
         },
         "r": {
@@ -203,6 +211,7 @@
           "poison_damage": 15,
           "poison_duration": 6.0,
           "spread_radius": 100,
+          "visual_scale": 1.73,
           "effect": "res://Assets/Effects/Skills/poison_plague.png"
         }
       }

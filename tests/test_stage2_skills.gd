@@ -89,10 +89,10 @@ func _test_ice_r_skill():
 		await process_frame
 	
 	# 释放R技能
-	Input.action_press("skill_r")
+	Input.action_press("skill_t")
 	for i in range(5):
 		await process_frame
-	Input.action_release("skill_r")
+	Input.action_release("skill_t")
 	
 	# 等待技能生效
 	for i in range(60):
@@ -153,10 +153,10 @@ func _test_thunder_r_skill():
 	for i in range(10):
 		await process_frame
 	
-	Input.action_press("skill_r")
+	Input.action_press("skill_t")
 	for i in range(5):
 		await process_frame
-	Input.action_release("skill_r")
+	Input.action_release("skill_t")
 	
 	for i in range(60):
 		await process_frame
@@ -216,10 +216,10 @@ func _test_fire_r_skill():
 	for i in range(10):
 		await process_frame
 	
-	Input.action_press("skill_r")
+	Input.action_press("skill_t")
 	for i in range(5):
 		await process_frame
-	Input.action_release("skill_r")
+	Input.action_release("skill_t")
 	
 	# 等待陨石落下
 	for i in range(120):
@@ -278,10 +278,10 @@ func _test_poison_r_skill():
 	for i in range(10):
 		await process_frame
 	
-	Input.action_press("skill_r")
+	Input.action_press("skill_t")
 	for i in range(5):
 		await process_frame
-	Input.action_release("skill_r")
+	Input.action_release("skill_t")
 	
 	for i in range(60):
 		await process_frame

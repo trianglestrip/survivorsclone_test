@@ -267,11 +267,11 @@ func _test_r_skill():
 		test_failed += 1
 		return
 	
-	print("  → 模拟按下R键...")
-	Input.action_press("skill_r")
+	print("  → 模拟按下T键（必杀）...")
+	Input.action_press("skill_t")
 	for i in range(6):
 		await process_frame
-	Input.action_release("skill_r")
+	Input.action_release("skill_t")
 	
 	for i in range(18):
 		await process_frame

@@ -6,6 +6,42 @@ extends Object
 
 const GameConstants = preload("res://Utility/game_constants.gd")
 
+## Q 技能（弹射物 / 单体打击）精灵基础缩放，适配不同分辨率下体量适中
+const Q_SKILL_VISUAL_SCALE_MIN := 1.2
+const Q_SKILL_VISUAL_SCALE_MAX := 1.5
+const Q_SKILL_VISUAL_SCALE_DEFAULT := 1.35
+
+## E 技能圆形领域：视觉缩放 = 半径 / 参考半径（与碰撞半径同量级）
+const E_SKILL_RADIUS_REFERENCE := 100.0
+
+## R 技能终极：视觉缩放 = 半径 / 参考半径（比 E 略大，强化存在感）
+const R_SKILL_RADIUS_REFERENCE := 150.0
+
+## 火墙矩形领域：纹理按默认宽高对齐碰撞盒（与 sect 默认 width/height 一致）
+const E_SKILL_FIRE_WALL_REF_SIZE := Vector2(200.0, 80.0)
+
+static func q_skill_scale_vector(custom: float = 0.0) -> Vector2:
+	var s: float = custom if custom > 0.0 else Q_SKILL_VISUAL_SCALE_DEFAULT
+	s = clampf(s, Q_SKILL_VISUAL_SCALE_MIN, Q_SKILL_VISUAL_SCALE_MAX)
+	return Vector2(s, s)
+
+static func e_skill_scale_from_radius(radius: float) -> float:
+	return radius / E_SKILL_RADIUS_REFERENCE
+
+static func e_skill_scale_vector(radius: float) -> Vector2:
+	var s := e_skill_scale_from_radius(radius)
+	return Vector2(s, s)
+
+static func r_skill_scale_from_radius(radius: float) -> float:
+	return radius / R_SKILL_RADIUS_REFERENCE
+
+static func r_skill_scale_vector(radius: float) -> Vector2:
+	var s := r_skill_scale_from_radius(radius)
+	return Vector2(s, s)
+
+static func e_skill_fire_wall_scale(width: float, height: float) -> Vector2:
+	return Vector2(width / E_SKILL_FIRE_WALL_REF_SIZE.x, height / E_SKILL_FIRE_WALL_REF_SIZE.y)
+
 # ========================================
 # 屏幕震动
 # ========================================
@@ -170,6 +206,45 @@ static func create_placeholder_texture(texture_size: Vector2) -> PlaceholderText
 	var placeholder = PlaceholderTexture2D.new()
 	placeholder.size = texture_size
 	return placeholder
+
+static func create_gradient_texture(texture_size: Vector2, center_color: Color, edge_color: Color) -> ImageTexture:
+	var image = Image.create(int(texture_size.x), int(texture_size.y), false, Image.FORMAT_RGBA8)
+	var center = texture_size / 2.0
+	var max_dist = center.length()
+	
+	for x in range(int(texture_size.x)):
+		for y in range(int(texture_size.y)):
+			var pos = Vector2(x, y)
+			var dist = pos.distance_to(center)
+			var t = clamp(dist / max_dist, 0.0, 1.0)
+			var color = center_color.lerp(edge_color, t)
+			image.set_pixel(x, y, color)
+	
+	return ImageTexture.create_from_image(image)
+
+static func create_circle_texture(texture_size: Vector2, color: Color, soft_edge: bool = true) -> ImageTexture:
+	var image = Image.create(int(texture_size.x), int(texture_size.y), false, Image.FORMAT_RGBA8)
+	var center = texture_size / 2.0
+	var radius = min(center.x, center.y)
+	
+	for x in range(int(texture_size.x)):
+		for y in range(int(texture_size.y)):
+			var pos = Vector2(x, y)
+			var dist = pos.distance_to(center)
+			
+			if soft_edge:
+				var edge_softness = radius * 0.2
+				var alpha = 1.0 - clamp((dist - radius + edge_softness) / edge_softness, 0.0, 1.0)
+				var pixel_color = color
+				pixel_color.a *= alpha
+				image.set_pixel(x, y, pixel_color)
+			else:
+				if dist <= radius:
+					image.set_pixel(x, y, color)
+				else:
+					image.set_pixel(x, y, Color(0, 0, 0, 0))
+	
+	return ImageTexture.create_from_image(image)
 
 static func load_texture_or_placeholder(path: String, placeholder_size: Vector2 = Vector2(64, 64)) -> Texture2D:
 	if ResourceLoader.exists(path):

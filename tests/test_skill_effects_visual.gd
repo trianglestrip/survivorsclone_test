@@ -135,10 +135,10 @@ func _test_r_skill_effect():
 	
 	# 释放R技能
 	print("  释放R技能...")
-	Input.action_press("skill_r")
+	Input.action_press("skill_t")
 	for i in range(5):
 		await process_frame
-	Input.action_release("skill_r")
+	Input.action_release("skill_t")
 	
 	# 等待技能生成
 	for i in range(30):

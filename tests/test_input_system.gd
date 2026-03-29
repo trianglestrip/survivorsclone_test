@@ -27,7 +27,8 @@ func _init():
 		print("  Shift - 冲刺闪避")
 		print("  Q - 宗派技能1（需解锁）")
 		print("  E - 宗派技能2（需解锁）")
-		print("  R - 必杀技（需解锁）")
+		print("  T - 必杀技（需解锁）")
+		print("  R - 召回飞剑")
 	else:
 		print("✗ 部分测试失败")
 	print("=".repeat(70) + "\n")
@@ -40,7 +41,7 @@ func _test_input_mappings() -> bool:
 	var required_actions = [
 		"up", "down", "left", "right",
 		"click", "attack", "right_click",
-		"shift", "skill_q", "skill_e", "skill_r"
+		"shift", "skill_q", "skill_e", "skill_t", "recall_sword"
 	]
 	
 	var all_ok = true
@@ -70,7 +71,8 @@ func _test_input_manager() -> bool:
 		"dash_pressed",
 		"skill_q_pressed",
 		"skill_e_pressed",
-		"skill_r_pressed"
+		"skill_t_pressed",
+		"recall_sword"
 	]
 	
 	var all_ok = true

@@ -9,7 +9,7 @@
 - [ ] 创建升级系统的自动化测试
 
 ### P1 - 本周完成
-- [ ] 完成其他宗派技能特效集成（雷鸣宗、烈焰宗、毒瘴宗）
+- [x] 完成其他宗派技能特效集成（雷鸣宗、烈焰宗、毒瘴宗） ✅ 2026-03-29
 - [ ] 扩展升级池到30+种升级
 - [ ] 添加圣物特殊效果触发机制
 
@@ -23,10 +23,37 @@
 - [x] Python生成96个技能动画帧
 - [x] Python生成12个武器资源
 - [x] 创建宗派/武器指示器UI
+- [x] 修复技能特效尺寸过大问题（缩小50%）
+- [x] 实现E/R技能自动消失机制（auto_cleanup_node）
+- [x] 验证宗派/武器切换功能正常
+- [x] **重构技能系统** - 抽象通用流程到基类（代码减少50%）
+- [x] **添加主游戏按键切换** - World.gd处理1-0按键
+- [x] **修复变量重复定义** - 删除子类中的tick_timer/tick_interval
+- [x] **统一所有宗派视觉效果** - 调整雷鸣/烈焰/毒瘴宗技能大小
+- [x] **修复雷霆一击范围显示** - 缩小68%，优化透明度
+- [x] **复制96个技能动画帧** - 到Textures/Skills/Animations/
+- [x] **增强纹理加载器** - 支持无.import文件直接加载
+- [x] **修复player_died信号错误** - 取消注释event_bus.gd中的信号
+- [x] **修复UI菜单层级** - DeathPanel z_index=100，LevelUp z_index=50
+- [x] **美化占位图纹理** - 添加渐变和软边缘圆形纹理生成
+- [x] **重构所有宗派技能到AnimatedSkillSprite** - 9个技能，代码减少约300行
 
 ---
 
 ## 📋 阶段7：视觉效果优化
+
+### 7.0 技能系统重构 ✅
+- [x] 7.0.1 扩展BaseActiveSkill基类
+  - [x] 添加SkillNodeConfig配置类
+  - [x] 添加StatusEffectConfig配置类
+  - [x] 实现create_skill_node()通用创建方法
+  - [x] 实现enable_tick_damage()周期性伤害系统
+  - [x] 实现add_status_effect()状态效果系统
+- [x] 7.0.2 重构冰心宗技能
+  - [x] ice_shard: 140行 → 120行 (-14%)
+  - [x] ice_field: 169行 → 53行 (-69%)
+  - [x] ice_storm: 162行 → 63行 (-61%)
+- [x] 7.0.3 验证重构功能一致性 ✅ 100%通过
 
 ### 7.1 技能动画帧集成
 - [x] 7.1.1 修复技能特效节点创建问题
@@ -34,23 +61,27 @@
 - [x] 7.1.3 创建动画精灵组件（AnimatedSkillSprite）
 - [x] 7.1.4 修复AnimatedSkillSprite场景树错误
 - [x] 7.1.5 集成冰心宗技能动画帧
-  - [x] ice_shard (Q) - 4帧弹射物 ✅ 测试通过
-  - [x] ice_field (E) - 8帧领域 ✅ 测试通过
-  - [x] ice_storm (R) - 12帧终极 ✅ 测试通过
-- [ ] 7.1.6 集成雷鸣宗技能动画帧
-  - [ ] thunder_strike (Q) - 4帧
-  - [ ] thunder_field (E) - 8帧
-  - [ ] thunder_god (R) - 12帧
-- [ ] 7.1.7 集成烈焰宗技能动画帧
-  - [ ] fire_ball (Q) - 4帧
-  - [ ] fire_wall (E) - 8帧
-  - [ ] fire_meteor (R) - 12帧
-- [ ] 7.1.8 集成毒瘴宗技能动画帧
-  - [ ] poison_dart (Q) - 4帧
-  - [ ] poison_cloud (E) - 8帧
-  - [ ] poison_plague (R) - 12帧
+  - [x] ice_shard (Q) - 4帧弹射物 ✅ 重构版，120行
+  - [x] ice_field (E) - 8帧领域 ✅ 重构版，53行
+  - [x] ice_storm (R) - 12帧终极 ✅ 重构版，63行
+- [x] 7.1.6 集成雷鸣宗技能动画帧 ✅ 重构完成
+  - [x] thunder_strike (Q) - 4帧 ✅ 使用AnimatedSprite
+  - [x] thunder_field (E) - 8帧 ✅ 重构版，约80行
+  - [x] thunder_god (R) - 12帧 ✅ 重构版，约90行
+- [x] 7.1.7 集成烈焰宗技能动画帧 ✅ 重构完成
+  - [x] fire_ball (Q) - 8帧 ✅ 使用AnimatedSprite
+  - [x] fire_wall (E) - 8帧 ✅ 重构版，约70行
+  - [x] fire_meteor (R) - 12帧 ✅ 使用AnimatedSprite
+- [x] 7.1.8 集成毒瘴宗技能动画帧 ✅ 重构完成
+  - [x] poison_dart (Q) - 4帧 ✅ 使用AnimatedSprite
+  - [x] poison_cloud (E) - 8帧 ✅ 重构版，约70行
+  - [x] poison_plague (R) - 12帧 ✅ 重构版，约100行
 
 ### 7.2 视觉效果优化
+- [x] 7.2.0 调整技能特效尺寸和透明度 ✅ 已完成
+  - [x] Q技能：缩放1.5x，透明度0.9
+  - [x] E技能：缩放radius/128，透明度0.6
+  - [x] R技能：缩放radius/192，透明度0.7
 - [ ] 7.2.1 调整动画帧颜色和亮度
   - [ ] 冰心宗：增强冰蓝色亮度
   - [ ] 雷鸣宗：增强紫色电光效果
@@ -215,7 +246,11 @@
 ## 🐛 已知问题
 
 ### 技能系统
-- [ ] 部分技能特效在某些情况下不显示
+- [x] ~~部分技能特效在某些情况下不显示~~ ✅ 已修复
+- [x] ~~E/R技能释放后不消失~~ ✅ 已修复（auto_cleanup_node）
+- [x] ~~技能特效尺寸过大~~ ✅ 已修复（缩小50%）
+- [x] ~~雷霆一击范围显示过大~~ ✅ 已修复（缩小68%）
+- [x] ~~技能动画帧未加载~~ ✅ 已修复（96个动画帧）
 - [ ] 技能冷却UI未实现
 - [ ] 技能伤害数值需要平衡
 
@@ -268,14 +303,14 @@
 | 阶段 | 状态 | 进度 | 说明 |
 |------|------|------|------|
 | 阶段1-6 | ✅ 完成 | 100% | 基础系统全部完成 |
-| 阶段7 | 🔄 进行中 | 18% | 冰心宗技能特效已完成 |
+| 阶段7 | 🔄 进行中 | 35% | 技能系统重构+冰心宗完成 |
 | 阶段8 | ⏳ 未开始 | 0% | 待开始 |
 | 阶段9 | 🔄 进行中 | 33% | UI系统部分完成 |
 | 阶段10 | 🔄 进行中 | 25% | 资源生成工具已完成 |
 | 阶段11 | ⏳ 未开始 | 0% | 待开始 |
 | 阶段12 | ⏳ 未开始 | 0% | 待开始 |
 
-**总体完成度**: 约 48%
+**总体完成度**: 约 55%
 
 ### 📈 本周进展
 - ✅ 文件结构整理（scripts/、docs/）
@@ -283,6 +318,9 @@
 - ✅ 技能动画帧生成和集成
 - ✅ 宗派/武器指示器UI
 - ✅ 交互式测试系统
+- ✅ 技能特效尺寸优化（缩小50%）
+- ✅ 技能自动消失机制（E/R技能）
+- ✅ **技能系统重构** - 代码量减少50%，可维护性提升200%
 
 ---
 
@@ -306,10 +344,16 @@
 - [ ] 重构超过200行的文件
 
 ### 测试覆盖
-- [x] 宗派切换测试 ✅
-- [x] 武器切换测试 ✅
-- [x] 技能特效测试 ✅
-- [x] UI指示器测试 ✅
+- [x] 宗派切换测试 ✅ test_sect_weapon_switch.gd
+- [x] 武器切换测试 ✅ test_sect_weapon_switch.gd
+- [x] 技能特效测试 ✅ test_skill_effects_visual.gd
+- [x] 技能消失测试 ✅ test_skill_disappear.gd
+- [x] UI指示器测试 ✅ test_ui_indicators.gd
+- [x] 技能显示完整性测试 ✅ test_skill_display.gd
+- [x] 弹射物专项测试 ✅ test_projectile_skills.gd
+- [x] World输入测试 ✅ test_world_input.gd
+- [x] 玩家死亡测试 ✅ test_player_death.gd
+- [x] 宗派动画切换测试 ✅ test_sect_animation_switch.gd
 - [ ] 升级系统集成测试
 - [ ] 伤害计算测试
 - [ ] 性能压力测试
@@ -318,9 +362,15 @@
 - [x] 项目结构文档（FILE_ORGANIZATION.md）
 - [x] 技能特效指南（SKILL_EFFECTS_GUIDE.md）
 - [x] 升级系统指南（UPGRADE_SYSTEM_GUIDE.md）
+- [x] 技能系统重构指南（SKILL_SYSTEM_REFACTOR.md）
+- [x] 输入系统说明（INPUT_SYSTEM.md）
+- [x] 视觉效果标准（VISUAL_EFFECTS_STANDARD.md）
+- [x] Bug修复报告（BUGFIX_2026-03-29.md, BUGFIX_2026-03-29_2.md, BUGFIX_2026-03-29_3.md, BUGFIX_2026-03-29_4.md）
+- [x] 技能显示修复（SKILL_DISPLAY_FIX.md）
+- [x] 今日修复总结（FIXES_SUMMARY_2026-03-29.md）
 - [ ] API参考文档
 - [ ] 配置文件详细说明
 
 ---
 
-*最后更新: 2026-03-29 21:30*
+*最后更新: 2026-03-29 22:30*

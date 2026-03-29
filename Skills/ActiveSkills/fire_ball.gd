@@ -30,13 +30,31 @@ func _spawn_fireball(pos: Vector2, dir: Vector2):
 	fireball.position = pos
 	fireball.z_index = 5
 	
-	var sprite = Sprite2D.new()
-	sprite.rotation = dir.angle()
-	sprite.scale = Vector2(2.0, 2.0)
-	sprite.modulate = GameConstants.Colors.SECT_FIRE
-	sprite.texture = VisualEffectsHelper.create_placeholder_texture(Vector2(24, 24))
+	# 使用动画精灵
+	var animated_sprite = preload("res://Utility/animated_skill_sprite.gd").new()
+	animated_sprite.fps = 15.0
+	animated_sprite.loop = true
+	animated_sprite.rotation = dir.angle()
+	animated_sprite.scale = VisualEffectsHelper.q_skill_scale_vector()
+	animated_sprite.modulate = Color(1.0, 1.0, 1.0, 0.9)
 	
-	fireball.add_child(sprite)
+	# 尝试加载动画帧
+	if animated_sprite.load_from_skill("fire_ball"):
+		apply_standard_to_skill_visual(animated_sprite, "projectile")
+		fireball.add_child(animated_sprite)
+	else:
+		# 回退到渐变纹理
+		var sprite = Sprite2D.new()
+		sprite.rotation = dir.angle()
+		sprite.scale = VisualEffectsHelper.q_skill_scale_vector()
+		var fire_color = GameConstants.Colors.SECT_FIRE
+		sprite.texture = VisualEffectsHelper.create_gradient_texture(
+			Vector2(24, 24),
+			Color(fire_color.r, fire_color.g, fire_color.b, 0.9),
+			Color(fire_color.r * 1.2, fire_color.g * 0.8, fire_color.b * 0.5, 0.0)
+		)
+		apply_standard_to_skill_visual(sprite, "projectile")
+		fireball.add_child(sprite)
 	
 	var fireball_script = load("res://Utility/auto_fireball.gd")
 	fireball.set_script(fireball_script)
@@ -69,10 +87,25 @@ func _apply_burn(enemy: Node):
 		enemy.apply_burn(burn_damage, burn_duration)
 
 func _create_explosion_effect(pos: Vector2):
-	var effect = spawn_effect(config.get("effect", ""), pos, radius / 32.0)
-	effect.modulate = GameConstants.Colors.SECT_FIRE
-	effect.modulate.a = 0.8
-	_animate_explosion(effect)
+	var effect = Sprite2D.new()
+	effect.position = pos
+	var blast := VisualEffectsHelper.e_skill_scale_from_radius(radius)
+	effect.scale = Vector2(blast, blast)
+	effect.z_index = 10
+	
+	var fire_color = GameConstants.Colors.SECT_FIRE
+	effect.texture = VisualEffectsHelper.create_gradient_texture(
+		Vector2(64, 64),
+		Color(fire_color.r * 1.3, fire_color.g, fire_color.b * 0.5, 0.7),
+		Color(fire_color.r, fire_color.g * 0.6, fire_color.b * 0.3, 0.0)
+	)
+	
+	if player and player.get_parent():
+		player.get_parent().add_child(effect)
+		await get_tree().process_frame
+		_animate_explosion(effect)
+	else:
+		effect.queue_free()
 
 func _animate_explosion(effect: Sprite2D):
 	if not is_instance_valid(effect):

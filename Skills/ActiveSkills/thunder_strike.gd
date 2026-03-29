@@ -61,25 +61,53 @@ func _create_strike_effect(pos: Vector2):
 	var effect = Node2D.new()
 	effect.position = pos
 	effect.z_index = 10
+	effect.name = "ThunderStrike"
 	
-	var flash = Sprite2D.new()
-	flash.scale = Vector2(3.0, 3.0)
-	flash.modulate = GameConstants.Colors.SECT_THUNDER
-	flash.texture = VisualEffectsHelper.create_placeholder_texture(Vector2(64, 64))
-	effect.add_child(flash)
+	# 使用动画精灵
+	var animated_sprite = preload("res://Utility/animated_skill_sprite.gd").new()
+	animated_sprite.fps = 15.0
+	animated_sprite.loop = false
+	animated_sprite.auto_destroy = true
+	animated_sprite.scale = VisualEffectsHelper.q_skill_scale_vector()
+	animated_sprite.modulate = Color(1.0, 1.0, 1.0, 0.9)
 	
-	var circle = VisualEffectsHelper.create_range_indicator(radius, GameConstants.Colors.SECT_THUNDER, null)
-	circle.modulate.a = 0.5
-	effect.add_child(circle)
+	# 尝试加载动画帧
+	if animated_sprite.load_from_skill("thunder_strike"):
+		apply_standard_to_skill_visual(animated_sprite, "area")
+		effect.add_child(animated_sprite)
+	else:
+		# 回退到渐变纹理
+		var flash = Sprite2D.new()
+		flash.scale = VisualEffectsHelper.q_skill_scale_vector()
+		var thunder_color = GameConstants.Colors.SECT_THUNDER
+		flash.texture = VisualEffectsHelper.create_gradient_texture(
+			Vector2(64, 64),
+			Color(thunder_color.r, thunder_color.g, thunder_color.b, 0.9),
+			Color(thunder_color.r, thunder_color.g, thunder_color.b, 0.0)
+		)
+		effect.add_child(flash)
+		
+		var circle = Sprite2D.new()
+		# 64px 纹理半径约 32，使精灵半径与伤害半径一致
+		var ring_s := radius / 32.0
+		circle.scale = Vector2(ring_s, ring_s)
+		circle.texture = VisualEffectsHelper.create_circle_texture(
+			Vector2(64, 64),
+			Color(thunder_color.r, thunder_color.g, thunder_color.b, 0.25),
+			true
+		)
+		circle.z_index = 5
+		effect.add_child(circle)
 	
 	if player and player.get_parent():
 		player.get_parent().add_child(effect)
 		await get_tree().process_frame
-		_animate_strike_effect(effect, flash, circle)
+		if not animated_sprite.load_from_skill("thunder_strike"):
+			_animate_strike_effect(effect)
 	else:
 		effect.queue_free()
 
-func _animate_strike_effect(effect: Node2D, flash: Sprite2D, circle: Sprite2D):
+func _animate_strike_effect(effect: Node2D):
 	if not is_instance_valid(effect):
 		return
 	
@@ -89,13 +117,16 @@ func _animate_strike_effect(effect: Node2D, flash: Sprite2D, circle: Sprite2D):
 	if not is_instance_valid(effect) or not effect.is_inside_tree():
 		return
 	
+	var flash = effect.get_node_or_null("Sprite2D")
+	var circle = effect.get_node_or_null("Sprite2D2")
+	
 	for i in range(5):
 		await effect.get_tree().create_timer(0.05).timeout
 		if is_instance_valid(flash):
 			flash.modulate.a -= 0.2
 		if is_instance_valid(circle):
-			circle.scale *= 1.2
-			circle.modulate.a -= 0.15
+			circle.scale *= 1.05
+			circle.modulate.a -= 0.1
 	
 	if is_instance_valid(effect):
 		effect.queue_free()

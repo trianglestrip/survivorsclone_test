@@ -48,7 +48,8 @@ func _test_stage1_operations():
 	_assert(InputMap.has_action("shift"), "输入映射: shift (冲刺)")
 	_assert(InputMap.has_action("skill_q"), "输入映射: skill_q")
 	_assert(InputMap.has_action("skill_e"), "输入映射: skill_e")
-	_assert(InputMap.has_action("skill_r"), "输入映射: skill_r")
+	_assert(InputMap.has_action("skill_t"), "输入映射: skill_t (必杀)")
+	_assert(InputMap.has_action("recall_sword"), "输入映射: recall_sword (召回)")
 	
 	# 测试2：配置文件加载
 	var config = _load_json("res://config/stage1_controls.json")
@@ -129,10 +130,15 @@ func _test_stage3_weapon_system():
 	var secondary = config.get("secondary_attack", {})
 	
 	_assert(primary.get("type") == "melee", "主攻击类型: melee")
-	_assert(secondary.get("type") == "ranged", "副攻击类型: ranged")
+	var sec_type = secondary.get("type", "")
+	_assert(sec_type == "flying_sword" or sec_type == "ranged", "副攻击类型: flying_sword 或 ranged")
 	_assert(primary.has("base_damage"), "主攻击伤害配置")
 	_assert(secondary.has("base_damage"), "副攻击伤害配置")
-	_assert(secondary.has("projectile_speed"), "副攻击弹速配置")
+	if sec_type == "flying_sword":
+		_assert(secondary.has("move_speed"), "飞剑 move_speed 配置")
+		_assert(secondary.has("max_active_swords"), "飞剑数量上限配置")
+	else:
+		_assert(secondary.has("projectile_speed"), "副攻击弹速配置")
 	
 	# 测试2：攻击脚本
 	var base_attack = load("res://Player/Components/base_attack.gd")

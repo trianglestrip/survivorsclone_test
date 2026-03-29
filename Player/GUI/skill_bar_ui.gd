@@ -25,12 +25,21 @@ var _skills = {
 		"on_cooldown": false
 	},
 	"r": {
-		"key": "R",
+		"key": "T",
 		"name": "必杀技",
 		"color": Color(1.0, 0.4, 0.6),
 		"glow_color": Color(1.0, 0.6, 0.75),
 		"cooldown": 0.0,
 		"max_cooldown": 10.0,
+		"on_cooldown": false
+	},
+	"recall": {
+		"key": "R",
+		"name": "召回",
+		"color": Color(0.45, 0.82, 1.0),
+		"glow_color": Color(0.55, 0.9, 1.0),
+		"cooldown": 0.0,
+		"max_cooldown": 0.0,
 		"on_cooldown": false
 	},
 	"shift": {
@@ -55,7 +64,7 @@ func _create_skill_bar():
 	var bar_margin = 20
 	var slot_size = 72
 	var slot_spacing = 10
-	var skill_order = ["q", "e", "r", "shift"]
+	var skill_order = ["q", "e", "r", "recall", "shift"]
 	
 	var start_x = bar_margin
 	var y = get_viewport_rect().size.y - bar_margin - slot_size
@@ -91,7 +100,10 @@ func _create_skill_slot(skill_id: String, skill_data: Dictionary, size: int) -> 
 	
 	var bg = TextureRect.new()
 	bg.name = "Background"
-	bg.texture = load("res://Textures/UI/skill_slot_%s.png" % skill_id)
+	var tex_path := "res://Textures/UI/skill_slot_%s.png" % skill_id
+	if not ResourceLoader.exists(tex_path):
+		tex_path = "res://Textures/UI/skill_slot_q.png"
+	bg.texture = load(tex_path)
 	bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	bg.size = Vector2(size, size)

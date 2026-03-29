@@ -1,0 +1,28 @@
+{
+  "skill_types": {
+    "projectile": {
+      "base_scale": 1.3,
+      "base_alpha": 0.9,
+      "glow_intensity": 0.6,
+      "animation_speed": 1.0
+    },
+    "area": {
+      "base_scale": 1.0,
+      "base_alpha": 0.65,
+      "glow_intensity": 0.5,
+      "pulse_speed": 0.8
+    },
+    "ultimate": {
+      "base_scale": 1.5,
+      "base_alpha": 0.8,
+      "glow_intensity": 0.9,
+      "screen_shake": 0.7
+    }
+  },
+  "sect_colors": {
+    "ice": {"primary": "#6ECFFF", "secondary": "#FFFFFF", "glow": "#B0E8FF"},
+    "thunder": {"primary": "#9D7FFF", "secondary": "#FFEB3B", "glow": "#E0B0FF"},
+    "fire": {"primary": "#FF6B35", "secondary": "#FFD700", "glow": "#FF9D5C"},
+    "poison": {"primary": "#7FFF00", "secondary": "#228B22", "glow": "#9FFF80"}
+  }
+}

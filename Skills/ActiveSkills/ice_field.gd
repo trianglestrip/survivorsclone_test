@@ -3,172 +3,50 @@ extends BaseActiveSkill
 
 ## 冰封领域技能
 ## 在周围创造冰霜领域，持续造成伤害并减速
-## 
-## 设计：完全配置驱动，无硬编码数值
 
 var radius: float = 0.0
-var tick_interval: float = 0.5
 var slow_percent: float = 0.0
 var slow_duration: float = 0.0
 var field_node: Node2D = null
-var tick_timer: float = 0.0
 
 func _load_skill_config(cfg: Dictionary):
 	radius = cfg.get("radius", 150.0)
 	duration = cfg.get("duration", 4.0)
 	slow_percent = cfg.get("slow_percent", 0.5)
-	slow_duration = duration  # 减速持续时间等于领域持续时间
-	tick_interval = cfg.get("tick_interval", 0.5)
+	slow_duration = duration
+	
+	# 配置状态效果
+	add_status_effect(StatusEffect.SLOW, slow_percent, slow_duration)
 
 func _on_skill_cast(cast_position: Vector2, _cast_direction: Vector2):
 	trigger_screen_shake(GameConstants.Values.SHAKE_ATTACK * 0.5)
-	_create_ice_field(cast_position)
+	
+	# 使用基类方法创建技能节点
+	var node_config = SkillNodeConfig.new()
+	node_config.node_name = "IceField"
+	node_config.node_type = SkillNodeType.AREA_CIRCLE
+	node_config.position = cast_position
+	node_config.z_index = 1
+	node_config.skill_animation_name = "ice_field"
+	node_config.animation_scale = VisualEffectsHelper.e_skill_scale_vector(radius)
+	node_config.animation_modulate = Color(1.0, 1.0, 1.0, 0.6)
+	node_config.animation_fps = 8.0
+	node_config.animation_loop = true
+	node_config.collision_radius = radius
+	node_config.lifetime = duration
+	node_config.fade_duration = 0.5
+	node_config.fallback_color = GameConstants.Colors.SECT_ICE
+	
+	field_node = await create_skill_node(node_config)
+	
+	# 启用周期性伤害
+	enable_tick_damage(0.5, _deal_damage)
 
-func _create_ice_field(pos: Vector2):
-	field_node = Node2D.new()
-	field_node.name = "IceField"
-	field_node.global_position = pos
-	field_node.z_index = 1
-	
-	# 创建动画精灵作为主视觉效果
-	var animated_sprite = preload("res://Utility/animated_skill_sprite.gd").new()
-	animated_sprite.scale = Vector2(radius / 64.0, radius / 64.0)  # 缩放到合适大小
-	animated_sprite.modulate = Color(1.0, 1.0, 1.0, 0.8)
-	animated_sprite.fps = 8.0
-	animated_sprite.loop = true
-	animated_sprite.name = "AnimatedLayer"
-	
-	# 尝试加载动画帧
-	if animated_sprite.load_from_skill("ice_field"):
-		field_node.add_child(animated_sprite)
-	else:
-		# 回退到原来的多层效果
-		var base_layer = Sprite2D.new()
-		base_layer.texture = VisualEffectsHelper.create_glow_background(
-			Vector2(radius * 2, radius * 2),
-			GameConstants.Colors.SECT_ICE
-		)
-		base_layer.modulate = GameConstants.Colors.SECT_ICE
-		base_layer.modulate.a = 0.3
-		base_layer.scale = Vector2(1.0, 1.0)
-		base_layer.name = "BaseLayer"
-		field_node.add_child(base_layer)
-	
-	# 中层：中等范围中透明度
-	var mid_layer = Sprite2D.new()
-	mid_layer.texture = VisualEffectsHelper.create_glow_background(
-		Vector2(radius * 1.5, radius * 1.5),
-		GameConstants.Colors.SECT_ICE
-	)
-	mid_layer.modulate = GameConstants.Colors.SECT_ICE
-	mid_layer.modulate.a = 0.5
-	mid_layer.scale = Vector2(1.0, 1.0)
-	mid_layer.name = "MidLayer"
-	field_node.add_child(mid_layer)
-	
-	# 顶层：小范围高透明度（核心光晕）
-	var top_layer = Sprite2D.new()
-	top_layer.texture = VisualEffectsHelper.create_glow_background(
-		Vector2(radius * 1.0, radius * 1.0),
-		GameConstants.Colors.SECT_ICE
-	)
-	top_layer.modulate = GameConstants.Colors.SECT_ICE
-	top_layer.modulate.a = 0.7
-	top_layer.scale = Vector2(1.0, 1.0)
-	top_layer.name = "TopLayer"
-	field_node.add_child(top_layer)
-	
-	# 添加伤害区域
-	var damage_area = Area2D.new()
-	damage_area.name = "DamageArea"
-	damage_area.collision_layer = 0
-	damage_area.collision_mask = 2  # 检测敌人
-	
-	var shape = CollisionShape2D.new()
-	var circle = CircleShape2D.new()
-	circle.radius = radius
-	shape.shape = circle
-	damage_area.add_child(shape)
-	
-	field_node.add_child(damage_area)
-	
-	if player and player.get_parent():
-		player.get_parent().add_child(field_node)
-		await get_tree().process_frame
-		_animate_field()
-	else:
-		field_node.queue_free()
-
-func _animate_field():
-	# 多层动画效果
-	var base = field_node.get_node_or_null("BaseLayer")
-	var mid = field_node.get_node_or_null("MidLayer")
-	var top = field_node.get_node_or_null("TopLayer")
-	
-	if base:
-		var tween = create_tween()
-		tween.tween_property(base, "scale", Vector2(1.1, 1.1), 0.4)
-		tween.tween_property(base, "modulate:a", 0.4, 0.4)
-	
-	if mid:
-		var tween = create_tween()
-		tween.set_loops()
-		tween.tween_property(mid, "rotation", TAU, 3.0)
-	
-	if top:
-		var tween = create_tween()
-		tween.set_loops()
-		tween.tween_property(top, "scale", Vector2(1.1, 1.1), 0.6)
-		tween.tween_property(top, "scale", Vector2(0.9, 0.9), 0.6)
-	
-	is_active = true
-	elapsed_time = 0.0
-	tick_timer = 0.0
-
-func _process(delta: float):
-	if not is_active or not is_instance_valid(field_node):
-		return
-	
-	elapsed_time += delta
-	tick_timer += delta
-	
-	# 定期造成伤害
-	if tick_timer >= tick_interval:
-		tick_timer = 0.0
-		_deal_field_damage()
-	
-	# 持续时间结束
-	if elapsed_time >= duration:
-		_end_field()
-
-func _deal_field_damage():
-	if not field_node:
-		return
-	
-	var damage_area = field_node.get_node_or_null("DamageArea")
-	if not damage_area:
+func _deal_damage():
+	if not is_instance_valid(field_node):
 		return
 	
 	var enemies = get_enemies_in_range(field_node.global_position, radius)
 	for enemy in enemies:
 		damage_enemy(enemy, damage)
-		_apply_slow(enemy)
-
-func _apply_slow(enemy: Node):
-	if enemy and enemy.has_method("apply_slow"):
-		enemy.apply_slow(slow_percent, slow_duration)
-
-func _end_field():
-	is_active = false
-	
-	if not is_instance_valid(field_node):
-		return
-	
-	# 淡出动画
-	var sprite = field_node.get_node_or_null("Sprite2D")
-	if sprite:
-		var fade_script = load("res://Utility/auto_fade_sprite.gd")
-		sprite.set_script(fade_script)
-		sprite.set("fade_duration", 0.5)
-	else:
-		field_node.queue_free()
+		apply_status_effects(enemy)

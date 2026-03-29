@@ -7,88 +7,40 @@ extends BaseActiveSkill
 ## 设计：完全配置驱动，无硬编码数值
 
 var radius: float = 0.0
-var trigger_interval: float = 0.5
 var field_node: Node2D = null
-var tick_timer: float = 0.0
 var hit_enemies: Array = []
 
 func _load_skill_config(cfg: Dictionary):
 	radius = cfg.get("radius", 120.0)
 	duration = cfg.get("duration", 6.0)
-	trigger_interval = cfg.get("trigger_interval", 0.5)
+	tick_interval = cfg.get("trigger_interval", 0.5)  # 使用基类的tick_interval
 
 func _on_skill_cast(cast_position: Vector2, _cast_direction: Vector2):
 	trigger_screen_shake(GameConstants.Values.SHAKE_ATTACK * 0.3)
-	_create_thunder_field(cast_position)
+	
+	# 使用基类方法创建技能节点
+	var node_config = SkillNodeConfig.new()
+	node_config.node_name = "ThunderField"
+	node_config.node_type = SkillNodeType.AREA_CIRCLE
+	node_config.position = cast_position
+	node_config.z_index = 1
+	node_config.skill_animation_name = "thunder_field"
+	node_config.animation_scale = VisualEffectsHelper.e_skill_scale_vector(radius)
+	node_config.animation_modulate = Color(1.0, 1.0, 1.0, 0.4)
+	node_config.animation_fps = 8.0
+	node_config.animation_loop = true
+	node_config.collision_radius = radius
+	node_config.lifetime = duration
+	node_config.fade_duration = 0.5
+	node_config.fallback_color = GameConstants.Colors.SECT_THUNDER
+	
+	field_node = await create_skill_node(node_config)
+	
+	# 启用周期性伤害
+	enable_tick_damage(tick_interval, _deal_damage)
 
-func _create_thunder_field(pos: Vector2):
-	field_node = Node2D.new()
-	field_node.name = "ThunderField"
-	field_node.global_position = pos
-	field_node.z_index = 1
-	
-	# 创建视觉效果
-	var sprite = Sprite2D.new()
-	sprite.texture = VisualEffectsHelper.create_glow_background(
-		Vector2(radius * 2, radius * 2),
-		GameConstants.Colors.SECT_THUNDER
-	)
-	sprite.modulate = GameConstants.Colors.SECT_THUNDER
-	sprite.modulate.a = 0.3
-	sprite.scale = Vector2(0.1, 0.1)
-	
-	field_node.add_child(sprite)
-	
-	# 添加触发区域
-	var trigger_area = Area2D.new()
-	trigger_area.name = "TriggerArea"
-	trigger_area.collision_layer = 0
-	trigger_area.collision_mask = 2  # 检测敌人
-	
-	var shape = CollisionShape2D.new()
-	var circle = CircleShape2D.new()
-	circle.radius = radius
-	shape.shape = circle
-	trigger_area.add_child(shape)
-	
-	field_node.add_child(trigger_area)
-	
-	if player and player.get_parent():
-		player.get_parent().add_child(field_node)
-		await get_tree().process_frame
-		_animate_field(sprite)
-	else:
-		field_node.queue_free()
-
-func _animate_field(sprite: Sprite2D):
-	# 展开动画
-	var tween = create_tween()
-	tween.tween_property(sprite, "scale", Vector2(1.0, 1.0), 0.2)
-	tween.tween_property(sprite, "modulate:a", 0.5, 0.2)
-	
-	is_active = true
-	elapsed_time = 0.0
-	tick_timer = 0.0
-	hit_enemies.clear()
-
-func _process(delta: float):
-	if not is_active or not is_instance_valid(field_node):
-		return
-	
-	elapsed_time += delta
-	tick_timer += delta
-	
-	# 定期触发电击
-	if tick_timer >= trigger_interval:
-		tick_timer = 0.0
-		_trigger_lightning()
-	
-	# 持续时间结束
-	if elapsed_time >= duration:
-		_end_field()
-
-func _trigger_lightning():
-	if not field_node:
+func _deal_damage():
+	if not is_instance_valid(field_node):
 		return
 	
 	var enemies = get_enemies_in_range(field_node.global_position, radius)
@@ -96,14 +48,20 @@ func _trigger_lightning():
 		damage_enemy(enemy, damage)
 		_create_lightning_effect(enemy.global_position)
 
+
 func _create_lightning_effect(pos: Vector2):
 	var effect = Sprite2D.new()
 	effect.global_position = pos
-	effect.scale = Vector2(1.5, 2.0)
-	effect.texture = VisualEffectsHelper.create_placeholder_texture(Vector2(16, 32))
+	var spark := VisualEffectsHelper.q_skill_scale_vector(1.25)
+	effect.scale = Vector2(spark.x, spark.y * 1.35)
 	effect.z_index = 10
-	effect.modulate = GameConstants.Colors.SECT_THUNDER
-	effect.modulate.a = 0.9
+	
+	var thunder_color = GameConstants.Colors.SECT_THUNDER
+	effect.texture = VisualEffectsHelper.create_gradient_texture(
+		Vector2(16, 32),
+		Color(thunder_color.r, thunder_color.g, thunder_color.b, 0.9),
+		Color(thunder_color.r, thunder_color.g, thunder_color.b, 0.0)
+	)
 	
 	var fade_script = load("res://Utility/auto_fade_sprite.gd")
 	effect.set_script(fade_script)
@@ -111,18 +69,3 @@ func _create_lightning_effect(pos: Vector2):
 	
 	if player and player.get_parent():
 		player.get_parent().add_child(effect)
-
-func _end_field():
-	is_active = false
-	
-	if not is_instance_valid(field_node):
-		return
-	
-	# 淡出动画
-	var sprite = field_node.get_node_or_null("Sprite2D")
-	if sprite:
-		var fade_script = load("res://Utility/auto_fade_sprite.gd")
-		sprite.set_script(fade_script)
-		sprite.set("fade_duration", 0.5)
-	else:
-		field_node.queue_free()

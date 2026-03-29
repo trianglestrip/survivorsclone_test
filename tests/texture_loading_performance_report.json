@@ -1,0 +1,28 @@
+{
+	"all_sects_estimated_mb": 8.78125,
+	"all_sects_memory_under_50mb": {
+		"detail": "est_mb=8.78",
+		"passed": true
+	},
+	"async_preload_completes": {
+		"detail": "duration_ms=352.08",
+		"passed": true
+	},
+	"async_thunder_ms": 352.078,
+	"cached_frame_usec": 4,
+	"load_ops_second_get_frames": 0,
+	"sect_preload_under_100ms": {
+		"detail": "worst=14.91ms sect=ice (无贴图时自动通过)",
+		"passed": true
+	},
+	"skill_cast_zero_load": {
+		"detail": "cached_lookup_usec=4",
+		"passed": true
+	},
+	"skill_frames_cache_reuse": {
+		"detail": "ops_after_second=5 (期望=5)",
+		"passed": true
+	},
+	"worst_sect_preload_id": "ice",
+	"worst_sect_preload_ms": 14.912
+}

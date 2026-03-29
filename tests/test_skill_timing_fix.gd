@@ -115,12 +115,12 @@ func _test_r_skill_realtime():
 		await process_frame
 	
 	print("  释放R技能...")
-	Input.action_press("skill_r")
+	Input.action_press("skill_t")
 	
 	for i in range(5):
 		await process_frame
 	
-	Input.action_release("skill_r")
+	Input.action_release("skill_t")
 	
 	# 等待技能效果
 	var frames_without_error = 0
@@ -177,10 +177,10 @@ func _test_all_skills_sequence():
 	
 	# R技能
 	print("  释放R技能...")
-	Input.action_press("skill_r")
+	Input.action_press("skill_t")
 	for i in range(5):
 		await process_frame
-	Input.action_release("skill_r")
+	Input.action_release("skill_t")
 	
 	for i in range(30):
 		await process_frame

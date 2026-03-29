@@ -143,6 +143,7 @@ texture_progress = ExtResource("9_uker1")
 unique_name_in_owner = true
 process_mode = 2
 visible = false
+z_index = 50
 layout_mode = 0
 offset_left = 800.0
 offset_top = 50.0
@@ -173,6 +174,7 @@ volume_db = -10.0
 unique_name_in_owner = true
 process_mode = 2
 visible = false
+z_index = 100
 layout_mode = 0
 offset_left = 230.0
 offset_top = -266.0
@@ -238,6 +240,17 @@ columns = 10
 
 [node name="SkillBarUI" parent="GUILayer/GUI" instance=ExtResource("13_skillbar")]
 unique_name_in_owner = true
+
+[node name="TexturePreloadLabel" type="Label" parent="GUILayer/GUI"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 0
+offset_left = 8.0
+offset_top = 320.0
+offset_right = 400.0
+offset_bottom = 348.0
+theme_override_font_sizes/font_size = 12
+text = "加载技能纹理"
 
 [connection signal="hurt" from="HurtBox" to="." method="_on_hurt_box_hurt"]
 [connection signal="timeout" from="Attack/IceSpearTimer" to="." method="_on_ice_spear_timer_timeout"]
