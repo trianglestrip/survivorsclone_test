@@ -218,7 +218,8 @@ func _spawn_active_skill(skill_config: Dictionary):
 	skill_instance.initialize(skill_config, self, sect_mgr)
 	
 	if get_parent():
-		get_parent().call_deferred("add_child", skill_instance)
+		get_parent().add_child(skill_instance)
+		await skill_instance.tree_entered
 	
 	skill_instance.cast(global_position, last_movement)
 
