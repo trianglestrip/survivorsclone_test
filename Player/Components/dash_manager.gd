@@ -7,8 +7,9 @@ extends Node
 ## 信号
 signal dash_started()
 signal dash_ended()
-signal dash_cooldown_started()
+signal dash_cooldown_started(cooldown_time: float)
 signal dash_cooldown_ended()
+signal dash_cooldown_updated(current_cooldown: float, max_cooldown: float)
 
 ## 冲刺属性（从配置加载）
 var cooldown: float = 1.0
@@ -96,6 +97,7 @@ func _update_invincible(delta: float):
 
 func _update_cooldown(delta: float):
 	current_cooldown -= delta
+	emit_signal("dash_cooldown_updated", max(current_cooldown, 0), cooldown)
 	if current_cooldown <= 0:
 		is_on_cooldown = false
 		emit_signal("dash_cooldown_ended")
@@ -171,7 +173,8 @@ func _end_dash():
 	is_on_cooldown = true
 	current_cooldown = cooldown
 	emit_signal("dash_ended")
-	emit_signal("dash_cooldown_started")
+	emit_signal("dash_cooldown_started", cooldown)
+	emit_signal("dash_cooldown_updated", current_cooldown, cooldown)
 
 ## 公共 API
 func get_dash_progress() -> float:

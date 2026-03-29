@@ -11,15 +11,32 @@
     "deadzone": 0.5
   },
   "attack": {
-    "base_cooldown": 0.5,
+    "base_cooldown": 0.4,
     "base_range": 80,
     "base_damage": 10,
     "base_knockback": 150
   },
   "dash": {
     "cooldown": 1.0,
-    "distance": 150,
-    "duration": 0.2,
-    "invincible_frames": 0.3
+    "distance": 180,
+    "duration": 0.15,
+    "invincible_frames": 0.25
+  },
+  "skills": {
+    "q": {
+      "name": "宗派技能1",
+      "cooldown": 3.0,
+      "key": "Q"
+    },
+    "e": {
+      "name": "宗派技能2",
+      "cooldown": 5.0,
+      "key": "E"
+    },
+    "r": {
+      "name": "必杀技",
+      "cooldown": 10.0,
+      "key": "R"
+    }
   }
 }

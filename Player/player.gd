@@ -117,6 +117,7 @@ func _connect_signals():
 	if dash_mgr:
 		dash_mgr.dash_started.connect(_on_dash_started)
 		dash_mgr.dash_ended.connect(_on_dash_ended)
+		dash_mgr.dash_cooldown_updated.connect(_on_dash_cooldown_updated)
 
 func _on_dash_started():
 	if hurt_box and hurt_box.has_node("CollisionShape2D"):
@@ -125,6 +126,11 @@ func _on_dash_started():
 func _on_dash_ended():
 	if hurt_box and hurt_box.has_node("CollisionShape2D"):
 		hurt_box.get_node("CollisionShape2D").disabled = false
+
+func _on_dash_cooldown_updated(current_cooldown: float, max_cooldown: float):
+	var skill_bar_ui = get_node_or_null("%SkillBarUI")
+	if skill_bar_ui and skill_bar_ui.has_method("update_skill_cooldown"):
+		skill_bar_ui.update_skill_cooldown("shift", current_cooldown, max_cooldown)
 
 func _initial_setup():
 	upgrade_character("icespear1")
