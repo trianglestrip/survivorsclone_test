@@ -47,7 +47,8 @@ func _spawn_fireball(pos: Vector2, dir: Vector2):
 	fireball.set("hit_radius", 20.0)
 	
 	if player and player.get_parent():
-		player.get_parent().call_deferred("add_child", fireball)
+		player.get_parent().add_child(fireball)
+		await get_tree().process_frame
 	else:
 		fireball.queue_free()
 

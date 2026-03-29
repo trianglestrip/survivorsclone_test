@@ -57,9 +57,8 @@ func _create_ice_field(pos: Vector2):
 	field_node.add_child(damage_area)
 	
 	if player and player.get_parent():
-		player.get_parent().call_deferred("add_child", field_node)
-		if field_node.is_inside_tree():
-			await field_node.tree_entered
+		player.get_parent().add_child(field_node)
+		await get_tree().process_frame
 		_animate_field(sprite)
 	else:
 		field_node.queue_free()

@@ -43,7 +43,8 @@ func _spawn_dart(pos: Vector2, dir: Vector2):
 	dart.set("skill_instance", self)
 	
 	if player and player.get_parent():
-		player.get_parent().call_deferred("add_child", dart)
+		player.get_parent().add_child(dart)
+		await get_tree().process_frame
 	else:
 		dart.queue_free()
 
@@ -76,4 +77,4 @@ func _create_hit_effect(pos: Vector2):
 	effect.set("fade_duration", GameConstants.Values.EFFECT_FADE_TIME)
 	
 	if player and player.get_parent():
-		player.get_parent().call_deferred("add_child", effect)
+		player.get_parent().add_child(effect)

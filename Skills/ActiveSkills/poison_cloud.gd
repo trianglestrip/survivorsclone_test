@@ -55,9 +55,8 @@ func _create_poison_cloud(pos: Vector2):
 	cloud_node.add_child(damage_area)
 	
 	if player and player.get_parent():
-		player.get_parent().call_deferred("add_child", cloud_node)
-		if cloud_node.is_inside_tree():
-			await cloud_node.tree_entered
+		player.get_parent().add_child(cloud_node)
+		await get_tree().process_frame
 		_animate_cloud(sprite)
 	else:
 		cloud_node.queue_free()

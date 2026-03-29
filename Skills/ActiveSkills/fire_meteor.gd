@@ -68,9 +68,8 @@ func _create_meteor(pos: Vector2):
 	meteor.add_child(sprite)
 	
 	if player and player.get_parent():
-		player.get_parent().call_deferred("add_child", meteor)
-		if meteor.is_inside_tree():
-			await meteor.tree_entered
+		player.get_parent().add_child(meteor)
+		await get_tree().process_frame
 		_animate_meteor_fall(meteor, pos)
 	else:
 		meteor.queue_free()
@@ -115,4 +114,4 @@ func _create_explosion_effect(pos: Vector2):
 	effect.set("fade_duration", 0.6)
 	
 	if player and player.get_parent():
-		player.get_parent().call_deferred("add_child", effect)
+		player.get_parent().add_child(effect)

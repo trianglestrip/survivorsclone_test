@@ -54,9 +54,8 @@ func _create_thunder_god(pos: Vector2):
 	god_node.add_child(damage_area)
 	
 	if player and player.get_parent():
-		player.get_parent().call_deferred("add_child", god_node)
-		if god_node.is_inside_tree():
-			await god_node.tree_entered
+		player.get_parent().add_child(god_node)
+		await get_tree().process_frame
 		_animate_god_aura(aura)
 	else:
 		god_node.queue_free()
@@ -122,9 +121,8 @@ func _create_lightning_bolt(from: Vector2, to: Vector2):
 	bolt.z_index = 11
 	
 	if player and player.get_parent():
-		player.get_parent().call_deferred("add_child", bolt)
-		if bolt.is_inside_tree():
-			await bolt.tree_entered
+		player.get_parent().add_child(bolt)
+		await get_tree().process_frame
 		_animate_bolt(bolt)
 
 func _animate_bolt(bolt: Line2D):

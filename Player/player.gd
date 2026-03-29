@@ -219,9 +219,9 @@ func _spawn_active_skill(skill_config: Dictionary):
 	
 	if get_parent():
 		get_parent().add_child(skill_instance)
-		await skill_instance.tree_entered
+		await get_tree().process_frame
 	
-	skill_instance.cast(global_position, last_movement)
+	await skill_instance.cast(global_position, last_movement)
 
 func _initial_setup():
 	set_expbar(stats.experience, exp_mgr.calculate_experience_cap())

@@ -73,8 +73,9 @@ func _create_strike_effect(pos: Vector2):
 	effect.add_child(circle)
 	
 	if player and player.get_parent():
-		player.get_parent().call_deferred("add_child", effect)
-		call_deferred("_animate_strike_effect", effect, flash, circle)
+		player.get_parent().add_child(effect)
+		await get_tree().process_frame
+		_animate_strike_effect(effect, flash, circle)
 	else:
 		effect.queue_free()
 

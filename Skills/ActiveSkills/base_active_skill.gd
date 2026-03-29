@@ -54,7 +54,7 @@ func cast(cast_position: Vector2, cast_direction: Vector2) -> bool:
 	is_active = true
 	elapsed_time = 0.0
 	
-	_on_skill_cast(cast_position, cast_direction)
+	await _on_skill_cast(cast_position, cast_direction)
 	
 	if duration > 0:
 		await get_tree().create_timer(duration).timeout
@@ -109,7 +109,7 @@ func create_effect(texture_path: String, pos: Vector2, scale_val: float = 1.0) -
 func spawn_effect(texture_path: String, pos: Vector2, scale_val: float = 1.0) -> Sprite2D:
 	var effect = create_effect(texture_path, pos, scale_val)
 	if player and player.get_parent():
-		player.get_parent().call_deferred("add_child", effect)
+		player.get_parent().add_child(effect)
 	return effect
 
 ## 工具函数：获取范围内的敌人

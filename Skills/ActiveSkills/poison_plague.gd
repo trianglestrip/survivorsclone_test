@@ -62,9 +62,8 @@ func _create_plague(pos: Vector2):
 	plague_node.add_child(damage_area)
 	
 	if player and player.get_parent():
-		player.get_parent().call_deferred("add_child", plague_node)
-		if plague_node.is_inside_tree():
-			await plague_node.tree_entered
+		player.get_parent().add_child(plague_node)
+		await get_tree().process_frame
 		_animate_plague()
 	else:
 		plague_node.queue_free()
@@ -149,9 +148,8 @@ func _create_spread_effect(from: Vector2, to: Vector2):
 	line.z_index = 9
 	
 	if player and player.get_parent():
-		player.get_parent().call_deferred("add_child", line)
-		if line.is_inside_tree():
-			await line.tree_entered
+		player.get_parent().add_child(line)
+		await get_tree().process_frame
 		_animate_spread_line(line)
 
 func _animate_spread_line(line: Line2D):

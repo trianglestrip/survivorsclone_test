@@ -28,7 +28,7 @@ func _on_skill_cast(cast_position: Vector2, _cast_direction: Vector2):
 	for i in range(projectile_count):
 		var offset_angle = (i - projectile_count / 2.0) * angle_spread
 		var projectile_dir = direction.rotated(deg_to_rad(offset_angle))
-		_spawn_projectile(cast_position, projectile_dir)
+		await _spawn_projectile(cast_position, projectile_dir)
 
 func _spawn_projectile(pos: Vector2, dir: Vector2):
 	var projectile = Node2D.new()
@@ -53,7 +53,8 @@ func _spawn_projectile(pos: Vector2, dir: Vector2):
 	projectile.set("skill_instance", self)
 	
 	if player and player.get_parent():
-		player.get_parent().call_deferred("add_child", projectile)
+		player.get_parent().add_child(projectile)
+		await get_tree().process_frame
 	else:
 		projectile.queue_free()
 
@@ -86,4 +87,4 @@ func _create_hit_effect(pos: Vector2):
 	effect.set("fade_duration", GameConstants.Values.EFFECT_FADE_TIME)
 	
 	if player and player.get_parent():
-		player.get_parent().call_deferred("add_child", effect)
+		player.get_parent().add_child(effect)

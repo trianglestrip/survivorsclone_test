@@ -57,9 +57,8 @@ func _create_ice_storm(pos: Vector2):
 	storm_node.add_child(damage_area)
 	
 	if player and player.get_parent():
-		player.get_parent().call_deferred("add_child", storm_node)
-		if storm_node.is_inside_tree():
-			await storm_node.tree_entered
+		player.get_parent().add_child(storm_node)
+		await get_tree().process_frame
 		_animate_storm()
 	else:
 		storm_node.queue_free()
@@ -128,7 +127,7 @@ func _create_ice_shard_effect(pos: Vector2):
 	effect.set("fade_duration", 0.4)
 	
 	if player and player.get_parent():
-		player.get_parent().call_deferred("add_child", effect)
+		player.get_parent().add_child(effect)
 
 func _end_storm():
 	is_active = false

@@ -56,9 +56,8 @@ func _create_fire_wall(pos: Vector2, dir: Vector2):
 	wall_node.add_child(damage_area)
 	
 	if player and player.get_parent():
-		player.get_parent().call_deferred("add_child", wall_node)
-		if wall_node.is_inside_tree():
-			await wall_node.tree_entered
+		player.get_parent().add_child(wall_node)
+		await get_tree().process_frame
 		_start_wall_effect()
 	else:
 		wall_node.queue_free()

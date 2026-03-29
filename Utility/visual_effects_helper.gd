@@ -23,14 +23,17 @@ static func trigger_screen_shake(source_node: Node, intensity: float = 0.3):
 		shake_camera(camera, intensity)
 
 static func shake_camera(camera: Camera2D, intensity: float):
-	if not camera:
+	if not camera or not is_instance_valid(camera):
 		return
 	
 	var shake_amount = intensity * 10.0
 	var original_offset = camera.offset
+	var tree = camera.get_tree()
+	if not tree:
+		return
 	
 	for i in range(8):
-		await camera.get_tree().create_timer(0.02).timeout
+		await tree.create_timer(0.02).timeout
 		if is_instance_valid(camera):
 			var shake_x = randf_range(-shake_amount, shake_amount)
 			var shake_y = randf_range(-shake_amount, shake_amount)
@@ -85,12 +88,16 @@ static func fade_out(node: CanvasItem, duration: float = 0.5):
 	if not is_instance_valid(node) or not node.is_inside_tree():
 		return
 	
+	var tree = node.get_tree()
+	if not tree:
+		return
+	
 	var steps = 10
 	var step_time = duration / steps
 	var alpha_step = 1.0 / steps
 	
 	for i in range(steps):
-		await node.get_tree().create_timer(step_time).timeout
+		await tree.create_timer(step_time).timeout
 		if is_instance_valid(node):
 			node.modulate.a -= alpha_step
 	
