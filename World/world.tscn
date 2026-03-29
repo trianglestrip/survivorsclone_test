@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://du6qbgqucaqov"]
+[gd_scene load_steps=8 format=3 uid="uid://du6qbgqucaqov"]
 
 [ext_resource type="Texture2D" uid="uid://b6umklllf2jsl" path="res://Textures/dirt_full_new.png" id="1_3v41d"]
 [ext_resource type="PackedScene" uid="uid://dncgepmkc4jf4" path="res://Player/player.tscn" id="2_40uwv"]
@@ -6,6 +6,8 @@
 [ext_resource type="AudioStream" uid="uid://bbufl4r1ou1rw" path="res://Audio/Music/battleThemeA.mp3" id="10_rk3we"]
 [ext_resource type="Script" path="res://Audio/Music/snd_Music.gd" id="11_ovtx6"]
 [ext_resource type="Script" path="res://tests/fps_display.gd" id="12_fps"]
+[ext_resource type="Script" path="res://UI/sect_indicator_ui.gd" id="13_sect_ui"]
+[ext_resource type="Script" path="res://UI/weapon_indicator_ui.gd" id="14_weapon_ui"]
 
 [node name="World" type="Node2D"]
 
@@ -45,5 +47,15 @@ offset_top = -40.0
 offset_right = 150.0
 offset_bottom = -10.0
 script = ExtResource("12_fps")
+
+[node name="SectIndicatorUI" type="Control" parent="CanvasLayer"]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("13_sect_ui")
+
+[node name="WeaponIndicatorUI" type="Control" parent="CanvasLayer"]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("14_weapon_ui")
 
 [connection signal="playerdeath" from="Player" to="snd_Music" method="_on_player_playerdeath"]

@@ -25,7 +25,7 @@ var sect_names = {
 	"poison": "毒瘴宗"
 }
 
-var weapon_ids = ["nameless_sword", "army_breaker", "star_bow", "heavy_hammer", "swift_blade", "dual_blades"]
+var weapon_ids = ["sword_basic", "sword_frost", "hammer_thunder", "staff_fire", "dagger_poison", "spear_legendary"]
 
 func _ready():
 	_setup_player()

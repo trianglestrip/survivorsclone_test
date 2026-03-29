@@ -91,11 +91,14 @@ func load_config(config: Dictionary):
 	knockback_recovery = config.get("knockback_resistance", knockback_recovery)
 	
 	# 更新颜色
-	var color_str = config.get("color", "")
-	if not color_str.is_empty():
+	if config.has("color"):
+		var color_value = config.get("color")
 		var sprite = get_node_or_null("Sprite2D")
 		if sprite:
-			sprite.modulate = Color(color_str)
+			if color_value is Color:
+				sprite.modulate = color_value
+			elif color_value is String and not color_value.is_empty():
+				sprite.modulate = Color(color_value)
 
 # ========================================
 # 子类可重写的方法
