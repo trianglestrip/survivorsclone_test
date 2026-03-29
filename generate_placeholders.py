@@ -1,4 +1,4 @@
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageFilter
 import os
 import math
 
@@ -170,11 +170,109 @@ def create_sword_swing_frames(num_frames, size, output_dir):
         img.save(output_path)
         print(f"Created: {output_path}")
 
-def create_ui_panel(size, bg_color, border_color, text, output_path):
+def draw_warm_snow_border(draw, x1, y1, x2, y2, border_color, highlight_color):
+    draw.rectangle([x1, y1, x2, y2], outline=border_color, width=3)
+    draw.rectangle([x1+2, y1+2, x2-2, y2-2], outline=highlight_color, width=1)
+    
+    corner_size = 8
+    draw.line([(x1, y1+corner_size), (x1, y1), (x1+corner_size, y1)], fill=highlight_color, width=2)
+    draw.line([(x2-corner_size, y1), (x2, y1), (x2, y1+corner_size)], fill=highlight_color, width=2)
+    draw.line([(x1, y2-corner_size), (x1, y2), (x1+corner_size, y2)], fill=highlight_color, width=2)
+    draw.line([(x2-corner_size, y2), (x2, y2), (x2, y2-corner_size)], fill=highlight_color, width=2)
+
+def create_warm_snow_skill_slot(size, key_text, skill_color, output_path):
+    img = Image.new('RGBA', size, (20, 20, 35, 230))
+    draw = ImageDraw.Draw(img)
+    
+    center_x = size[0] // 2
+    center_y = size[1] // 2
+    
+    border_color = (80, 80, 100)
+    highlight_color = skill_color
+    
+    draw_warm_snow_border(draw, 2, 2, size[0]-3, size[1]-3, border_color, highlight_color)
+    
+    inner_size = size[0] - 16
+    inner_x1 = 8
+    inner_y1 = 8
+    inner_x2 = inner_x1 + inner_size
+    inner_y2 = inner_y1 + inner_size
+    
+    gradient_steps = 10
+    for i in range(gradient_steps):
+        step_alpha = int(100 * (1 - i / gradient_steps))
+        step_color = (*skill_color[:3], step_alpha)
+        step_size = inner_size - i * 2
+        if step_size > 0:
+            offset = i
+            draw.rectangle([
+                inner_x1 + offset, inner_y1 + offset,
+                inner_x2 - offset, inner_y2 - offset
+            ], outline=step_color, width=1)
+    
+    font = ImageFont.load_default()
+    
+    bbox = draw.textbbox((0, 0), key_text, font=font)
+    text_w = bbox[2] - bbox[0]
+    text_h = bbox[3] - bbox[1]
+    
+    key_x = size[0] - text_w - 8
+    key_y = size[1] - text_h - 4
+    
+    bg_pad = 4
+    draw.rectangle([
+        key_x - bg_pad, key_y - bg_pad,
+        key_x + text_w + bg_pad, key_y + text_h + bg_pad
+    ], fill=(10, 10, 20, 200))
+    
+    draw.text((key_x, key_y), key_text, fill=(255, 255, 255), font=font)
+    
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    img.save(output_path)
+    print(f"Created: {output_path}")
+
+def create_warm_snow_health_bar(width, height, fill_percent, output_path):
+    img = Image.new('RGBA', (width, height), (10, 10, 20, 220))
+    draw = ImageDraw.Draw(img)
+    
+    border_color = (100, 80, 60)
+    highlight_color = (200, 180, 150)
+    
+    draw_warm_snow_border(draw, 1, 1, width-2, height-2, border_color, highlight_color)
+    
+    bar_x1 = 4
+    bar_y1 = 4
+    bar_x2 = width - 5
+    bar_y2 = height - 5
+    
+    draw.rectangle([bar_x1, bar_y1, bar_x2, bar_y2], fill=(30, 20, 15, 255))
+    
+    fill_width = int((bar_x2 - bar_x1) * fill_percent)
+    if fill_width > 0:
+        if fill_percent > 0.5:
+            fill_color = (180, 50, 50)
+            glow_color = (255, 100, 100)
+        elif fill_percent > 0.25:
+            fill_color = (180, 150, 50)
+            glow_color = (255, 220, 100)
+        else:
+            fill_color = (150, 50, 30)
+            glow_color = (255, 80, 60)
+        
+        draw.rectangle([bar_x1, bar_y1, bar_x1 + fill_width, bar_y2], fill=fill_color)
+        
+        glow_height = (bar_y2 - bar_y1) // 3
+        draw.rectangle([bar_x1, bar_y1, bar_x1 + fill_width, bar_y1 + glow_height], fill=(*glow_color[:3], 100))
+    
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+    img.save(output_path)
+    print(f"Created: {output_path}")
+
+def create_warm_snow_panel(size, bg_color, border_color, highlight_color, text, output_path):
     img = Image.new('RGBA', size, bg_color)
     draw = ImageDraw.Draw(img)
     
-    draw.rectangle([0, 0, size[0]-1, size[1]-1], outline=border_color, width=3)
+    draw_warm_snow_border(draw, 2, 2, size[0]-3, size[1]-3, border_color, highlight_color)
     
     font = ImageFont.load_default()
     
@@ -190,42 +288,24 @@ def create_ui_panel(size, bg_color, border_color, text, output_path):
     img.save(output_path)
     print(f"Created: {output_path}")
 
-def create_health_bar(width, height, fill_percent, output_path):
-    img = Image.new('RGBA', (width, height), (50, 50, 50, 255))
+def create_warm_snow_button(size, text, output_path):
+    img = Image.new('RGBA', size, (40, 30, 25, 240))
     draw = ImageDraw.Draw(img)
     
-    draw.rectangle([0, 0, width-1, height-1], outline=(200, 200, 200), width=2)
+    border_color = (120, 100, 80)
+    highlight_color = (200, 180, 140)
     
-    fill_width = int(width * fill_percent)
-    if fill_percent > 0.5:
-        fill_color = (0, 200, 0, 255)
-    elif fill_percent > 0.25:
-        fill_color = (200, 200, 0, 255)
-    else:
-        fill_color = (200, 0, 0, 255)
-    
-    draw.rectangle([2, 2, fill_width-2, height-2], fill=fill_color)
-    
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    img.save(output_path)
-    print(f"Created: {output_path}")
-
-def create_skill_slot(size, key_text, color, output_path):
-    img = Image.new('RGBA', size, (30, 30, 50, 200))
-    draw = ImageDraw.Draw(img)
-    
-    draw.rectangle([0, 0, size[0]-1, size[1]-1], outline=color, width=3)
-    draw.rectangle([4, 4, size[0]-5, size[1]-5], outline=(100, 100, 100), width=1)
+    draw_warm_snow_border(draw, 1, 1, size[0]-2, size[1]-2, border_color, highlight_color)
     
     font = ImageFont.load_default()
     
-    bbox = draw.textbbox((0, 0), key_text, font=font)
+    bbox = draw.textbbox((0, 0), text, font=font)
     text_w = bbox[2] - bbox[0]
     text_h = bbox[3] - bbox[1]
-    text_x = size[0] - text_w - 8
-    text_y = size[1] - text_h - 4
+    text_x = (size[0] - text_w) // 2
+    text_y = (size[1] - text_h) // 2
     
-    draw.text((text_x, text_y), key_text, fill=(255, 255, 255), font=font)
+    draw.text((text_x, text_y), text, fill=(240, 220, 180), font=font)
     
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     img.save(output_path)
@@ -286,55 +366,54 @@ def main():
         os.path.join(effects_dir, "Hit")
     )
     
-    print("\n=== Creating UI Elements ===")
+    print("\n=== Creating Warm Snow Style UI Elements ===")
     
-    create_ui_panel(
-        (300, 100), (50, 50, 100, 200), (100, 100, 200), 
-        "Warm Snow UI",
+    create_warm_snow_panel(
+        (300, 100), (30, 25, 40, 220), (100, 90, 120), (180, 160, 200),
+        "Warm Snow",
         os.path.join(ui_dir, "placeholder_panel.png")
     )
     
-    create_ui_panel(
-        (200, 60), (100, 50, 50, 200), (200, 100, 100), 
-        "Start Game",
+    create_warm_snow_button(
+        (200, 60), "Start Game",
         os.path.join(ui_dir, "placeholder_button.png")
     )
     
-    create_health_bar(
-        256, 32, 0.75,
+    create_warm_snow_health_bar(
+        280, 36, 0.75,
         os.path.join(ui_dir, "placeholder_healthbar.png")
     )
     
-    create_health_bar(
-        256, 32, 0.5,
+    create_warm_snow_health_bar(
+        280, 36, 0.5,
         os.path.join(ui_dir, "placeholder_healthbar_half.png")
     )
     
-    create_health_bar(
-        256, 32, 0.25,
+    create_warm_snow_health_bar(
+        280, 36, 0.25,
         os.path.join(ui_dir, "placeholder_healthbar_low.png")
     )
     
-    print("\n=== Creating Skill Bar UI ===")
+    print("\n=== Creating Warm Snow Style Skill Bar UI ===")
     
-    skill_slot_size = (64, 64)
+    skill_slot_size = (72, 72)
     
-    create_skill_slot(
+    create_warm_snow_skill_slot(
         skill_slot_size, "Q", (100, 150, 255),
         os.path.join(ui_dir, "skill_slot_q.png")
     )
     
-    create_skill_slot(
+    create_warm_snow_skill_slot(
         skill_slot_size, "E", (150, 100, 255),
         os.path.join(ui_dir, "skill_slot_e.png")
     )
     
-    create_skill_slot(
+    create_warm_snow_skill_slot(
         skill_slot_size, "R", (255, 100, 150),
         os.path.join(ui_dir, "skill_slot_r.png")
     )
     
-    create_skill_slot(
+    create_warm_snow_skill_slot(
         skill_slot_size, "Shift", (100, 255, 150),
         os.path.join(ui_dir, "skill_slot_shift.png")
     )
@@ -345,8 +424,10 @@ def main():
     print("  - Sword swing (10 frames)")
     print("  - Dash effect (8 frames)")
     print("  - Hit effect (8 frames)")
-    print("\nNote: Created UI:")
-    print("  - Skill slots (Q, E, R, Shift)")
+    print("\nNote: Created Warm Snow style UI:")
+    print("  - Skill slots (Q, E, R, Shift) with corner decorations")
+    print("  - Health bars with gradient glow")
+    print("  - Panel and button with warm snow aesthetic")
 
 if __name__ == "__main__":
     main()

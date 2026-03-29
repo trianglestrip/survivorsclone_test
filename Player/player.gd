@@ -181,7 +181,7 @@ func _play_hit_effect(position: Vector2):
 	
 	var sprite = Sprite2D.new()
 	sprite.texture = _hit_frames[0]
-	sprite.scale = Vector2(1.5, 1.5)
+	sprite.scale = Vector2(1.0, 1.0)
 	effect_node.add_child(sprite)
 	
 	if get_parent():

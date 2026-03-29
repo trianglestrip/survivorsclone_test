@@ -74,7 +74,7 @@ func _play_slash_effect(position: Vector2, direction: Vector2):
 	
 	var sprite = Sprite2D.new()
 	sprite.texture = _slash_frames[0]
-	sprite.scale = Vector2(1.5, 1.5)
+	sprite.scale = Vector2(0.8, 0.8)
 	effect_node.add_child(sprite)
 	
 	if player and player.get_parent():

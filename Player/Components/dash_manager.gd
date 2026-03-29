@@ -145,7 +145,7 @@ func _play_dash_effect(position: Vector2):
 	
 	_current_effect_sprite = Sprite2D.new()
 	_current_effect_sprite.texture = _dash_frames[0]
-	_current_effect_sprite.scale = Vector2(1.5, 1.5)
+	_current_effect_sprite.scale = Vector2(1.0, 1.0)
 	_current_effect_node.add_child(_current_effect_sprite)
 	
 	if player and player.get_parent():
