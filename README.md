@@ -336,7 +336,7 @@ F:\project\godot\Godot_v4.6.1-stable_win64_console.exe --headless --script tests
 
 ## 项目状态
 
-- **版本**: v2.2
+- **版本**: v2.3
 - **状态**: ✅ 完全可运行
 - **代码质量**: ⭐⭐⭐⭐⭐（无警告）
 - **架构**: A+ 级别

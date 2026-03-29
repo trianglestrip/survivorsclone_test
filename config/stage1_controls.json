@@ -1,0 +1,25 @@
+{
+  "input": {
+    "bindings": {
+      "move_up": "up",
+      "move_down": "down",
+      "move_left": "left",
+      "move_right": "right",
+      "attack": "click",
+      "dash": "shift"
+    },
+    "deadzone": 0.5
+  },
+  "attack": {
+    "base_cooldown": 0.5,
+    "base_range": 80,
+    "base_damage": 10,
+    "base_knockback": 150
+  },
+  "dash": {
+    "cooldown": 1.0,
+    "distance": 150,
+    "duration": 0.2,
+    "invincible_frames": 0.3
+  }
+}
