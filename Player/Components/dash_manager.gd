@@ -51,6 +51,9 @@ func set_input_manager(im: Node):
 	if input_manager:
 		input_manager.dash_pressed.connect(_on_dash_pressed)
 
+func _on_dash_pressed():
+	try_dash()
+
 func _process(delta: float):
 	if is_dashing:
 		_update_dash(delta)

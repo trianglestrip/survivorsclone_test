@@ -7,6 +7,7 @@ var stats
 var upgrade_mgr
 var exp_mgr
 var attack_mgr
+var dash_mgr
 
 # 基础变量
 var last_movement = Vector2.UP
@@ -21,6 +22,7 @@ var enemy_close = []
 # 节点引用
 @onready var sprite = $Sprite2D
 @onready var walkTimer = get_node("%walkTimer")
+@onready var hurt_box = $HurtBox
 
 # 标枪特殊处理（暂时保留）
 @onready var javelinBase = get_node("%JavelinBase")
@@ -93,7 +95,7 @@ func _initialize_components():
 	
 	# 创建冲刺管理器
 	var dash_mgr_script = load("res://Player/Components/dash_manager.gd")
-	var dash_mgr = dash_mgr_script.new()
+	dash_mgr = dash_mgr_script.new()
 	dash_mgr.set_player(self)
 	dash_mgr.set_input_manager(input_mgr)
 	add_child(dash_mgr)
@@ -101,6 +103,17 @@ func _initialize_components():
 func _connect_signals():
 	exp_mgr.level_up.connect(_on_level_up)
 	exp_mgr.experience_changed.connect(_on_experience_changed)
+	if dash_mgr:
+		dash_mgr.dash_started.connect(_on_dash_started)
+		dash_mgr.dash_ended.connect(_on_dash_ended)
+
+func _on_dash_started():
+	if hurt_box and hurt_box.has_node("CollisionShape2D"):
+		hurt_box.get_node("CollisionShape2D").disabled = true
+
+func _on_dash_ended():
+	if hurt_box and hurt_box.has_node("CollisionShape2D"):
+		hurt_box.get_node("CollisionShape2D").disabled = false
 
 func _initial_setup():
 	upgrade_character("icespear1")
@@ -112,6 +125,9 @@ func _physics_process(_delta):
 	movement()
 
 func movement():
+	if dash_mgr and dash_mgr.is_dashing:
+		return
+	
 	var x_mov = Input.get_action_strength("right") - Input.get_action_strength("left")
 	var y_mov = Input.get_action_strength("down") - Input.get_action_strength("up")
 	var mov = Vector2(x_mov, y_mov)
