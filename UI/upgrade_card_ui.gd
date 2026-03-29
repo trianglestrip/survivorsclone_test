@@ -10,13 +10,17 @@ const GameConstants = preload("res://Utility/game_constants.gd")
 var cards: Array = []
 var upgrade_data: Array = []
 var selected_card: Control = null
+var _selection_in_progress: bool = false
 
 func _ready():
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	mouse_filter = Control.MOUSE_FILTER_STOP
 	hide()
 
 ## 显示升级选项
 ## @param options: Array[Dictionary] - 升级配置数组
 func show_upgrade_options(options: Array):
+	_selection_in_progress = false
 	upgrade_data = options
 	_create_cards()
 	show()
@@ -274,6 +278,8 @@ func _on_card_hover(card: Control, is_hover: bool):
 		style.border_width_bottom = 3
 
 func _on_card_selected(card: Control):
+	if _selection_in_progress:
+		return
 	if not is_instance_valid(card):
 		return
 	
@@ -281,6 +287,7 @@ func _on_card_selected(card: Control):
 	if upgrade_id.is_empty():
 		return
 	
+	_selection_in_progress = true
 	# 播放选择动画
 	var tween = create_tween()
 	tween.tween_property(card, "modulate", Color(1.5, 1.5, 1.5), 0.1)
@@ -302,6 +309,7 @@ func _hide_ui():
 		child.queue_free()
 	
 	cards.clear()
+	_selection_in_progress = false
 	hide()
 
 func _input(event):

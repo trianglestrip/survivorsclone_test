@@ -13,7 +13,8 @@ signal dash_pressed()                 # 冲刺按下
 signal dash_released()                # 冲刺释放
 signal skill_q_pressed()              # Q技能按下
 signal skill_e_pressed()              # E技能按下
-signal skill_r_pressed()              # R技能按下
+signal skill_t_pressed()              # T键必杀技（原R）
+signal recall_sword()                 # R键召回飞剑
 
 ## 输入状态
 var move_direction: Vector2 = Vector2.ZERO
@@ -28,7 +29,9 @@ func _ready():
 	_load_config()
 
 func _load_config():
-	var json_data = ConfigManager.load_json_config("res://config/stage1_controls.json")
+	var ConfigManagerClass = load("res://Utility/config_manager.gd")
+	var config_mgr = ConfigManagerClass.new()
+	var json_data = config_mgr.load_json_config("res://config/stage1_controls.json")
 	if json_data and json_data.has("input"):
 		_config = json_data["input"]
 
@@ -83,8 +86,11 @@ func _update_skills():
 	if Input.is_action_just_pressed("skill_e"):
 		emit_signal("skill_e_pressed")
 	
-	if Input.is_action_just_pressed("skill_r"):
-		emit_signal("skill_r_pressed")
+	if Input.is_action_just_pressed("skill_t"):
+		emit_signal("skill_t_pressed")
+	
+	if Input.is_action_just_pressed("recall_sword"):
+		emit_signal("recall_sword")
 
 ## 公共 API - 查询输入状态
 func get_move_direction() -> Vector2:

@@ -1,0 +1,8 @@
+{
+  "max_active_swords": 4,
+  "lifetime": 5.0,
+  "move_speed": 480,
+  "turn_rate": 10.0,
+  "homing_range": 1200,
+  "collision_radius": 22
+}

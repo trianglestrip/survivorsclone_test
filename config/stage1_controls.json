@@ -10,7 +10,8 @@
       "dash": "shift",
       "skill_q": "skill_q",
       "skill_e": "skill_e",
-      "skill_r": "skill_r"
+      "skill_t": "skill_t",
+      "recall_sword": "recall_sword"
     },
     "deadzone": 0.5,
     "description": {
@@ -19,7 +20,8 @@
       "dash": "冲刺闪避（Shift）",
       "skill_q": "宗派技能1（Q）",
       "skill_e": "宗派技能2（E）",
-      "skill_r": "必杀技（R）"
+      "skill_t": "必杀技（T）",
+      "recall_sword": "召回飞剑（R）"
     }
   },
   "primary_attack": {
@@ -32,12 +34,17 @@
     "hit_pause_duration": 0.05
   },
   "secondary_attack": {
-    "type": "ranged",
-    "base_cooldown": 0.5,
+    "type": "flying_sword",
+    "base_cooldown": 0.7,
     "base_range": 300,
-    "base_damage": 8,
-    "base_knockback": 50,
-    "projectile_speed": 400
+    "base_damage": 14,
+    "base_knockback": 90,
+    "max_active_swords": 4,
+    "lifetime": 5.0,
+    "move_speed": 480,
+    "turn_rate": 10.0,
+    "homing_range": 1200,
+    "collision_radius": 22
   },
   "dash": {
     "cooldown": 0.8,
@@ -61,7 +68,7 @@
     "r": {
       "name": "必杀技",
       "cooldown": 10.0,
-      "key": "R"
+      "key": "T"
     }
   }
 }

@@ -33,7 +33,6 @@ var _hit_frames: Array = []
 @onready var lblLevel = get_node("%lbl_level")
 @onready var levelPanel = get_node("%LevelUp")
 @onready var upgradeOptions = get_node("%UpgradeOptions")
-@onready var itemOptions = preload("res://Utility/item_option.tscn")
 @onready var sndLevelUp = get_node("%snd_levelup")
 @onready var healthBar = get_node("%HealthBar")
 @onready var lblTimer = get_node("%lblTimer")
@@ -89,9 +88,17 @@ func _initialize_components():
 	weapon_registry = weapon_registry_script.new()
 	add_child(weapon_registry)
 	
+	var flying_sword_mgr_script = load("res://Player/Components/flying_sword_manager.gd")
+	var flying_sword_mgr = flying_sword_mgr_script.new()
+	flying_sword_mgr.name = "FlyingSwordManager"
+	flying_sword_mgr.set_player(self)
+	flying_sword_mgr.set_input_manager(input_mgr)
+	add_child(flying_sword_mgr)
+	
 	var attack_mgr_script = load("res://Player/Components/attack_manager.gd")
 	attack_mgr = attack_mgr_script.new()
 	attack_mgr.set_player(self)
+	attack_mgr.set_flying_sword_manager(flying_sword_mgr)
 	attack_mgr.set_input_manager(input_mgr)
 	attack_mgr.set_weapon_registry(weapon_registry)
 	add_child(attack_mgr)
@@ -338,17 +345,36 @@ func _on_level_up(new_level: int):
 	tween.play()
 	levelPanel.visible = true
 	
-	# 生成升级选项
-	var options = 0
-	var optionsmax = 3
-	while options < optionsmax:
-		var option_choice = itemOptions.instantiate()
-		var random_item = upgrade_mgr.get_random_upgrade()
-		option_choice.item = random_item
-		upgradeOptions.add_child(option_choice)
-		options += 1
+	var upgrade_card_ui = get_parent().get_node_or_null("UpgradeCardLayer/UpgradeCardUI")
+	if upgrade_card_ui == null or not upgrade_card_ui.has_method("show_upgrade_options"):
+		push_error("UpgradeCardUI 未找到，请确认 World 场景中已添加 UpgradeCardLayer/UpgradeCardUI")
+		get_tree().paused = true
+		return
 	
-	get_tree().paused = true
+	var upgrade_db = get_node_or_null("/root/UpgradeDb")
+	var option_payload: Array = []
+	if upgrade_db:
+		for _i in range(3):
+			var uid = upgrade_mgr.get_random_upgrade()
+			if uid.is_empty():
+				break
+			var row: Dictionary = upgrade_db.UPGRADES.get(uid, {})
+			if row.is_empty():
+				continue
+			var entry = row.duplicate(true)
+			if not entry.has("id") or str(entry.get("id", "")).is_empty():
+				entry["id"] = uid
+			option_payload.append(entry)
+	
+	if option_payload.is_empty():
+		push_warning("没有可用升级选项")
+		levelPanel.visible = false
+		levelPanel.position = Vector2(800, 50)
+		upgrade_mgr.clear_upgrade_options()
+		exp_mgr.add_experience(0)
+		return
+	
+	upgrade_card_ui.show_upgrade_options(option_payload)
 
 func _on_experience_changed(current_exp: int, required_exp: int):
 	set_expbar(current_exp, required_exp)

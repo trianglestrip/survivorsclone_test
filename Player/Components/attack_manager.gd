@@ -1,6 +1,8 @@
 class_name AttackManager
 extends Node
 
+const FlyingSwordAttack := preload("res://Player/Components/flying_sword_attack.gd")
+
 ## 新的攻击管理器 - 支持主动攻击
 ## 管理所有攻击类型，处理攻击输入和冷却
 
@@ -11,6 +13,7 @@ signal attack_launched(attack_type: String)
 var player: Node = null
 var input_manager: Node = null
 var weapon_registry: Node = null
+var flying_sword_manager: Node = null
 
 ## 攻击系统
 var primary_attack: BaseAttack = null
@@ -21,9 +24,13 @@ var current_weapon: Dictionary = {}
 
 func _ready():
 	_load_config()
+	if weapon_registry:
+		_initialize_attack()
 
 func _load_config():
-	var json_data = ConfigManager.load_json_config("res://config/stage1_controls.json")
+	var ConfigManagerClass = load("res://Utility/config_manager.gd")
+	var config_mgr = ConfigManagerClass.new()
+	var json_data = config_mgr.load_json_config("res://config/stage1_controls.json")
 	if json_data:
 		if json_data.has("primary_attack"):
 			_primary_config = json_data["primary_attack"]
@@ -41,6 +48,9 @@ func set_input_manager(im: Node):
 	if input_manager:
 		input_manager.attack_pressed.connect(_on_primary_attack_pressed)
 		input_manager.secondary_attack_pressed.connect(_on_secondary_attack_pressed)
+
+func set_flying_sword_manager(m: Node) -> void:
+	flying_sword_manager = m
 
 func set_weapon_registry(wr: Node):
 	weapon_registry = wr
@@ -84,14 +94,28 @@ func _initialize_attack():
 		add_child(ranged_attack)
 		primary_attack = ranged_attack
 	
-	# 副攻击（如果有配置）
+	# 副攻击：剑类 + 飞剑管理器 → 可召回飞剑；否则普通弹道
 	if not _secondary_config.is_empty():
-		var ranged_attack = RangedAttack.new()
-		ranged_attack.set_player(player)
-		ranged_attack.load_config(_secondary_config)
-		ranged_attack.attack_executed.connect(_on_attack_executed)
-		add_child(ranged_attack)
-		secondary_attack = ranged_attack
+		var merged_secondary := _secondary_config.duplicate()
+		merged_secondary["base_damage"] = weapon_stats.get("base_damage", merged_secondary.get("base_damage", 8))
+		merged_secondary["base_range"] = weapon_stats.get("range", merged_secondary.get("base_range", 300.0))
+		var weapon_type := str(current_weapon.get("weapon_type", ""))
+		var use_flying := weapon_type == "sword" and flying_sword_manager
+		if use_flying:
+			var fsa := FlyingSwordAttack.new()
+			fsa.set_player(player)
+			fsa.set_flying_sword_manager(flying_sword_manager)
+			fsa.load_config(merged_secondary)
+			fsa.attack_executed.connect(_on_attack_executed)
+			add_child(fsa)
+			secondary_attack = fsa
+		else:
+			var ranged_attack = RangedAttack.new()
+			ranged_attack.set_player(player)
+			ranged_attack.load_config(merged_secondary)
+			ranged_attack.attack_executed.connect(_on_attack_executed)
+			add_child(ranged_attack)
+			secondary_attack = ranged_attack
 	
 	print("[AttackManager] 装备武器: ", current_weapon.get("name", "未知"))
 
